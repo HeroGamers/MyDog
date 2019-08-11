@@ -1,0 +1,11 @@
+language: java
+jdk:
+- openjdk8
+deploy:
+  provider: releases
+  file: target/MyDog-*.jar
+  skip_cleanup: true
+  on:
+    repo: DoggyCraftDK/MyDog
+    tags: true
+sudo: false

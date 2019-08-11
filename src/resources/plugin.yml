@@ -1,0 +1,41 @@
+name: MyDog
+main: dk.fido2603.mydog.MyDog
+author: Fido2603
+version: ${project.version}
+api-version: 1.13
+load: POSTWORLD
+description: Tamed wolves but at least 10x better!
+depend: []
+softdepend: [Vault]
+website: https://github.com/DoggyCraftDK/MyDog
+commands:
+   mydog:
+      description: Command for the MyDog plugin
+      usage: Incorrect usage or missing permissions! Check /<command> help
+      aliases: [md, dog, dogs]
+permissions:
+    mydog.*:
+        description: Gives access to all MyDog commands
+        default: false
+        children:
+            mydog.all: true
+    mydog.all:
+        description: Gives access to all MyDog commands
+        default: false
+        children:
+            mydog.teleport: true
+            mydog.reload: true
+            mydog.save: true
+            mydogs.list: true
+    mydog.teleport:
+        description: Player's tamed wolves will teleport to the player
+        default: true
+    mydog.list:
+        description: Player can view the MyDog basic command
+        default: true
+    mydog.reload:
+        description: Player can reload the configuration(s)
+        default: false
+    mydog.save:
+        description: Player can save the configuration(s)
+        default: false       
