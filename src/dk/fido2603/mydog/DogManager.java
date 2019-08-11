@@ -4,13 +4,18 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -31,29 +36,39 @@ public class DogManager
 
 	public class Dog
 	{
-		UUID dogId;
-		UUID dogOwnerId;
-		String dogName;
-		Integer level;
-		Date birthday;
-		Location location;
-		DyeColor collarColor;
-		ChatColor nameColor;
+		private UUID dogId;
+		private UUID dogOwnerId;
+		private Integer dogIdentifier;
+		private String dogName;
+		private Integer level;
+		private Integer experience;
+		private Date birthday;
+		private Location location;
+		private DyeColor collarColor;
+		private ChatColor nameColor;
 
-		String pattern = "HH:mm dd-MM-yyyy";
+		String pattern = "dd-MM-yyyy HH:mm";
 		DateFormat formatter = new SimpleDateFormat(pattern);
 
 		// For new dogs
-		public Dog(Wolf dog, Player dogOwner)
+		public Dog(Wolf dog, Player dogOwner, Integer dogUID)
 		{
+			// The UUID of the Dog
 			this.dogId = dog.getUniqueId();
 
+			// The UUID of the Dog's owner (Player)
 			this.dogOwnerId = dogOwner.getUniqueId();
 			dogsConfig.set(dogId.toString() + ".Owner", dogOwnerId.toString());
 
+			// Generate an ID for the Dog
+			this.dogIdentifier = dogUID;
+			dogsConfig.set(dogId.toString() + ".ID", dogIdentifier);
+
+			// Generate a new name for the Dog
 			this.dogName = newDogName();
 			dogsConfig.set(dogId.toString() + ".Name", dogName);
 
+			// Generate a random Collar Color and set the Dog's Color
 			if (plugin.randomCollarColor)
 			{
 				dog.setCollarColor(ColorUtils.randomDyeColor());
@@ -62,17 +77,27 @@ public class DogManager
 			this.nameColor = ColorUtils.getChatColorFromDyeColor(collarColor);
 			dogsConfig.set(dogId.toString() + ".NameChatColor", nameColor.name());
 
+			// Save the Dog's last seen location
 			this.location = dog.getLocation();
-			dogsConfig.set(dogId.toString() + ".LastSeen", location.toString());
+			dogsConfig.set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
+			dogsConfig.set(dogId.toString() + ".LastSeen.X", location.getX());
+			dogsConfig.set(dogId.toString() + ".LastSeen.Y", location.getY());
+			dogsConfig.set(dogId.toString() + ".LastSeen.Z", location.getZ());
 
+			// Give the Dog a level
 			if (plugin.useLevels)
 			{
 				this.level = 1;
-				dogsConfig.set(dogId.toString() + ".Level", level);
+				dogsConfig.set(dogId.toString() + ".Level.Level", level);
+				this.experience = 0;
+				dogsConfig.set(dogId.toString() + ".Level.Experience", experience);
 			}
 
+			// Set the current time as the Dog's birthday
 			this.birthday = new Date();
 			dogsConfig.set(dogId.toString() + ".Birthday", formatter.format(birthday));
+
+			save();
 		}
 
 		// For old, already created, dogs
@@ -82,8 +107,26 @@ public class DogManager
 			{
 				this.dogId = dog.getUniqueId();
 				this.dogOwnerId = dog.getOwner().getUniqueId();
+				this.dogIdentifier = getIdentifier();
 				this.birthday = getBirthday();
 				this.level = getLevel();
+				this.experience = getExperience();
+				this.dogName = getDogName();
+				this.nameColor = getDogColor();
+			}
+		}
+
+		// For old, already created, dogs
+		public Dog(UUID dogUUID, UUID playerUUID)
+		{
+			if (dogsConfig.contains(dogUUID.toString()))
+			{
+				this.dogId = dogUUID;
+				this.dogOwnerId = playerUUID;
+				this.dogIdentifier = getIdentifier();
+				this.birthday = getBirthday();
+				this.level = getLevel();
+				this.experience = getExperience();
 				this.dogName = getDogName();
 				this.nameColor = getDogColor();
 			}
@@ -134,7 +177,7 @@ public class DogManager
 				return nameColor;
 			}
 
-			if (!plugin.getServer().getEntity(dogId).isValid())
+			if (plugin.getServer().getEntity(dogId) == null || !plugin.getServer().getEntity(dogId).isValid())
 			{
 				if (dogsConfig.getString(dogId.toString() + ".NameChatColor") != null)
 				{
@@ -148,14 +191,22 @@ public class DogManager
 
 		public Location getDogLocation()
 		{
-			if (!plugin.getServer().getEntity(dogId).isValid())
+			if (plugin.getServer().getEntity(dogId) == null || !plugin.getServer().getEntity(dogId).isValid())
 			{
+				if (dogsConfig.getString(dogId.toString() + ".LastSeen.World") != null)
+				{
+					return new Location(plugin.getServer().getWorld(dogsConfig.getString(dogId.toString() + ".LastSeen.World")), dogsConfig.getInt(dogId.toString() + ".LastSeen.X"), dogsConfig.getInt(dogId.toString() + ".LastSeen.Y"), dogsConfig.getInt(dogId.toString() + ".LastSeen.Z"));
+				}
 				return null;
 			}
 
 			this.location = plugin.getServer().getEntity(dogId).getLocation();
-			dogsConfig.set(dogId.toString() + ".LastSeen", location.toString());
-			
+			dogsConfig.set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
+			dogsConfig.set(dogId.toString() + ".LastSeen.X", location.getX());
+			dogsConfig.set(dogId.toString() + ".LastSeen.Y", location.getY());
+			dogsConfig.set(dogId.toString() + ".LastSeen.Z", location.getZ());
+
+			save();
 			return location;
 		}
 
@@ -181,7 +232,59 @@ public class DogManager
 				return level;
 			}
 
-			return dogsConfig.getInt(dogId.toString() + ".Level", 0);
+			return dogsConfig.getInt(dogId.toString() + ".Level.Level", 0);
+		}
+
+		public void setLevel(Integer lvl)
+		{
+			if (!level.equals(lvl))
+			{
+				this.level = lvl;
+			}
+
+			dogsConfig.set(dogId.toString() + ".Level.Level", lvl);
+		}
+
+		public Integer getExperience()
+		{
+			if (experience != null)
+			{
+				return experience;
+			}
+
+			return dogsConfig.getInt(dogId.toString() + ".Level.Experience", 0);
+		}
+
+		public void giveExperience(Integer exp)
+		{
+			Integer currentExp = getExperience();
+			setExperience(currentExp + exp);
+		}
+
+		public void setExperience(Integer exp)
+		{
+			this.experience = exp;
+			dogsConfig.set(dogId.toString() + ".Level.Experience", exp);
+
+			Integer levelBefore = level;
+
+			if (exp >= 10 && exp < 100) { this.level = 2; }
+			else if (exp >= 100 && exp < 200) { this.level = 3; }
+			else if (exp >= 200 && exp < 500) { this.level = 4; }
+			else if (exp >= 500 && exp < 1000) { this.level = 5; }
+			else if (exp >= 1000 && exp < 2000) { this.level = 6; }
+			else if (exp >= 2000 && exp < 3000) { this.level = 7; }
+			else if (exp >= 3000 && exp < 4000) { this.level = 8; }
+			else if (exp >= 4000 && exp < 5000) { this.level = 9; }
+			else if (exp >= 5000) { this.level = 10; }
+
+			if (levelBefore < level)
+			{
+				setLevel(level);
+				handleNewLevel(this);
+			}
+			
+			save();
 		}
 
 		public boolean setDogCustomName()
@@ -205,6 +308,16 @@ public class DogManager
 			}
 			plugin.logDebug("Retuning false!");
 			return false;
+		}
+
+		public Integer getIdentifier()
+		{
+			if (dogIdentifier != null)
+			{
+				return dogIdentifier;
+			}
+
+			return dogsConfig.getInt(dogId.toString() + ".ID", -1);
 		}
 	}
 
@@ -250,25 +363,162 @@ public class DogManager
 		if (dogsConfig.contains(dogId.toString()))
 		{
 			dogsConfig.set(dogId.toString(), null);
+			save();
 		}
 	}
 
+	public Integer dogsOwned(Player player)
+	{
+		return dogsOwned(player.getUniqueId());
+	}
+
+	public Integer dogsOwned(UUID playerId)
+	{
+		Integer dogs = 0;
+		for (String dogUUID : dogsConfig.getKeys(false))
+		{
+			plugin.logDebug(dogUUID);
+			UUID ownerId = UUID.fromString(dogsConfig.getString(dogUUID + ".Owner"));
+			if (ownerId.equals(playerId))
+			{
+				dogs++;
+			}
+		}
+		return dogs;
+	}
+
 	public Dog newDog(Wolf dog, Player dogOwner) {
-		return new Dog(dog, dogOwner);
+		Integer dogID = generateNewId(dogOwner.getUniqueId());
+		return new Dog(dog, dogOwner, dogID);
 	}
 
 	public Dog getDog(UUID dogId)
 	{
 		if (dogsConfig.contains(dogId.toString()))
 		{
-			return new Dog((Wolf) plugin.getServer().getEntity(dogId));
+			return new Dog(dogId, UUID.fromString(dogsConfig.getString(dogId.toString() + ".Owner")));
 		}
 		return null;
+	}
+
+	public Dog getDog(String dogIdentifier)
+	{
+		for (String dogIdString : dogsConfig.getKeys(false))
+		{
+			if (dogsConfig.getString(dogIdString + ".ID").contains(dogIdentifier))
+			{
+				UUID dogId = UUID.fromString(dogIdString);
+				return new Dog(dogId, UUID.fromString(dogsConfig.getString(dogId.toString() + ".Owner")));
+			}
+		}
+
+		return null;
+	}
+
+	public List<Dog> getDogs()
+	{
+		List<Dog> dogs = new ArrayList<Dog>();
+
+		for (String dogIdString : dogsConfig.getKeys(false))
+		{
+			UUID dogId = UUID.fromString(dogIdString);
+			// throws null if entity is unloaded
+			dogs.add(new Dog((Wolf) plugin.getServer().getEntity(dogId)));
+		}
+
+		return dogs;
+	}
+
+	public List<Dog> getDogs(UUID ownerId)
+	{
+		List<Dog> dogs = new ArrayList<Dog>();
+
+		for (String dogIdString : dogsConfig.getKeys(false))
+		{
+			if (dogsConfig.getString(dogIdString + ".Owner").contains(ownerId.toString()))
+			{
+				UUID dogId = UUID.fromString(dogIdString);
+				dogs.add(new Dog(dogId, ownerId));
+			}
+		}
+
+		return dogs;
 	}
 
 	public String newDogName()
 	{
 		int dogNameNumber = random.nextInt(plugin.dogNames.size());
 		return plugin.dogNames.get(dogNameNumber);
+	}
+
+	private Integer generateNewId(UUID dogOwnerId)
+	{
+		Integer id = 1;
+		List<Dog> dogs = MyDog.getDogManager().getDogs(dogOwnerId);
+
+		if (!dogs.isEmpty())
+		{
+			plugin.logDebug("Running new generator for ID");
+
+			while (true)
+			{
+				plugin.logDebug("Running loop - Dogs size: " + dogs.size());
+				Boolean isUsed = false;
+				for (Dog dog : dogs)
+				{
+					plugin.logDebug("Current dog: " + dog.getDogName() + " - " + dog.getIdentifier() + " ID to search: " + id);
+					if (dog.getIdentifier().equals(id))
+					{
+						plugin.logDebug("ID already used - ID: " + id);
+						isUsed = true;
+						break;
+					}
+				}
+				if (!isUsed)
+				{
+					plugin.logDebug("Found a free ID: " + id);
+					break;
+				}
+				id++;
+			}
+			plugin.logDebug("ok");
+		}
+		else
+		{
+			plugin.logDebug("Dogs list is empty!");
+			id = 1;
+		}
+
+		plugin.logDebug("Returning ID: " + id);
+		return id;
+	}
+
+	public void handleNewLevel(Dog dog)
+	{
+		plugin.logDebug("Dog levelup! Level before: " + (dog.getLevel()-1) + " - Level now: " + dog.getLevel());
+		UUID ownerId = dog.getOwnerId();
+		Player owner = plugin.getServer().getPlayer(ownerId);
+		if (owner.isOnline())
+		{
+			owner.sendMessage(ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.DARK_PURPLE + "Your dog, "
+					+ dog.getDogColor() + dog.getDogName() + ChatColor.DARK_PURPLE + ", just leveled up to " + ChatColor.LIGHT_PURPLE + "Level " + dog.level + ChatColor.DARK_PURPLE + "!");
+
+
+			MyDog.getParticleUtils().newLevelUpParticle(plugin.getServer().getEntity(dog.getDogId()));
+			owner.playSound(owner.getLocation(), Sound.ENTITY_WOLF_HOWL, 3.0F, 1.0F);
+		}
+
+		Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+
+		AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+		plugin.logDebug("Dog Maxhealth Before: " + wolfMaxHealth.getValue());
+		wolfMaxHealth.setBaseValue((wolfMaxHealth.getValue()/(0.5*(dog.getLevel()-1)))*(0.5*dog.getLevel()));
+		wolf.setHealth(wolfMaxHealth.getValue());
+		plugin.logDebug("Dog Maxhealth After: " + wolfMaxHealth.getValue());
+
+		AttributeInstance wolfDamage = wolf.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+		plugin.logDebug("Dog Damage Before: " + wolfDamage.getValue());
+		wolfDamage.setBaseValue((wolfDamage.getValue()/(0.5*(dog.getLevel()-1)))*(0.5*dog.getLevel()));
+		plugin.logDebug("Dog Damage After: " + wolfDamage.getValue());
 	}
 }

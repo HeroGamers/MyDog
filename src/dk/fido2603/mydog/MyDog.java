@@ -1,6 +1,8 @@
 package dk.fido2603.mydog;
 
+import dk.fido2603.mydog.listeners.DamageListener;
 import dk.fido2603.mydog.listeners.WolfMainListener;
+import dk.fido2603.mydog.utils.ParticleUtils;
 import net.milkbowl.vault.economy.Economy;
 
 import java.util.Arrays;
@@ -23,13 +25,16 @@ public class MyDog extends JavaPlugin
 {
 	public static MyDog 						instance;
 	public static boolean						pluginEnabled							= false;
+
 	public boolean								vaultEnabled							= false;
+
 	public static Server						server									= null;
 	public boolean								debug									= false;
 	private static MyDog						plugin;
 	private static FileConfiguration			config									= null;
 	private static PermissionsManager			permissionsManager						= null;
 	private static DogManager					dogManager								= null;
+	private static ParticleUtils				particleUtils							= null;
 
 	public boolean								randomCollarColor						= true;
 	public boolean								useLevels								= true;
@@ -53,6 +58,11 @@ public class MyDog extends JavaPlugin
 	public static DogManager getDogManager()
 	{
 		return dogManager;
+	}
+
+	public static ParticleUtils getParticleUtils()
+	{
+		return particleUtils;
 	}
 
 	public static Economy getEconomy()
@@ -89,6 +99,7 @@ public class MyDog extends JavaPlugin
 	public void onEnable()
 	{
 		WolfMainListener tameListener = null;
+		DamageListener damageListener = null;
 		
 		plugin = this;
 		instance = this;
@@ -100,6 +111,7 @@ public class MyDog extends JavaPlugin
 		pluginEnabled = true;
 
 		tameListener = new WolfMainListener(this);
+		damageListener = new DamageListener(this);
 		dogManager = new DogManager(this);
 
 		PluginManager pm = getServer().getPluginManager();
@@ -127,8 +139,10 @@ public class MyDog extends JavaPlugin
 		}
 
 		permissionsManager = new PermissionsManager(this);
+		particleUtils = new ParticleUtils(this);
 
 		getServer().getPluginManager().registerEvents(tameListener, this);
+		getServer().getPluginManager().registerEvents(damageListener, this);
 
 		loadSettings();
 		saveSettings();

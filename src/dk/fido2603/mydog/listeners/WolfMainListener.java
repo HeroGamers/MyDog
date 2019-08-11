@@ -14,12 +14,14 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Sittable;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 public class WolfMainListener implements Listener
@@ -88,6 +90,27 @@ public class WolfMainListener implements Listener
 		MyDog.getDogManager().removeDog(event.getEntity().getUniqueId());
 	}
 
+	@EventHandler
+	public void onWolfSit(PlayerInteractAtEntityEvent event)
+	{
+		Entity entity = event.getRightClicked();
+		if (!(entity instanceof Sittable) || !(entity instanceof Wolf))
+		{
+			return;
+		}
+
+		if (MyDog.getDogManager().isDog(entity.getUniqueId()))
+		{
+			Dog dog = MyDog.getDogManager().getDog(entity.getUniqueId());
+
+			if (!((Sittable) entity).isSitting())
+			{
+				plugin.logDebug("Saved dog location!");
+				dog.getDogLocation();
+			}
+		}
+	}
+
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onChunkUnload(ChunkUnloadEvent event)
 	{
@@ -105,7 +128,7 @@ public class WolfMainListener implements Listener
 				if (MyDog.getDogManager().isDog(dog.getUniqueId()) && !dog.isSitting())
 				{
 					Player player = (Player) dog.getOwner();
-					if (player != null && player.isOnline())
+					if (player != null && player.isOnline() && player.hasPermission("mydog.teleport"))
 					{
 						Location loc = player.getLocation();
 						if (!isSafeLocation(loc))
