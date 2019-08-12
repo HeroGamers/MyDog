@@ -1,12 +1,15 @@
 package dk.fido2603.mydog;
 
+import dk.fido2603.mydog.LevelFactory.Level;
 import dk.fido2603.mydog.listeners.DamageListener;
 import dk.fido2603.mydog.listeners.WolfMainListener;
 import dk.fido2603.mydog.utils.ParticleUtils;
 import net.milkbowl.vault.economy.Economy;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Server;
 import org.bukkit.command.Command;
@@ -34,11 +37,14 @@ public class MyDog extends JavaPlugin
 	private static FileConfiguration			config									= null;
 	private static PermissionsManager			permissionsManager						= null;
 	private static DogManager					dogManager								= null;
+	private static LevelFactory					levelFactory							= null;
 	private static ParticleUtils				particleUtils							= null;
 
 	public boolean								randomCollarColor						= true;
 	public boolean								useLevels								= true;
 	public List<String>							dogNames								= Arrays.asList("Fido", "Queen", "King", "Doggy", "Charlie", "Max", "Milo", "Ollie", "Toby", "Teddy", "Molly", "Rosie", "Bella");
+
+	public Map<Integer, Level>					dogLevels								= new HashMap<Integer, Level>();
 
 	private static Economy						economy									= null;
 	private Commands							commands								= null;
@@ -58,6 +64,11 @@ public class MyDog extends JavaPlugin
 	public static DogManager getDogManager()
 	{
 		return dogManager;
+	}
+
+	public static LevelFactory getLevelFactory()
+	{
+		return levelFactory;
 	}
 
 	public static ParticleUtils getParticleUtils()
@@ -113,6 +124,7 @@ public class MyDog extends JavaPlugin
 		tameListener = new WolfMainListener(this);
 		damageListener = new DamageListener(this);
 		dogManager = new DogManager(this);
+		levelFactory = new LevelFactory(this);
 
 		PluginManager pm = getServer().getPluginManager();
 
@@ -144,7 +156,7 @@ public class MyDog extends JavaPlugin
 		getServer().getPluginManager().registerEvents(tameListener, this);
 		getServer().getPluginManager().registerEvents(damageListener, this);
 
-		loadSettings();
+		reloadSettings();
 		saveSettings();
 
 		permissionsManager.load();
@@ -182,6 +194,37 @@ public class MyDog extends JavaPlugin
 		{
 			this.dogNames = config.getStringList("DogSettings.DogNames");
 		}
+
+		// Levels
+		if (config.getConfigurationSection("DogSettings.Levels") != null)
+		{
+			for (String level : config.getConfigurationSection("DogSettings.Levels").getKeys(false))
+			{
+				if (config.getConfigurationSection("DogSettings.Levels." + level) != null)
+				{
+					Integer exp = config.getInt("DogSettings.Levels." + level + ".Experience");
+					double health = config.getInt("DogSettings.Levels." + level + ".Health");
+					double damage = config.getInt("DogSettings.Levels." + level + ".Damage");
+
+					this.dogLevels.put(Integer.parseInt(level), getLevelFactory().newLevel(Integer.parseInt(level), exp, health, damage));
+				}
+			}
+		}
+		else
+		{
+			// Put levels into the hashmap
+			// Level format - [level, experience]
+			this.dogLevels.put(2, getLevelFactory().newLevel(2, 10, 21, 5));
+			this.dogLevels.put(3, getLevelFactory().newLevel(3, 100, 22, 6));
+			this.dogLevels.put(4, getLevelFactory().newLevel(4, 200, 23, 7));
+			this.dogLevels.put(5, getLevelFactory().newLevel(5, 500, 24, 8));
+			this.dogLevels.put(6, getLevelFactory().newLevel(6, 1000, 26, 11));
+			this.dogLevels.put(7, getLevelFactory().newLevel(7, 2000, 29, 13));
+			this.dogLevels.put(8, getLevelFactory().newLevel(8, 3000, 31, 15));
+			this.dogLevels.put(9, getLevelFactory().newLevel(9, 4000, 33, 17));
+			this.dogLevels.put(10, getLevelFactory().newLevel(10, 5000, 36, 20));	
+		}
+
 		dogManager.load();
 	}
 
@@ -193,6 +236,15 @@ public class MyDog extends JavaPlugin
 		config.set("DogSettings.RandomCollarColor", this.randomCollarColor);
 		config.set("DogSettings.UseLevels", this.useLevels);
 		config.set("DogSettings.DogNames", this.dogNames);
+
+		// Levels
+		for (Integer level : this.dogLevels.keySet())
+		{
+			Level levelObject = this.dogLevels.get(level);
+			config.set("DogSettings.Levels." + level + ".Experience", levelObject.exp);
+			config.set("DogSettings.Levels." + level + ".Health", levelObject.health);
+			config.set("DogSettings.Levels." + level + ".Damage", levelObject.damage);
+		}
 
 		saveConfig();
 		dogManager.save();

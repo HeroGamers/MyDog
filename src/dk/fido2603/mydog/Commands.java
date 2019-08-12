@@ -1,7 +1,12 @@
 package dk.fido2603.mydog;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang.Validate;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
@@ -9,8 +14,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
+import org.bukkit.util.StringUtil;
 
 import dk.fido2603.mydog.DogManager.Dog;
+import dk.fido2603.mydog.LevelFactory.Level;
 
 public class Commands
 {
@@ -49,7 +56,7 @@ public class Commands
 						return true;
 					}
 					
-					if ((!player.isOp()) && (!player.hasPermission("mydog.reload")))
+					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.reload")))
 					{
 						return false;
 					}
@@ -67,7 +74,7 @@ public class Commands
 						return true;
 					}
 					
-					if ((!player.isOp()) && (!player.hasPermission("mydog.save")))
+					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.save")))
 					{
 						return false;
 					}
@@ -78,7 +85,7 @@ public class Commands
 				}
 				if ((args[0].equalsIgnoreCase("help")) && (player != null))
 				{
-					if ((!player.isOp()) && (!player.hasPermission("mydog.list")))
+					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.help")))
 					{
 						return false;
 					}
@@ -89,7 +96,7 @@ public class Commands
 				}
 				if (((args[0].equalsIgnoreCase("dogs")) || (args[0].equalsIgnoreCase("list"))) && (player != null))
 				{
-					if ((!player.isOp()) && (!player.hasPermission("mydog.dogs")))
+					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.dogs")))
 					{
 						return false;
 					}
@@ -101,9 +108,9 @@ public class Commands
 			}
 			else if ((args.length == 2) && (player != null))
 			{
-				if ((args[0].equalsIgnoreCase("putdown")) && (player != null))
+				if (((args[0].equalsIgnoreCase("putdown")) || (args[0].equalsIgnoreCase("kill"))) && (player != null))
 				{
-					if ((!player.isOp()) && (!player.hasPermission("mydog.putdown")))
+					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown")))
 					{
 						return false;
 					}
@@ -114,12 +121,23 @@ public class Commands
 				}
 				if (((args[0].equalsIgnoreCase("stats")) || (args[0].equalsIgnoreCase("info"))) && (player != null))
 				{
-					if ((!player.isOp()) && (!player.hasPermission("mydog.stats")))
+					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.stats")))
 					{
 						return false;
 					}
 
 					commandDogStats(sender, args[1]);
+
+					return true;
+				}
+				if (((args[0].equalsIgnoreCase("comehere"))) && (player != null))
+				{
+					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.stats")))
+					{
+						return false;
+					}
+
+					commandDogComehere(sender, args[1]);
 
 					return true;
 				}
@@ -141,7 +159,13 @@ public class Commands
 		sender.sendMessage(ChatColor.YELLOW + "------------------ " + plugin.getDescription().getFullName() + " ------------------");
 		sender.sendMessage(ChatColor.AQUA + "By Fido2603");
 		sender.sendMessage(ChatColor.AQUA + "");
-		sender.sendMessage(ChatColor.AQUA + "You currently have " + ChatColor.WHITE + MyDog.getDogManager().dogsOwned((Player) sender) + ChatColor.AQUA + " dogs!");
+		Integer dogsOwned = MyDog.getDogManager().dogsOwned((Player) sender);
+		String dogs = " dogs!";
+		if (dogsOwned == 1)
+		{
+			dogs = " dog!";
+		}
+		sender.sendMessage(ChatColor.AQUA + "You currently own " + ChatColor.WHITE + dogsOwned + ChatColor.AQUA + dogs);
 		sender.sendMessage(ChatColor.AQUA + "");
 		sender.sendMessage(ChatColor.AQUA + "Use " + ChatColor.WHITE + "/mydog help" + ChatColor.AQUA + " for a list of commands!");
 
@@ -152,29 +176,38 @@ public class Commands
 	{
 		sender.sendMessage(ChatColor.YELLOW + "------------------ " + this.plugin.getDescription().getFullName() + " ------------------");
 		sender.sendMessage(ChatColor.AQUA + "/mydog" + ChatColor.WHITE + " - Basic info");
-		if ((sender.isOp()) || (sender.hasPermission("mydog.list")))
+		if (sender instanceof Player)
 		{
-			sender.sendMessage(ChatColor.AQUA + "/mydog help" + ChatColor.WHITE + " - This command");
-		}
-		if ((sender.isOp()) || (sender.hasPermission("mydog.reload")))
-		{
-			sender.sendMessage(ChatColor.AQUA + "/mydog reload" + ChatColor.WHITE + " - Reloads the MyDog system");
-		}
-		if ((sender.isOp()) || (sender.hasPermission("mydog.save")))
-		{
-			sender.sendMessage(ChatColor.AQUA + "/mydog save" + ChatColor.WHITE + " - Saves the current changes to the MyDog system");
-		}
-		if ((sender.isOp()) || (sender.hasPermission("mydog.dogs")))
-		{
-			sender.sendMessage(ChatColor.AQUA + "/mydog dogs" + ChatColor.WHITE + " - View a list with your current Dogs");
-		}
-		if ((sender.isOp()) || (sender.hasPermission("mydog.putdown")))
-		{
-			sender.sendMessage(ChatColor.AQUA + "/mydog putdown <id>" + ChatColor.WHITE + " - Kill your Dog");
-		}
-		if ((sender.isOp()) || (sender.hasPermission("mydog.stats")))
-		{
-			sender.sendMessage(ChatColor.AQUA + "/mydog info <id>" + ChatColor.WHITE + " - Gets stats about a Dog");
+			Player player = (Player) sender;
+
+			if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.help")))
+			{
+				sender.sendMessage(ChatColor.AQUA + "/mydog help" + ChatColor.WHITE + " - This command");
+			}
+			if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.reload")))
+			{
+				sender.sendMessage(ChatColor.AQUA + "/mydog reload" + ChatColor.WHITE + " - Reloads the MyDog system");
+			}
+			if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.save")))
+			{
+				sender.sendMessage(ChatColor.AQUA + "/mydog save" + ChatColor.WHITE + " - Saves the current changes to the MyDog system");
+			}
+			if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.dogs")))
+			{
+				sender.sendMessage(ChatColor.AQUA + "/mydog list" + ChatColor.WHITE + " - View a list with your current Dogs");
+			}
+			if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown")))
+			{
+				sender.sendMessage(ChatColor.AQUA + "/mydog putdown <id>" + ChatColor.WHITE + " - Get rid of a Dog you own");
+			}
+			if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere")))
+			{
+				sender.sendMessage(ChatColor.AQUA + "/mydog comehere <id>" + ChatColor.WHITE + " - Forces your Dog to teleport to your location");
+			}
+			if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.stats")))
+			{
+				sender.sendMessage(ChatColor.AQUA + "/mydog info <id>" + ChatColor.WHITE + " - Gets stats and other info about a Dog you own");
+			}
 		}
 
 		return true;
@@ -201,7 +234,7 @@ public class Commands
 
 	private boolean commandDogPutdown(CommandSender sender, String dogIdentifier)
 	{
-		Dog dog = MyDog.getDogManager().getDog(dogIdentifier);
+		Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
 		if (dog == null)
 		{
 			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
@@ -224,7 +257,7 @@ public class Commands
 
 	private boolean commandDogStats(CommandSender sender, String dogIdentifier)
 	{
-		Dog dog = MyDog.getDogManager().getDog(dogIdentifier);
+		Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
 		if (dog == null)
 		{
 			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
@@ -232,11 +265,75 @@ public class Commands
 		}
 
 		Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+		DecimalFormat df = new DecimalFormat("#.#");
 
 		sender.sendMessage(ChatColor.YELLOW + "------------------ " + this.plugin.getDescription().getFullName() + " ------------------");
 		
 		sender.sendMessage(ChatColor.AQUA + "Name: " + dog.getDogColor() + dog.getDogName());
-		sender.sendMessage(ChatColor.AQUA + "Level: " + ChatColor.WHITE + dog.getLevel());
+
+		if (plugin.useLevels)
+		{
+			sender.sendMessage(ChatColor.AQUA + "Level: " + ChatColor.WHITE + dog.getLevel());
+
+			// Calculate and make experience string
+			String experienceString = "";
+			double exp = dog.getExperience();
+			//double levelStartExp = 0;
+			double maxExp = 0;
+			
+			Map<Integer, Level> levels = plugin.dogLevels;
+
+			for (Integer levelInt : levels.keySet())
+			{
+				Integer levelExp = levels.get(levelInt).exp;
+
+				// If experience is under the experience needed to level up
+				if (exp < levelExp)
+				{
+					// If there is a level under the current one, check if the exp is over or equals to the value of that levelup
+					if (levels.containsKey((levelInt-1)) && exp >= levels.get((levelInt-1)).exp)
+					{
+						//levelStartExp = levels.get((levelInt-1));
+						maxExp = levelExp;
+						break;
+					}
+					// Exp is under needed, and there is no level under. Lowest level found. User is at lowest level then
+
+					//levelStartExp = 0;
+					maxExp = levelExp;
+					break;
+				}
+				else if (exp > levelExp && !levels.containsKey((levelInt+1))) // Highest level
+				{
+					if (levels.get((levelInt-1)) == null)
+					{
+						plugin.logDebug("Something went wrong! Last level, there is no level under! Return!");
+						return false;
+					}
+					//levelStartExp = levels.get((levelInt-1));
+					maxExp = levelExp;
+				}
+			}
+
+			/*
+			if (exp < 10) { levelStartExp = 0; maxExp = 10; } // to level 2
+			else if (exp >= 10 && exp < 100) { levelStartExp = 10; maxExp = 100; } // to level 3
+			else if (exp >= 100 && exp < 200) { levelStartExp = 100; maxExp = 200; } // to level 4
+			else if (exp >= 200 && exp < 500) { levelStartExp = 200; maxExp = 500; }
+			else if (exp >= 500 && exp < 1000) { levelStartExp = 500; maxExp = 1000; }
+			else if (exp >= 1000 && exp < 2000) { levelStartExp = 1000; maxExp = 2000; }
+			else if (exp >= 2000 && exp < 3000) { levelStartExp = 2000; maxExp = 3000; }
+			else if (exp >= 3000 && exp < 4000) { levelStartExp = 3000; maxExp = 4000; }
+			else if (exp >= 4000 && exp < 5000) { levelStartExp = 4000; maxExp = 5000; }*/
+
+			plugin.logDebug("Exp: " + exp + " - MaxExp: " + maxExp);
+			double percent = (exp/maxExp)*100;
+			plugin.logDebug("Current percent: " + percent);
+			
+			experienceString = calculatePercentString(percent) + ChatColor.AQUA + "" + ChatColor.BOLD + " [" + ChatColor.DARK_AQUA + df.format(exp) + 
+					ChatColor.AQUA + "" + ChatColor.BOLD + "/" + ChatColor.RESET + ChatColor.AQUA + df.format(maxExp) + ChatColor.AQUA + "" + ChatColor.BOLD + "]";
+			sender.sendMessage(ChatColor.AQUA + "Experience: " + experienceString);
+		}
 
 		if (wolf != null)
 		{
@@ -245,50 +342,11 @@ public class Commands
 			double health = wolf.getHealth();
 			
 			double percent = (health/maxHealth)*100;
-			String healthString = "==========";
+			
+			String healthString = calculatePercentString(percent);
 
-			if (percent > 0 && percent <= 10)
-			{
-				healthString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "=" + ChatColor.AQUA + "=========";
-			}
-			else if (percent > 10 && percent <= 20)
-			{
-				healthString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "==" + ChatColor.AQUA + "========";
-			}
-			else if (percent > 20 && percent <= 30)
-			{
-				healthString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "===" + ChatColor.AQUA + "=======";
-			}
-			else if (percent > 30 && percent <= 40)
-			{
-				healthString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "====" + ChatColor.AQUA + "=====";
-			}
-			else if (percent > 40 && percent <= 50)
-			{
-				healthString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "=====" + ChatColor.AQUA + "=====";
-			}
-			else if (percent > 50 && percent <= 60)
-			{
-				healthString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "======" + ChatColor.AQUA + "====";
-			}
-			else if (percent > 60 && percent <= 70)
-			{
-				healthString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "=======" + ChatColor.AQUA + "===";
-			}
-			else if (percent > 70 && percent <= 80)
-			{
-				healthString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "========" + ChatColor.AQUA + "==";
-			}
-			else if (percent > 80 && percent <= 90)
-			{
-				healthString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "=========" + ChatColor.AQUA + "=";
-			}
-			else if (percent > 90 && percent <= 100)
-			{
-				healthString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "==========";
-			}
-
-			sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + healthString + ChatColor.AQUA + "" + ChatColor.BOLD + "] [" + ChatColor.DARK_AQUA + health + ChatColor.AQUA + "" + ChatColor.BOLD + "/" + ChatColor.RESET + ChatColor.AQUA + maxHealth + ChatColor.AQUA + "" + ChatColor.BOLD + "]");
+			sender.sendMessage(ChatColor.AQUA + "Health: " + healthString + ChatColor.AQUA + "" + ChatColor.BOLD + " [" + ChatColor.DARK_AQUA + df.format(health) + 
+					ChatColor.AQUA + "" + ChatColor.BOLD + "/" + ChatColor.RESET + ChatColor.AQUA + df.format(maxHealth) + ChatColor.AQUA + "" + ChatColor.BOLD + "]");
 
 			sender.sendMessage(ChatColor.AQUA + "Damage: " + ChatColor.WHITE + wolf.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getValue() + " HP");
 		}
@@ -296,14 +354,197 @@ public class Commands
 		Location dogLoc = dog.getDogLocation();
 		if (dogLoc != null)
 		{
-			sender.sendMessage(ChatColor.AQUA + "Last Seen at: " + ChatColor.WHITE + "World: " + dogLoc.getWorld().getName() + " - X: " + dogLoc.getX() + " Y: " + dogLoc.getY() + " Z: " + dogLoc.getZ());
+			sender.sendMessage(ChatColor.AQUA + "Last Seen at: " + ChatColor.DARK_AQUA + "World: " + ChatColor.WHITE + dogLoc.getWorld().getName() + 
+					ChatColor.DARK_AQUA + " X: " + ChatColor.WHITE + df.format(dogLoc.getX()) + ChatColor.DARK_AQUA + " Y: " + ChatColor.WHITE + df.format(dogLoc.getY()) + 
+					ChatColor.DARK_AQUA + " Z: " + ChatColor.WHITE + df.format(dogLoc.getZ()));
 		}
 
 		return true;
 	}
 
-	public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+	private String calculatePercentString(double percent)
+	{
+		String percentString = "==========";
+
+		if (percent >= 10.0 && percent < 19.9)
+		{
+			percentString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "=" + ChatColor.AQUA + "=========";
+		}
+		else if (percent >= 20.0 && percent < 29.9)
+		{
+			percentString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "==" + ChatColor.AQUA + "========";
+		}
+		else if (percent >= 30.0 && percent < 39.9)
+		{
+			percentString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "===" + ChatColor.AQUA + "=======";
+		}
+		else if (percent >= 40.0 && percent < 49.9)
+		{
+			percentString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "====" + ChatColor.AQUA + "=====";
+		}
+		else if (percent >= 50.0 && percent < 59.9)
+		{
+			percentString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "=====" + ChatColor.AQUA + "=====";
+		}
+		else if (percent >= 60.0 && percent < 69.9)
+		{
+			percentString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "======" + ChatColor.AQUA + "====";
+		}
+		else if (percent >= 70.0 && percent < 79.9)
+		{
+			percentString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "=======" + ChatColor.AQUA + "===";
+		}
+		else if (percent >= 80.0 && percent < 89.9)
+		{
+			percentString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "========" + ChatColor.AQUA + "==";
+		}
+		else if (percent >= 90.0 && percent < 99.9)
+		{
+			percentString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "=========" + ChatColor.AQUA + "=";
+		}
+		else if (percent >= 100.0)
+		{
+			percentString = ChatColor.DARK_AQUA + "" + ChatColor.BOLD + "==========";
+		}
+
+		return ChatColor.AQUA + "" + ChatColor.BOLD + "[" + percentString + ChatColor.AQUA + "" + ChatColor.BOLD + "]";
+	}
+
+	private boolean commandDogComehere(CommandSender sender, String dogIdentifier)
+	{
+		Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
+		if (dog == null)
+		{
+			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + 
+					ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
+			return false;
+		}
+
+		Wolf wolf = null;
+
+		Location dogLocation = dog.getDogLocation();
+		Boolean useLocation = false;
+		if (dogLocation == null)
+		{
+			wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+			if (wolf == null)
+			{
+				sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + 
+						ChatColor.RED + "Aww bonkers! Seems like your Dog cannot be found... Sorry about that!");
+				return false;
+			}
+		}
+		else
+		{
+			if (dogLocation.getChunk().load(false))
+			{
+				plugin.logDebug("Loaded the chunk sucessfully, no generate!");
+			}
+			else if (dogLocation.getChunk().load(true))
+			{
+				plugin.logDebug("Loaded the chunk sucessfully, generated!");
+			}
+			else
+			{
+				sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + 
+						ChatColor.RED + "Aww bonkers! Seems like your Dog is at a location that cannot be loaded right now!");
+				return false;
+			}
+			useLocation = true;
+		}
+
+		wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+		
+		if (wolf == null)
+		{
+			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + 
+					ChatColor.RED + "Aww bonkers! Seems like your Dog cannot be found...");
+			plugin.logDebug("Could not find Dog, even though chunks should be loaded...");
+			return false;
+		}
+
+		Location playerLoc = ((Player) sender).getLocation();
+		wolf.teleport(playerLoc);
+		wolf.setSitting(false);
+		sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + 
+				ChatColor.GOLD + "Come here! Good doggo, " + dog.getDogName() + "!");
+		dog.updateWolf();
+
+		if (useLocation == true)
+		{
+			dogLocation.getChunk().unload();
+			plugin.logDebug("Unloaded the chunk sucessfully!");
+		}
+
+		return true;
+	}
+
+	public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args)
+	{
+		Validate.notNull(sender, "Sender cannot be null");
+		Validate.notNull(args, "Arguments cannot be null");
+		Validate.notNull(alias, "Alias cannot be null");
+
+		List<String> result = new ArrayList<String>();
+
+		Player player = null;
+		if (sender instanceof Player)
+		{
+			player = (Player) sender;
+		}
+
+		if (args.length == 1 && (cmd.getName().equalsIgnoreCase("mydog") || cmd.getName().equalsIgnoreCase("dog") || cmd.getName().equalsIgnoreCase("dogs") || cmd.getName().equalsIgnoreCase("md")))
+		{
+			List<String> arg1 = new ArrayList<String>();
+			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.help"))
+			{
+				arg1.add("help");
+			}
+			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.reload"))
+			{
+				arg1.add("reload");
+			}
+			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.save"))
+			{
+				arg1.add("save");
+			}
+			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.dogs"))
+			{
+				arg1.add("dogs");
+			}
+			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown"))
+			{
+				arg1.add("putdown");
+			}
+			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere"))
+			{
+				arg1.add("comehere");
+			}
+			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.stats"))
+			{
+				arg1.add("info");
+			}
+			Iterable<String> FIRST_ARGUMENTS = arg1;
+			StringUtil.copyPartialMatches(args[0], FIRST_ARGUMENTS, result);
+		}
+		else if (args.length == 2)
+		{
+			List<String> arg2 = new ArrayList<String>();
+
+			if (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("comehere") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("stats"))
+			{
+				List<Dog> dogs = MyDog.getDogManager().getDogs(player.getUniqueId());
+				for (Dog dog : dogs)
+				{
+					arg2.add(dog.getIdentifier().toString());
+				}
+			}
+			
+			Iterable<String> SECOND_ARGUMENTS = arg2;
+			StringUtil.copyPartialMatches(args[1], SECOND_ARGUMENTS, result);
+		}
+
+		Collections.sort(result);
+		return result;
 	}
 }

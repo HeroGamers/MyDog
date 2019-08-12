@@ -7,6 +7,7 @@ import dk.fido2603.mydog.utils.TimeUtils;
 
 import java.util.Date;
 
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -21,8 +22,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
-import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 
 public class WolfMainListener implements Listener
 {
@@ -91,7 +95,7 @@ public class WolfMainListener implements Listener
 	}
 
 	@EventHandler
-	public void onWolfSit(PlayerInteractAtEntityEvent event)
+	public void onWolfSit(PlayerInteractEntityEvent event)
 	{
 		Entity entity = event.getRightClicked();
 		if (!(entity instanceof Sittable) || !(entity instanceof Wolf))
@@ -107,6 +111,145 @@ public class WolfMainListener implements Listener
 			{
 				plugin.logDebug("Saved dog location!");
 				dog.getDogLocation();
+			}
+		}
+	}
+
+	@EventHandler
+	public void onWolfCollarChange(PlayerInteractEntityEvent event)
+	{
+		Entity entity = event.getRightClicked();
+		if (!(entity instanceof Wolf))
+		{
+			return;
+		}
+
+		EquipmentSlot hand = event.getHand();
+		Player player = event.getPlayer();
+		ItemStack item = null;
+
+		if (hand.equals(EquipmentSlot.HAND))
+		{
+			item = player.getEquipment().getItemInMainHand();
+		}
+		else if (hand.equals(EquipmentSlot.OFF_HAND))
+		{
+			item = player.getEquipment().getItemInOffHand();
+		}
+		else
+		{
+			plugin.logDebug("No item in hand, returning!");
+			return;
+		}
+
+		if (item == null)
+		{
+			plugin.logDebug("Item is null, retuning!");
+			return;
+		}
+
+		DyeColor dc = null;
+		switch (item.getType())
+		{
+		case BLACK_DYE:
+			dc = DyeColor.BLACK;
+			break;
+		case BLUE_DYE:
+			dc = DyeColor.BLUE;
+			break;
+		case BROWN_DYE:
+			dc = DyeColor.BROWN;
+			break;
+		case CYAN_DYE:
+			dc = DyeColor.CYAN;
+			break;
+		case GRAY_DYE:
+			dc = DyeColor.GRAY;
+			break;
+		case GREEN_DYE:
+			dc = DyeColor.GREEN;
+			break;
+		case LIGHT_BLUE_DYE:
+			dc = DyeColor.LIGHT_BLUE;
+			break;
+		case LIGHT_GRAY_DYE:
+			dc = DyeColor.LIGHT_GRAY;
+			break;
+		case LIME_DYE:
+			dc = DyeColor.LIME;
+			break;
+		case MAGENTA_DYE:
+			dc = DyeColor.MAGENTA;
+			break;
+		case ORANGE_DYE:
+			dc = DyeColor.ORANGE;
+			break;
+		case PINK_DYE:
+			dc = DyeColor.PINK;
+			break;
+		case PURPLE_DYE:
+			dc = DyeColor.PURPLE;
+			break;
+		case RED_DYE:
+			dc = DyeColor.RED;
+			break;
+		case YELLOW_DYE:
+			dc = DyeColor.YELLOW;
+			break;
+		case WHITE_DYE:
+			dc = DyeColor.WHITE;
+			break;
+		default:
+			break;
+		}
+
+		if (dc == null)
+		{
+			plugin.logDebug("DyeColor is null, returning!");
+			return;
+		}
+
+		if (MyDog.getDogManager().isDog(entity.getUniqueId()))
+		{
+			Dog dog = MyDog.getDogManager().getDog(entity.getUniqueId());
+
+			if (dog == null)
+			{
+				plugin.logDebug("Dog is null, returning!");
+				return;
+			}
+
+			Wolf wolf = (Wolf) entity;
+
+			if (wolf.getCollarColor().equals(dc))
+			{
+				plugin.logDebug("Collar color is the same as dye color, returning!");
+				return;
+			}
+
+			dog.setDogColor(dc);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onChunkLoad(ChunkLoadEvent event)
+	{
+		if (event.getChunk().getEntities() == null)
+		{
+			return;
+		}
+
+		Entity[] entities = event.getChunk().getEntities();
+		for (Entity e : entities)
+		{
+			if (e != null && e.getType().equals(EntityType.WOLF))
+			{
+				Wolf dog = (Wolf) e;
+				if (MyDog.getDogManager().isDog(dog.getUniqueId()) && !dog.isSitting())
+				{
+					plugin.logDebug("Updated loaded wolf with health and damage!");
+					MyDog.getDogManager().getDog(dog.getUniqueId()).updateWolf();
+				}
 			}
 		}
 	}
@@ -127,8 +270,10 @@ public class WolfMainListener implements Listener
 				Wolf dog = (Wolf) e;
 				if (MyDog.getDogManager().isDog(dog.getUniqueId()) && !dog.isSitting())
 				{
+					MyDog.getDogManager().getDog(dog.getUniqueId()).saveDogLocation();
+
 					Player player = (Player) dog.getOwner();
-					if (player != null && player.isOnline() && player.hasPermission("mydog.teleport"))
+					if (player != null && player.isOnline() && MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport"))
 					{
 						Location loc = player.getLocation();
 						if (!isSafeLocation(loc))

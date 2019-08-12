@@ -26,18 +26,22 @@ permissions:
             mydog.teleport: true
             mydog.reload: true
             mydog.save: true
-            mydog.list: true
+            mydog.help: true
             mydog.putdown: true
             mydog.dogs: true
             mydog.stats: true
+            mydog.comehere: true
     mydog.teleport:
         description: Player's tamed wolves will teleport to the player
         default: true
-    mydog.list:
-        description: Player can view the MyDog basic command
+    mydog.help:
+        description: Player can view the MyDog command list
         default: true
     mydog.putdown:
         description: Player can kill their Dog with a command
+        default: true
+    mydog.comehere:
+        description: Player can force their Dogs to load and teleport to the position of the player
         default: true
     mydog.dogs:
         description: Player can get an overview about their Dogs
