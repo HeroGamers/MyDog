@@ -33,6 +33,7 @@ public class MyDog extends JavaPlugin
 
 	public static Server						server									= null;
 	public boolean								debug									= false;
+	public boolean								instantSave								= false;
 	private static MyDog						plugin;
 	private static FileConfiguration			config									= null;
 	private static PermissionsManager			permissionsManager						= null;
@@ -188,6 +189,7 @@ public class MyDog extends JavaPlugin
 		this.debug = config.getBoolean("Settings.Debug", false);
 		this.serverName = config.getString("Settings.ServerName", "Your Server");
 		this.chatPrefix = config.getString("Settings.ChatPrefix", "MyDog");
+		this.instantSave = config.getBoolean("Settings.InstantSaveConfig", false);
 		this.randomCollarColor = config.getBoolean("DogSettings.RandomCollarColor", true);
 		this.useLevels = config.getBoolean("DogSettings.UseLevels", true);
 		if (config.contains("DogSettings.DogNames"))
@@ -236,6 +238,7 @@ public class MyDog extends JavaPlugin
 		config.set("Settings.ServerName", this.serverName);
 		config.set("Settings.Debug", Boolean.valueOf(this.debug));
 		config.set("Settings.ChatPrefix", this.chatPrefix);
+		config.set("Settings.InstantSaveConfig", Boolean.valueOf(this.instantSave));
 		config.set("DogSettings.RandomCollarColor", this.randomCollarColor);
 		config.set("DogSettings.UseLevels", this.useLevels);
 		config.set("DogSettings.DogNames", this.dogNames);

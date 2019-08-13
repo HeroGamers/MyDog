@@ -322,35 +322,51 @@ public class WolfMainListener implements Listener
 			return;
 		}
 
+		Location safeLocation = null;
+		Boolean isSafe = true;
+
 		Entity[] entities = event.getChunk().getEntities();
 		for (Entity e : entities)
 		{
-			if (e != null && e.getType().equals(EntityType.WOLF))
+			if (isSafe && e != null && e.getType().equals(EntityType.WOLF))
 			{
 				Wolf dog = (Wolf) e;
-				if (MyDog.getDogManager().isDog(dog.getUniqueId()) && !dog.isSitting())
+				Player player = (Player) dog.getOwner();
+				if (MyDog.getDogManager().isDog(dog.getUniqueId()) && player != null && player.isOnline() && (!dog.isSitting() || !dog.getWorld().equals(player.getWorld())))
 				{
 					MyDog.getDogManager().getDog(dog.getUniqueId()).saveDogLocation();
-
-					Player player = (Player) dog.getOwner();
-					if (player != null && player.isOnline() && MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport"))
+					if (MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport"))
 					{
-						Location loc = player.getLocation();
-						if (!isSafeLocation(loc))
+						Location loc = null;
+						if (safeLocation == null)
 						{
-							plugin.logDebug("Whoops, seems like our player isn't at a safe location, let's find a good spot for the doggo...");
-							loc = searchSafeLocation(loc);
-							if (loc == null)
+							loc = player.getLocation();
+							if (!isSafeLocation(loc))
 							{
-								plugin.logDebug("Did not find a safe place to teleport a wolf! Keeping wolf at unloaded chunks!");
-								player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Hello! Looks like you just teleported away from your Dog(s)! " +
-										"They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...");
-								return;
+								plugin.logDebug("Whoops, seems like our player isn't at a safe location, let's find a good spot for the doggo...");
+								loc = searchSafeLocation(loc);
+								if (loc == null)
+								{
+									plugin.logDebug("Did not find a safe place to teleport a wolf! Keeping wolf at unloaded chunks!");
+									player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Hello! Looks like you just teleported away from your Dog(s)! " +
+											"They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...");
+									isSafe = false;
+									return;
+								}
 							}
 						}
+						else
+						{
+							loc = safeLocation;
+						}
+
 						plugin.logDebug("It's a safe location, teleporting!");
 						plugin.logDebug("Teleported a dog to a player! Chunk-unload!");
 						dog.teleport(loc);
+						if (dog.isSitting())
+						{
+							dog.setSitting(false);
+						}
 					}
 				}
 			}
@@ -359,59 +375,103 @@ public class WolfMainListener implements Listener
 
 	public Location searchSafeLocation(Location loc)
 	{
-		Integer y;
+		double y;
 		for (y = 255; y > 1; y--)
 		{
 			loc.setY(y);
 			plugin.logDebug("Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
 			if (isSafeLocation(loc))
 			{
+				plugin.logDebug("Is safe location");
 				return loc;
 			}
-		}
-		Integer x;
-		for (x = 1; x == 5; x++)
-		{
-			loc.setX(loc.getX()+x);
-			for (y = 255; y > 1; y--)
-			{
-				loc.setY(y);
-				plugin.logDebug("Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
-				if (isSafeLocation(loc))
-				{
-					return loc;
-				}
-			}
-		}
-		Integer z;
-		for (z = 1; z == 5; z++)
-		{
-			loc.setZ(loc.getZ()+z);
-			for (x = 1; x == 5; x++)
-			{
-				loc.setX(loc.getX()+x);
-				for (y = 255; y > 1; y--)
-				{
-					loc.setY(y);
-					plugin.logDebug("Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
-					if (isSafeLocation(loc))
-					{
-						return loc;
-					}
-				}
-			}
+			plugin.logDebug("Not safe location");
 		}
 		
 		return null;
 	}
 
-	// Method stolen from the Spigot Forums @ BillyGalbreath (https://www.spigotmc.org/threads/safely-teleport-players.83205/), and modified slightly
 	public boolean isSafeLocation(Location location) {
 		Block feet = location.getBlock();
 		Block ground = feet.getRelative(BlockFace.DOWN);
 		plugin.logDebug("Feet: " + feet.getType().toString());
 		plugin.logDebug("Ground: " + ground.getType().toString());
 
-		return (feet.getType() == Material.AIR && ground.getType().isSolid());
+		return (isTransparent(feet.getType()) && (ground.getType().isSolid() || ground.getType() == Material.WATER));
     }
+
+	public boolean isTransparent(Material materialType)
+	{
+		switch (materialType)
+		{
+		case AIR:
+		case GRASS:
+		case OAK_SAPLING:
+		case SPRUCE_SAPLING:
+		case JUNGLE_SAPLING:
+		case BIRCH_SAPLING:
+		case ACACIA_SAPLING:
+		case DARK_OAK_SAPLING:
+		case DEAD_BUSH:
+		case VINE:
+		case LILY_PAD:
+		case LILAC:
+		case ROSE_BUSH:
+		case TALL_GRASS:
+		case PEONY:
+		case OAK_SIGN:
+		case SPRUCE_SIGN:
+		case BIRCH_SIGN:
+		case JUNGLE_SIGN:
+		case ACACIA_SIGN:
+		case DARK_OAK_SIGN:
+		case SUNFLOWER:
+		case WHITE_CARPET:
+		case ORANGE_CARPET:
+		case MAGENTA_CARPET:
+		case LIGHT_BLUE_CARPET:
+		case YELLOW_CARPET:
+		case LIME_CARPET:
+		case PINK_CARPET:
+		case GRAY_CARPET:
+		case LIGHT_GRAY_CARPET:
+		case CYAN_CARPET:
+		case PURPLE_CARPET:
+		case BLUE_CARPET:
+		case BROWN_CARPET:
+		case GREEN_CARPET:
+		case RED_CARPET:
+		case BLACK_CARPET:
+		case DANDELION:
+		case POPPY:
+		case BLUE_ORCHID:
+		case ALLIUM:
+		case AZURE_BLUET:
+		case RED_TULIP:
+		case ORANGE_TULIP:
+		case WHITE_TULIP:
+		case PINK_TULIP:
+		case OXEYE_DAISY:
+		case CORNFLOWER:
+		case LILY_OF_THE_VALLEY:
+		case BROWN_MUSHROOM:
+		case RED_MUSHROOM:
+		case TORCH:
+		case REDSTONE_TORCH:
+		case SNOW:
+		case LARGE_FERN:
+		case FERN:
+		case BAMBOO:
+		case SUGAR_CANE:
+		case WHEAT:
+		case TRIPWIRE:
+		case PUMPKIN_STEM:
+		case MELON_STEM:
+		case NETHER_WART:
+		case BEETROOTS:
+			return true;
+		default:
+			return false;
+		}
+	}
 }

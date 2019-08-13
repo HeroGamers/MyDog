@@ -31,6 +31,7 @@ public class DogManager
 	private FileConfiguration	dogsConfig			= null;
 	private File				dogsConfigFile		= null;
 	private Random				random				= new Random();
+	private long				lastSaveTime					= 0L;
 
 	DogManager(MyDog plugin)
 	{
@@ -100,7 +101,7 @@ public class DogManager
 			this.birthday = new Date();
 			dogsConfig.set(dogId.toString() + ".Birthday", formatter.format(birthday));
 
-			save();
+			saveTimed();
 		}
 
 		// For old, already created, dogs
@@ -222,7 +223,7 @@ public class DogManager
 				dog.setCustomName(nameColor + dogName);
 				dog.setCustomNameVisible(true);
 			}
-			save();
+			saveTimed();
 			return true;
 		}
 
@@ -254,7 +255,7 @@ public class DogManager
 				dog.setCustomName(nameColor + dogName);
 				dog.setCustomNameVisible(true);
 			}
-			save();
+			saveTimed();
 			return true;
 		}
 
@@ -275,7 +276,7 @@ public class DogManager
 			dogsConfig.set(dogId.toString() + ".LastSeen.Y", location.getY());
 			dogsConfig.set(dogId.toString() + ".LastSeen.Z", location.getZ());
 
-			save();
+			saveTimed();
 			return location;
 		}
 
@@ -292,7 +293,7 @@ public class DogManager
 			dogsConfig.set(dogId.toString() + ".LastSeen.Y", location.getY());
 			dogsConfig.set(dogId.toString() + ".LastSeen.Z", location.getZ());
 
-			save();
+			saveTimed();
 			return true;
 		}
 
@@ -381,7 +382,7 @@ public class DogManager
 				handleNewLevel(this);
 			}
 			
-			save();
+			saveTimed();
 		}
 
 		public boolean setDogCustomName()
@@ -538,6 +539,21 @@ public class DogManager
 		}
 	}
 
+	public void saveTimed()
+	{
+		if (plugin.instantSave) {
+			save();
+			return;
+		}
+
+		if (System.currentTimeMillis() - this.lastSaveTime < 180000L)
+		{
+			return;
+		}
+
+		save();
+	}
+
 	public boolean isDog(UUID dogId)
 	{
 		return dogsConfig.contains(dogId.toString());
@@ -548,7 +564,7 @@ public class DogManager
 		if (dogsConfig.contains(dogId.toString()))
 		{
 			dogsConfig.set(dogId.toString(), null);
-			save();
+			saveTimed();
 		}
 	}
 
