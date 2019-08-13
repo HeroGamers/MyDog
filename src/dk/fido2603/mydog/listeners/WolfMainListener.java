@@ -20,6 +20,7 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -229,6 +230,33 @@ public class WolfMainListener implements Listener
 
 			dog.setDogColor(dc);
 		}
+	}
+
+	@EventHandler
+	public void onBreedEvent(EntityBreedEvent event)
+	{
+		if (!(event.getEntity() instanceof Wolf) || (!MyDog.getDogManager().isDog(event.getMother().getUniqueId())) || (!MyDog.getDogManager().isDog(event.getFather().getUniqueId())) || !(event.getBreeder() instanceof Player))
+		{
+			plugin.logDebug("Entity breed return!");
+			return;
+		}
+
+		Wolf wolf = (Wolf) event.getEntity();
+		Player owner = (Player) event.getBreeder();
+
+		Dog dog = MyDog.getDogManager().newDog(wolf, owner);
+		plugin.logDebug("New dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + plugin.getServer().getPlayer(dog.getOwnerId()).getName() + " - OwnerId: " + dog.getOwnerId());
+		Location dogLocation = dog.getDogLocation();
+		plugin.logDebug("Dog Location = X: " + dogLocation.getX() + " Y: " + dogLocation.getY() + " Z: " + dogLocation.getZ());
+		
+		if (!dog.setDogCustomName())
+		{
+			event.setCancelled(true);
+			return;
+		}
+
+		owner.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.GOLD + "Congratulations with your new dog, "
+				+ dog.getDogColor() + dog.getDogName() + ChatColor.GOLD + "!");
 	}
 
 	@EventHandler(priority = EventPriority.LOWEST)

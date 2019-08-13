@@ -20,6 +20,7 @@ Tamed wolves but at least 10x better
 
 **TODO Feature-list:**
 *	Add inventory to Dogs, so they can wear armor and take less damage.
+*	Add feature to automatically make newly bred Wolves into a Dog.
 
 **Permissions:**
 ```YAML

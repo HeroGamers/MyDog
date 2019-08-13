@@ -226,6 +226,38 @@ public class DogManager
 			return true;
 		}
 
+		public boolean setDogName(String name)
+		{
+			if (name == null || name.isEmpty())
+			{
+				return false;
+			}
+			if (dogsConfig.contains(dogId.toString()))
+			{
+				this.dogName = name;
+				dogsConfig.set(dogId.toString() + ".Name", dogName);
+
+				Wolf dog = (Wolf) plugin.getServer().getEntity(dogId);
+
+				if (dog == null)
+				{
+					plugin.logDebug("Dog is null");
+					return false;
+				}
+
+				if (dogName == null)
+				{
+					this.dogName = getDogName();
+				}
+
+				plugin.logDebug("Setting customName to: " + nameColor + dogName);
+				dog.setCustomName(nameColor + dogName);
+				dog.setCustomNameVisible(true);
+			}
+			save();
+			return true;
+		}
+
 		public Location getDogLocation()
 		{
 			if (plugin.getServer().getEntity(dogId) == null || !plugin.getServer().getEntity(dogId).isValid())

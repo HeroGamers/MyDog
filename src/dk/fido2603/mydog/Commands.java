@@ -142,9 +142,23 @@ public class Commands
 					return true;
 				}
 			}
+			else if ((args.length == 3) && (player != null))
+			{
+				if (((args[0].equalsIgnoreCase("rename"))) && (player != null))
+				{
+					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.rename")))
+					{
+						return false;
+					}
+
+					commandDogRename(sender, args);
+
+					return true;
+				}
+			}
 			else if (player != null)
 			{
-				if (args.length > 3)
+				if (args.length > 4)
 				{
 					sender.sendMessage(ChatColor.RED + "Too many arguments! Check /mydog help");
 					return true;
@@ -208,6 +222,10 @@ public class Commands
 			{
 				sender.sendMessage(ChatColor.AQUA + "/mydog info <id>" + ChatColor.WHITE + " - Gets stats and other info about a Dog you own");
 			}
+			if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.rename")))
+			{
+				sender.sendMessage(ChatColor.AQUA + "/mydog rename <id> <name>" + ChatColor.WHITE + " - Renames a Dog you own");
+			}
 		}
 
 		return true;
@@ -229,6 +247,34 @@ public class Commands
 
 			sender.sendMessage(ChatColor.AQUA + "#" + dog.getIdentifier() + ChatColor.WHITE + " - " + ChatColor.AQUA + dog.getDogName() + healthString);
 		}
+		return true;
+	}
+
+	private boolean commandDogRename(CommandSender sender, String[] args)
+	{
+		String dogIdentifier = args[1];
+		String name = args[2];
+		Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
+		if (dog == null)
+		{
+			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
+			return false;
+		}
+
+		if (name.isEmpty() || name.length() > 16)
+		{
+			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please choose a name under 16 characters for your Dog!");
+			return false;
+		}
+
+		if (!dog.setDogName(name))
+		{
+			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "An error occured! Could not set Dog name!");
+			return false;
+		}
+
+		sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + "From now on, I will call you " + dog.getDogName() + ChatColor.RESET + ChatColor.AQUA + "!");
+
 		return true;
 	}
 
