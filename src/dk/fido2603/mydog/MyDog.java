@@ -153,13 +153,13 @@ public class MyDog extends JavaPlugin
 		permissionsManager = new PermissionsManager(this);
 		particleUtils = new ParticleUtils(this);
 
-		getServer().getPluginManager().registerEvents(tameListener, this);
-		getServer().getPluginManager().registerEvents(damageListener, this);
-
 		reloadSettings();
 		saveSettings();
 
 		permissionsManager.load();
+
+		getServer().getPluginManager().registerEvents(tameListener, this);
+		getServer().getPluginManager().registerEvents(damageListener, this);
 	}
 
 	public void log(String message)
@@ -198,6 +198,7 @@ public class MyDog extends JavaPlugin
 		// Levels
 		if (config.getConfigurationSection("DogSettings.Levels") != null)
 		{
+			this.dogLevels.clear();
 			for (String level : config.getConfigurationSection("DogSettings.Levels").getKeys(false))
 			{
 				if (config.getConfigurationSection("DogSettings.Levels." + level) != null)
@@ -214,6 +215,8 @@ public class MyDog extends JavaPlugin
 		{
 			// Put levels into the hashmap
 			// Level format - [level, experience]
+			this.dogLevels.clear();
+			this.dogLevels.put(1, getLevelFactory().newLevel(1, 0, 20, 4));
 			this.dogLevels.put(2, getLevelFactory().newLevel(2, 10, 21, 5));
 			this.dogLevels.put(3, getLevelFactory().newLevel(3, 100, 22, 6));
 			this.dogLevels.put(4, getLevelFactory().newLevel(4, 200, 23, 7));

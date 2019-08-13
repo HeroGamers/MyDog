@@ -28,6 +28,7 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class WolfMainListener implements Listener
 {
@@ -232,34 +233,58 @@ public class WolfMainListener implements Listener
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onBreedEvent(EntityBreedEvent event)
 	{
-		if (!(event.getEntity() instanceof Wolf) || (!MyDog.getDogManager().isDog(event.getMother().getUniqueId())) || (!MyDog.getDogManager().isDog(event.getFather().getUniqueId())) || !(event.getBreeder() instanceof Player))
+		if (event.getEntity() == null || !(event.getEntity() instanceof Wolf) || /*(!MyDog.getDogManager().isDog(event.getMother().getUniqueId())) || (!MyDog.getDogManager().isDog(event.getFather().getUniqueId())) ||*/ !(event.getBreeder() instanceof Player))
 		{
 			plugin.logDebug("Entity breed return!");
 			return;
 		}
 
 		Wolf wolf = (Wolf) event.getEntity();
-		Player owner = (Player) event.getBreeder();
-
-		Dog dog = MyDog.getDogManager().newDog(wolf, owner);
-		plugin.logDebug("New dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + plugin.getServer().getPlayer(dog.getOwnerId()).getName() + " - OwnerId: " + dog.getOwnerId());
-		Location dogLocation = dog.getDogLocation();
-		plugin.logDebug("Dog Location = X: " + dogLocation.getX() + " Y: " + dogLocation.getY() + " Z: " + dogLocation.getZ());
-		
-		if (!dog.setDogCustomName())
+		if (wolf == null)
 		{
-			event.setCancelled(true);
+			plugin.logDebug("Wolf is null, returning!");
 			return;
 		}
 
-		owner.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.GOLD + "Congratulations with your new dog, "
-				+ dog.getDogColor() + dog.getDogName() + ChatColor.GOLD + "!");
+		Player owner = (Player) event.getBreeder();
+		if (owner == null)
+		{
+			plugin.logDebug("Dog owner is null, returning!");
+			return;
+		}
+
+		// Make the task for getting the doggo, we want it to load in first...
+		BukkitRunnable newDogBreed = new BukkitRunnable()
+		{
+			@Override
+			public void run() {
+				plugin.logDebug("Running newDogBreed BukkitRunnable...");
+				Dog dog = MyDog.getDogManager().newDog(wolf, owner);
+				plugin.logDebug("New dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + plugin.getServer().getPlayer(dog.getOwnerId()).getName() + " - OwnerId: " + dog.getOwnerId());
+				Location dogLocation = dog.getDogLocation();
+				plugin.logDebug("Dog Location = X: " + dogLocation.getX() + " Y: " + dogLocation.getY() + " Z: " + dogLocation.getZ());
+				
+				if (!dog.setDogCustomName())
+				{
+					plugin.logDebug("Could not set custom dog name, cancelling event!");
+					event.setCancelled(true);
+					return;
+				}
+				plugin.logDebug("Finished setting custom dog name! Breed sucessfull!");
+
+				owner.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.GOLD + "Congratulations with your new dog, "
+						+ dog.getDogColor() + dog.getDogName() + ChatColor.GOLD + "!");
+			}
+		};
+
+		// Run the DoggoMaker task
+		newDogBreed.runTaskLater(plugin, 2);
 	}
 
-	@EventHandler(priority = EventPriority.LOWEST)
+	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onChunkLoad(ChunkLoadEvent event)
 	{
 		if (event.getChunk().getEntities() == null)
@@ -272,8 +297,15 @@ public class WolfMainListener implements Listener
 		{
 			if (e != null && e.getType().equals(EntityType.WOLF))
 			{
+				String customName = "UNKNOWN NAME";
+				if (e.getCustomName() != null)
+				{
+					customName = e.getCustomName();
+				}
+				plugin.logDebug("There is a wolf in the loaded chunk! Name: " + customName);
+
 				Wolf dog = (Wolf) e;
-				if (MyDog.getDogManager().isDog(dog.getUniqueId()) && !dog.isSitting())
+				if (MyDog.getDogManager().isDog(dog.getUniqueId()))
 				{
 					plugin.logDebug("Updated loaded wolf with health and damage!");
 					MyDog.getDogManager().getDog(dog.getUniqueId()).updateWolf();
@@ -375,21 +407,11 @@ public class WolfMainListener implements Listener
 
 	// Method stolen from the Spigot Forums @ BillyGalbreath (https://www.spigotmc.org/threads/safely-teleport-players.83205/), and modified slightly
 	public boolean isSafeLocation(Location location) {
-        Block feet = location.getBlock();
-        plugin.logDebug("Feet: " + feet.getType().toString());
-        if (feet.getType() != Material.AIR && feet.getLocation().add(0, 1, 0).getBlock().getType() != Material.AIR) {
-            return false; // not transparent (will suffocate)
-        }
-        Block head = feet.getRelative(BlockFace.UP);
-        plugin.logDebug("Head: " + head.getType().toString());
-        if (head.getType() != Material.AIR) {
-            return false; // not transparent (will suffocate)
-        }
-        Block ground = feet.getRelative(BlockFace.DOWN);
-        plugin.logDebug("Ground: " + ground.getType().toString());
-        if (!ground.getType().isSolid()) {
-            return false; // not solid
-        }
-        return true;
+		Block feet = location.getBlock();
+		Block ground = feet.getRelative(BlockFace.DOWN);
+		plugin.logDebug("Feet: " + feet.getType().toString());
+		plugin.logDebug("Ground: " + ground.getType().toString());
+
+		return (feet.getType() == Material.AIR && ground.getType().isSolid());
     }
 }

@@ -7,20 +7,19 @@ MyDog
 Tamed wolves but at least 10x better
 
 **Plugin Features:**
-*	Dogs teleport upon chunk-unloading, so the Dogs can follow their owner. Requires the Dog to not sit.
-*	Randomly generated names.
-*	Dog Stats.
-*	Dog Levels.
-*	Dogs list.
-*	Comehere command.
-*	Nametag and name updates when the Dog's collar gets coloured.
+*	  Dogs teleport upon chunk-unloading, so the Dogs can follow their owner. Requires the Dog to not sit.
+*	  Randomly generated names.
+*	  Dog Stats.
+*	  Dog Levels.
+*	  Dogs list.
+*	  Comehere command.
+*	  Nametag and name updates when the Dogs collar gets coloured.
+*	  Automatically make newly bred Wolves into a Dog.
 
-**Resources:**
-[Spigot Resource](https://www.spigotmc.org/resources/mydog.70260/)
+**Resources:** [Spigot Resource](https://www.spigotmc.org/resources/mydog.70260/)
 
 **TODO Feature-list:**
-*	Add inventory to Dogs, so they can wear armor and take less damage.
-*	Add feature to automatically make newly bred Wolves into a Dog.
+*	  Add inventory to Dogs, so they can wear armor and take less damage.
 
 **Permissions:**
 ```YAML

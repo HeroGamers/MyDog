@@ -318,7 +318,7 @@ public class DogManager
 				return level;
 			}
 
-			return dogsConfig.getInt(dogId.toString() + ".Level.Level", 0);
+			return dogsConfig.getInt(dogId.toString() + ".Level.Level", 1);
 		}
 
 		public void setLevel(Integer lvl)
@@ -386,8 +386,8 @@ public class DogManager
 
 		public boolean setDogCustomName()
 		{
-			plugin.logDebug("Setting custom name...");
-			if (!plugin.getServer().getEntity(dogId).isValid() || !(plugin.getServer().getEntity(dogId) instanceof Wolf))
+			plugin.logDebug("Setting custom name... dogId: " + dogId);
+			if (plugin.getServer().getEntity(dogId) == null || !plugin.getServer().getEntity(dogId).isValid() || !(plugin.getServer().getEntity(dogId) instanceof Wolf))
 			{
 				plugin.logDebug("Retuning false!");
 				return false;
@@ -427,10 +427,30 @@ public class DogManager
 				return false;
 			}
 
+			Integer dogsLevel = getLevel();
+			if (dogsLevel == null || dogsLevel < 1)
+			{
+				plugin.logDebug("Level was under 1 or null, setting level to 1");
+				dogsLevel = 1;
+			}
+
+			Level level = plugin.dogLevels.get(dogsLevel);
+			if (level == null)
+			{
+				plugin.logDebug("Level object is null, returning!");
+				return false;
+			}
+
+			double health = level.health;
+			if (health < 10.0)
+			{
+				health = 10.0;
+			}
+
 			AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
 			plugin.logDebug("Dog Maxhealth Before: " + wolfMaxHealth.getValue());
 			// wolfMaxHealth.setBaseValue((wolfMaxHealth.getValue()/(0.5*(getLevel()-1)))*(0.5*getLevel()));
-			wolfMaxHealth.setBaseValue(plugin.dogLevels.get(getLevel()).health);
+			wolfMaxHealth.setBaseValue(health);
 			wolf.setHealth(wolfMaxHealth.getValue());
 			plugin.logDebug("Dog Maxhealth After: " + wolfMaxHealth.getValue());
 
@@ -447,21 +467,43 @@ public class DogManager
 				return false;
 			}
 
+			Integer dogsLevel = getLevel();
+			if (dogsLevel == null || dogsLevel < 1)
+			{
+				plugin.logDebug("Level was under 1 or null, setting level to 1");
+				dogsLevel = 1;
+			}
+
+			Level level = plugin.dogLevels.get(dogsLevel);
+			if (level == null)
+			{
+				plugin.logDebug("Level object is null, returning!");
+				return false;
+			}
+
+			double damage = level.damage;
+			if (damage < 1.0)
+			{
+				damage = 1.0;
+			}
+
 			AttributeInstance wolfDamage = wolf.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
 			plugin.logDebug("Dog Damage Before: " + wolfDamage.getValue());
 			// wolfDamage.setBaseValue((wolfDamage.getValue()/(0.5*(getLevel()-1)))*(0.5*getLevel()));
-			wolfDamage.setBaseValue(plugin.dogLevels.get(getLevel()).damage);
+			wolfDamage.setBaseValue(damage);
 			plugin.logDebug("Dog Damage After: " + wolfDamage.getValue());
 			return true;
 		}
 
 		public boolean updateWolf()
 		{
-			if (setHealth() && setDamage())
+			if (!plugin.useLevels)
 			{
+				plugin.logDebug("Not updating wolf, levels are disabled!");
 				return true;
 			}
-			return false;
+
+			return (setHealth() && setDamage());
 		}
 	}
 
@@ -548,13 +590,10 @@ public class DogManager
 	{
 		for (String dogIdString : dogsConfig.getKeys(false))
 		{
-			if (dogsConfig.getString(dogIdString + ".ID").contains(dogIdentifier))
+			if (dogsConfig.getString(dogIdString + ".ID").contains(dogIdentifier) && dogsConfig.getString(dogIdString + ".Owner").contains(ownerId.toString()))
 			{
-				if (dogsConfig.getString(dogIdString + ".Owner").contains(ownerId.toString()))
-				{
-					UUID dogId = UUID.fromString(dogIdString);
-					return new Dog(dogId, UUID.fromString(dogsConfig.getString(dogId.toString() + ".Owner")));
-				}
+				UUID dogId = UUID.fromString(dogIdString);
+				return new Dog(dogId, UUID.fromString(dogsConfig.getString(dogId.toString() + ".Owner")));
 			}
 		}
 

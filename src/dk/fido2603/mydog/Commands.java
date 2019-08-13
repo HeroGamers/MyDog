@@ -156,13 +156,10 @@ public class Commands
 					return true;
 				}
 			}
-			else if (player != null)
+			else if ((args.length > 4) && (player != null))
 			{
-				if (args.length > 4)
-				{
-					sender.sendMessage(ChatColor.RED + "Too many arguments! Check /mydog help");
-					return true;
-				}
+				sender.sendMessage(ChatColor.RED + "Too many arguments! Check /mydog help");
+				return true;
 			}
 		}
 		return true;
@@ -516,7 +513,7 @@ public class Commands
 				ChatColor.GOLD + "Come here! Good doggo, " + dog.getDogName() + "!");
 		dog.updateWolf();
 
-		if (useLocation == true)
+		if (useLocation)
 		{
 			dogLocation.getChunk().unload();
 			plugin.logDebug("Unloaded the chunk sucessfully!");
@@ -577,7 +574,7 @@ public class Commands
 		{
 			List<String> arg2 = new ArrayList<String>();
 
-			if (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("comehere") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("stats"))
+			if (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("comehere")  || args[0].equalsIgnoreCase("rename") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("stats"))
 			{
 				List<Dog> dogs = MyDog.getDogManager().getDogs(player.getUniqueId());
 				for (Dog dog : dogs)
@@ -585,9 +582,21 @@ public class Commands
 					arg2.add(dog.getIdentifier().toString());
 				}
 			}
-			
+
 			Iterable<String> SECOND_ARGUMENTS = arg2;
 			StringUtil.copyPartialMatches(args[1], SECOND_ARGUMENTS, result);
+		}
+		else if (args.length == 3)
+		{
+			List<String> arg3 = new ArrayList<String>();
+
+			if (args[0].equalsIgnoreCase("rename"))
+			{
+				arg3.add("<name>");
+			}
+
+			Iterable<String> SECOND_ARGUMENTS = arg3;
+			StringUtil.copyPartialMatches(args[2], SECOND_ARGUMENTS, result);
 		}
 
 		Collections.sort(result);
