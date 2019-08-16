@@ -16,6 +16,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sittable;
+import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -364,6 +365,11 @@ public class WolfMainListener implements Listener
 			if (isSafe && e != null && e.getType().equals(EntityType.WOLF))
 			{
 				Wolf dog = (Wolf) e;
+				if (dog.getOwner() == null || !(dog.getOwner() instanceof Player))
+				{
+					plugin.logDebug("Owner is null or not instance of Player!");
+					return;
+				}
 				Player player = (Player) dog.getOwner();
 				if (MyDog.getDogManager().isDog(dog.getUniqueId()) && player != null && player.isOnline() && (!dog.isSitting() || !dog.getWorld().equals(player.getWorld())))
 				{

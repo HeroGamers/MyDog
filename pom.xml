@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>dk.fido2603</groupId>
   <artifactId>mydog</artifactId>
-  <version>0.0.6</version>
+  <version>0.0.7</version>
   <name>MyDog</name>
   <description>Tamed wolves but at least 10x better!</description>
   <url>https://github.com/DoggyCraftDK/MyDog</url>
