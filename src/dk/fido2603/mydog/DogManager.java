@@ -701,12 +701,23 @@ public class DogManager
 		Player owner = plugin.getServer().getPlayer(ownerId);
 		if (owner.isOnline())
 		{
-			owner.sendMessage(ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.DARK_PURPLE + "Your dog, "
-					+ dog.getDogColor() + dog.getDogName() + ChatColor.DARK_PURPLE + ", just leveled up to " + ChatColor.LIGHT_PURPLE + "Level " + dog.level + ChatColor.DARK_PURPLE + "!");
-
+			String levelupString = plugin.levelUpString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName()).replace("{level}", dog.level.toString());
+			/*owner.sendMessage(ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.DARK_PURPLE + "Your dog, "
+					+ dog.getDogColor() + dog.getDogName() + ChatColor.DARK_PURPLE + ", just leveled up to " + ChatColor.LIGHT_PURPLE + "Level " + dog.level + ChatColor.DARK_PURPLE + "!");*/
+			owner.sendMessage(ChatColor.translateAlternateColorCodes('&', levelupString));
 
 			MyDog.getParticleUtils().newLevelUpParticle(plugin.getServer().getEntity(dog.getDogId()));
-			owner.playSound(owner.getLocation(), Sound.ENTITY_WOLF_HOWL, 3.0F, 1.0F);
+			Sound sound = null;
+			if (plugin.levelUpSound == null)
+			{
+				plugin.logDebug("Couldn't load the levelup sound, took Howl!");
+				sound = Sound.ENTITY_WOLF_HOWL;
+			}
+			else
+			{
+				sound = Sound.valueOf(plugin.levelUpSound);
+			}
+			owner.playSound(owner.getLocation(), sound, 3.0F, 1.0F);
 		}
 
 		dog.updateWolf();

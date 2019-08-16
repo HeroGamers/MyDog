@@ -119,10 +119,15 @@ public class DamageListener implements Listener
 						gainedExp = 60;
 						break;
 					case IRON_GOLEM:
-					case PLAYER:
 					case RAVAGER:
 						gainedExp = 70;
 						break;
+					case PLAYER:
+						if (plugin.allowPlayerKillExp)
+						{
+							gainedExp = 70;
+							break;
+						}
 					case ELDER_GUARDIAN:
 					case GIANT:
 						gainedExp = 90;

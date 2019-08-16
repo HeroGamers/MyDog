@@ -61,8 +61,10 @@ public class WolfMainListener implements Listener
 			return;
 		}
 
-		owner.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.GOLD + "Congratulations with your new dog, "
-				+ dog.getDogColor() + dog.getDogName() + ChatColor.GOLD + "!");
+		/*owner.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.GOLD + "Congratulations with your new dog, "
+		+ dog.getDogColor() + dog.getDogName() + ChatColor.GOLD + "!");*/
+		String newDogString = plugin.newDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
+		owner.sendMessage(ChatColor.translateAlternateColorCodes('&', newDogString));
 	}
 
 	@EventHandler
@@ -83,14 +85,17 @@ public class WolfMainListener implements Listener
 			long diff = Math.abs(today.getTime() - dogBirthday.getTime());
 			String time = TimeUtils.parseMillisToUFString(diff);
 
-			String levelText = ".";
+			String levelText = "";
 			if (plugin.useLevels)
 			{
-				levelText = ", and got to " + ChatColor.DARK_RED + "Level " + dog.getLevel() + ChatColor.RED + ".";
+				//levelText = ", and got to " + ChatColor.DARK_RED + "Level " + dog.getLevel() + ChatColor.RED + ".";
+				levelText = plugin.deadDogLevelString.replace("{level}", dog.getLevel().toString());
 			}
 
-			owner.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Your dog, " + dog.getDogColor() + dog.getDogName() + ChatColor.RED + 
-					", just passed away... " + dog.getDogColor() + dog.getDogName() + ChatColor.RED + " lived for " + time + levelText);
+			/*owner.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Your dog, " + dog.getDogColor() + dog.getDogName() + ChatColor.RED + 
+					", just passed away... " + dog.getDogColor() + dog.getDogName() + ChatColor.RED + " lived for " + time + levelText);*/
+			String deadDogString = plugin.deadDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName()).replace("{time}", time).replace("{deadDogLevelString}", levelText);
+			owner.sendMessage(ChatColor.translateAlternateColorCodes('&', deadDogString));
 		}
 	
 		MyDog.getDogManager().removeDog(event.getEntity().getUniqueId());
@@ -118,7 +123,7 @@ public class WolfMainListener implements Listener
 	}
 
 	@EventHandler
-	public void onWolfCollarChange(PlayerInteractEntityEvent event)
+	public void onWolfPlayerInteract(PlayerInteractEntityEvent event)
 	{
 		Entity entity = event.getRightClicked();
 		if (!(entity instanceof Wolf))
@@ -207,7 +212,33 @@ public class WolfMainListener implements Listener
 
 		if (dc == null)
 		{
-			plugin.logDebug("DyeColor is null, returning!");
+			if (!item.getType().equals(Material.NAME_TAG) || !item.getItemMeta().hasDisplayName())
+			{
+				plugin.logDebug("Item is not a name-tag, returning!");
+				return;
+			}
+
+			if (MyDog.getDogManager().isDog(entity.getUniqueId()))
+			{
+				if (!plugin.allowNametagRename)
+				{
+					plugin.logDebug("NametagRename is disabled, cancelling interact event!");
+					event.setCancelled(true);
+					return;
+				}
+				Dog dog = MyDog.getDogManager().getDog(entity.getUniqueId());
+
+				if (dog == null)
+				{
+					plugin.logDebug("Dog is null, returning!");
+					return;
+				}
+
+				dog.setDogName(item.getItemMeta().getDisplayName());
+				plugin.logDebug("Set the Dog's name to: " + item.getItemMeta().getDisplayName());
+				item.setAmount(0);
+				event.setCancelled(true);
+			}
 			return;
 		}
 
@@ -275,8 +306,10 @@ public class WolfMainListener implements Listener
 				}
 				plugin.logDebug("Finished setting custom dog name! Breed sucessfull!");
 
-				owner.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.GOLD + "Congratulations with your new dog, "
-						+ dog.getDogColor() + dog.getDogName() + ChatColor.GOLD + "!");
+				/*owner.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.GOLD + "Congratulations with your new dog, "
+						+ dog.getDogColor() + dog.getDogName() + ChatColor.GOLD + "!");*/
+				String newDogString = plugin.newDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
+				owner.sendMessage(ChatColor.translateAlternateColorCodes('&', newDogString));
 			}
 		};
 
@@ -348,8 +381,9 @@ public class WolfMainListener implements Listener
 								if (loc == null)
 								{
 									plugin.logDebug("Did not find a safe place to teleport a wolf! Keeping wolf at unloaded chunks!");
-									player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Hello! Looks like you just teleported away from your Dog(s)! " +
-											"They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...");
+									/*player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Hello! Looks like you just teleported away from your Dog(s)! " +
+											"They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...");*/
+									player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.cannotTeleportWolfString));
 									isSafe = false;
 									return;
 								}

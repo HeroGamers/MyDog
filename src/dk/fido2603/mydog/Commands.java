@@ -509,8 +509,12 @@ public class Commands
 		Location playerLoc = ((Player) sender).getLocation();
 		wolf.teleport(playerLoc);
 		wolf.setSitting(false);
-		sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + 
-				ChatColor.GOLD + "Come here! Good doggo, " + dog.getDogName() + "!");
+
+		String comehereString = plugin.commandComehereString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
+		sender.sendMessage(ChatColor.translateAlternateColorCodes('&', comehereString));
+		/*sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + 
+				ChatColor.GOLD + "Come here! Good doggo, " + dog.getDogName() + "!");*/
+
 		dog.updateWolf();
 
 		if (useLocation)

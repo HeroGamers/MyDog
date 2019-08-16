@@ -34,6 +34,19 @@ public class MyDog extends JavaPlugin
 	public static Server						server									= null;
 	public boolean								debug									= false;
 	public boolean								instantSave								= false;
+
+	public boolean								allowPlayerKillExp						= true;
+	public boolean								allowNametagRename						= true;
+
+	public String								levelUpSound							= "ENTITY_WOLF_HOWL";
+	public String								levelUpString							= "&5&l[{chatPrefix}] &r&5Your dog, {dogNameColor}{dogName}&5, just leveled up to &dLevel {level}&5!";
+	public String								cannotTeleportWolfString				= "&c&l[{chatPrefix}] &r&cHello! Looks like you just teleported away from your Dog(s)! " +
+																						"They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...";
+	public String								newDogString							= "&6&l[{chatPrefix}] &r&6Congratulations with your new dog, {dogNameColor}{dogName}&6!";
+	public String								deadDogString							= "&c&l[{chatPrefix}] &r&cYour dog, {dogNameColor}{dogName}&c, just passed away... {dogNameColor}{dogName}&c lived for {time}{deadDogLevelString}.";
+	public String								deadDogLevelString						= ", and got to &4Level {level}&c";
+	public String								commandComehereString					= "&6&l[{chatPrefix}] &r&6Come here! Good doggo, {dogNameColor}{dogName}&6!";
+
 	private static MyDog						plugin;
 	private static FileConfiguration			config									= null;
 	private static PermissionsManager			permissionsManager						= null;
@@ -192,6 +205,8 @@ public class MyDog extends JavaPlugin
 		this.instantSave = config.getBoolean("Settings.InstantSaveConfig", false);
 		this.randomCollarColor = config.getBoolean("DogSettings.RandomCollarColor", true);
 		this.useLevels = config.getBoolean("DogSettings.UseLevels", true);
+		this.allowPlayerKillExp = config.getBoolean("DogSettings.AllowPlayerKillExp", true);
+		this.allowNametagRename = config.getBoolean("DogSettings.AllowNametagRename", true);
 		if (config.contains("DogSettings.DogNames"))
 		{
 			this.dogNames = config.getStringList("DogSettings.DogNames");
@@ -230,6 +245,16 @@ public class MyDog extends JavaPlugin
 			this.dogLevels.put(10, getLevelFactory().newLevel(10, 5000, 36, 20));	
 		}
 
+		// Messages and sounds
+		this.levelUpSound = config.getString("PlayerInteraction.LevelUpSound", "ENTITY_WOLF_HOWL");
+		this.levelUpString = config.getString("PlayerInteraction.LevelUpString", "&5&l[{chatPrefix}] &r&5Your dog, {dogNameColor}{dogName}&5, just leveled up to &dLevel {level}&5!");
+		this.cannotTeleportWolfString = config.getString("PlayerInteraction.CannotTeleportWolfString", "&c&l[{chatPrefix}] &r&cHello! Looks like you just teleported away from your Dog(s)! " +
+				"They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...");
+		this.newDogString = config.getString("PlayerInteraction.NewDogString", "&6&l[{chatPrefix}] &r&6Congratulations with your new dog, {dogNameColor}{dogName}&6!");
+		this.deadDogString = config.getString("PlayerInteraction.DeadDogString", "&c&l[{chatPrefix}] &r&cYour dog, {dogNameColor}{dogName}&c, just passed away... {dogNameColor}{dogName}&c lived for {time}{deadDogLevelString}.");
+		this.deadDogLevelString = config.getString("PlayerInteraction.DeadDogLevelString", ", and got to &4Level {level}&c");
+		this.commandComehereString = config.getString("PlayerInteraction.CommandComehereString", "&6&l[{chatPrefix}] &r&6Come here! Good doggo, {dogNameColor}{dogName}&6!");
+
 		dogManager.load();
 	}
 
@@ -241,6 +266,8 @@ public class MyDog extends JavaPlugin
 		config.set("Settings.InstantSaveConfig", Boolean.valueOf(this.instantSave));
 		config.set("DogSettings.RandomCollarColor", this.randomCollarColor);
 		config.set("DogSettings.UseLevels", this.useLevels);
+		config.set("DogSettings.AllowPlayerKillExp", this.allowPlayerKillExp);
+		config.set("DogSettings.AllowNametagRename", this.allowNametagRename);
 		config.set("DogSettings.DogNames", this.dogNames);
 
 		// Levels
@@ -251,6 +278,15 @@ public class MyDog extends JavaPlugin
 			config.set("DogSettings.Levels." + level + ".Health", levelObject.health);
 			config.set("DogSettings.Levels." + level + ".Damage", levelObject.damage);
 		}
+
+		// Messages and sounds
+		config.set("PlayerInteraction.LevelUpSound", this.levelUpSound);
+		config.set("PlayerInteraction.LevelUpString", this.levelUpString);
+		config.set("PlayerInteraction.LevelUpString", this.cannotTeleportWolfString);
+		config.set("PlayerInteraction.NewDogString", this.newDogString);
+		config.set("PlayerInteraction.DeadDogString", this.deadDogString);
+		config.set("PlayerInteraction.DeadDogLevelString", this.deadDogLevelString);
+		config.set("PlayerInteraction.CommandComehereString", this.commandComehereString);
 
 		saveConfig();
 		dogManager.save();
