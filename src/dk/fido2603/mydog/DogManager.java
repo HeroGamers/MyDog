@@ -246,7 +246,7 @@ public class DogManager
 					return false;
 				}
 
-				if (dogName == null)
+				if (dogName.isEmpty())
 				{
 					this.dogName = getDogName();
 				}
@@ -515,11 +515,6 @@ public class DogManager
 			this.dogsConfigFile = new File(this.plugin.getDataFolder(), "dogs.yml");
 		}
 		this.dogsConfig = YamlConfiguration.loadConfiguration(this.dogsConfigFile);
-		if (this.dogsConfig == null)
-		{
-			this.plugin.log("Error loading dogs.yml! This plugin will NOT work.");
-			return;
-		}
 		this.plugin.log("Loaded " + this.dogsConfig.getKeys(false).size() + " dogs.");
 	}
 

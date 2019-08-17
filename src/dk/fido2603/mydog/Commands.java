@@ -370,12 +370,15 @@ public class Commands
 			else if (exp >= 4000 && exp < 5000) { levelStartExp = 4000; maxExp = 5000; }*/
 
 			plugin.logDebug("Exp: " + exp + " - MaxExp: " + maxExp);
-			double percent = (exp/maxExp)*100;
-			plugin.logDebug("Current percent: " + percent);
-			
-			experienceString = calculatePercentString(percent) + ChatColor.AQUA + "" + ChatColor.BOLD + " [" + ChatColor.DARK_AQUA + df.format(exp) + 
-					ChatColor.AQUA + "" + ChatColor.BOLD + "/" + ChatColor.RESET + ChatColor.AQUA + df.format(maxExp) + ChatColor.AQUA + "" + ChatColor.BOLD + "]";
-			sender.sendMessage(ChatColor.AQUA + "Experience: " + experienceString);
+			if (maxExp != 0)
+			{
+				double percent = (exp/maxExp)*100;
+				plugin.logDebug("Current percent: " + percent);
+				
+				experienceString = calculatePercentString(percent) + ChatColor.AQUA + "" + ChatColor.BOLD + " [" + ChatColor.DARK_AQUA + df.format(exp) + 
+						ChatColor.AQUA + "" + ChatColor.BOLD + "/" + ChatColor.RESET + ChatColor.AQUA + df.format(maxExp) + ChatColor.AQUA + "" + ChatColor.BOLD + "]";
+				sender.sendMessage(ChatColor.AQUA + "Experience: " + experienceString);
+			}
 		}
 
 		if (wolf != null)
@@ -543,31 +546,31 @@ public class Commands
 		if (args.length == 1 && (cmd.getName().equalsIgnoreCase("mydog") || cmd.getName().equalsIgnoreCase("dog") || cmd.getName().equalsIgnoreCase("dogs") || cmd.getName().equalsIgnoreCase("md")))
 		{
 			List<String> arg1 = new ArrayList<String>();
-			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.help"))
+			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.help")))
 			{
 				arg1.add("help");
 			}
-			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.reload"))
+			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.reload")))
 			{
 				arg1.add("reload");
 			}
-			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.save"))
+			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.save")))
 			{
 				arg1.add("save");
 			}
-			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.dogs"))
+			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.dogs")))
 			{
 				arg1.add("dogs");
 			}
-			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown"))
+			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown")))
 			{
 				arg1.add("putdown");
 			}
-			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere"))
+			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere")))
 			{
 				arg1.add("comehere");
 			}
-			if (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.stats"))
+			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.stats")))
 			{
 				arg1.add("info");
 			}
@@ -578,7 +581,7 @@ public class Commands
 		{
 			List<String> arg2 = new ArrayList<String>();
 
-			if (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("comehere")  || args[0].equalsIgnoreCase("rename") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("stats"))
+			if (player != null && (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("comehere")  || args[0].equalsIgnoreCase("rename") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("stats")))
 			{
 				List<Dog> dogs = MyDog.getDogManager().getDogs(player.getUniqueId());
 				for (Dog dog : dogs)

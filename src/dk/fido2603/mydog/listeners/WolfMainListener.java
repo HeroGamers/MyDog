@@ -16,7 +16,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sittable;
-import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -150,7 +149,7 @@ public class WolfMainListener implements Listener
 			return;
 		}
 
-		if (item == null)
+		if (item.getType() == Material.AIR)
 		{
 			plugin.logDebug("Item is null, retuning!");
 			return;
@@ -275,11 +274,6 @@ public class WolfMainListener implements Listener
 		}
 
 		Wolf wolf = (Wolf) event.getEntity();
-		if (wolf == null)
-		{
-			plugin.logDebug("Wolf is null, returning!");
-			return;
-		}
 
 		Player owner = (Player) event.getBreeder();
 		if (owner == null)
@@ -321,11 +315,6 @@ public class WolfMainListener implements Listener
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onChunkLoad(ChunkLoadEvent event)
 	{
-		if (event.getChunk().getEntities() == null)
-		{
-			return;
-		}
-
 		Entity[] entities = event.getChunk().getEntities();
 		for (Entity e : entities)
 		{
