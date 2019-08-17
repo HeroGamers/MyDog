@@ -1,8 +1,12 @@
 MyDog
 ======
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/917ba264534e4c319671ce6badbd0600)](https://www.codacy.com/app/Fido2603/MyDog?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=DoggyCraftDK/MyDog&amp;utm_campaign=Badge_Grade)
 [![Build Status](https://travis-ci.com/DoggyCraftDK/MyDog.svg?branch=master)](https://travis-ci.com/DoggyCraftDK/MyDog)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=alert_status)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=ncloc)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=bugs)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
 
 Tamed wolves but at least 10x better
 
