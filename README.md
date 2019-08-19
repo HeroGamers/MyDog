@@ -22,11 +22,16 @@ Tamed wolves but at least 10x better
 *	Config option for killing players for XP.
 *	Configurables all the way from the sound to the messages displayed (excluding error messages for now...)
 
-**Resources:** [Spigot Resource](https://www.spigotmc.org/resources/mydog.70260/)
+**Resources:**
+*	Resource page on [Spigot](https://www.spigotmc.org/resources/mydog.70260/).
+*	Project page on [Bukkit](https://dev.bukkit.org/projects/mydog).
 
 **TODO Feature-list:**
 *	Add inventory to Dogs, so they can wear armor and take less damage.
 *	Try to hide the nametag, and only show on hover, if possible.
+*	Config with customizable experience values for entities.
+*	Add currently existing Tamed Wolves to the MyDog system, and register them as new Dogs.
+*	Add a way to return your Dog to the wild, without having to kill it (less violence <3).
 
 **Permissions:**
 ```YAML
