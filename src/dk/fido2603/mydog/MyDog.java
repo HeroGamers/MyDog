@@ -34,6 +34,8 @@ public class MyDog extends JavaPlugin
 	public static Server						server									= null;
 	public boolean								debug									= false;
 	public boolean								instantSave								= false;
+	public boolean								teleportOnWorldChange					= true;
+	public boolean								onlyShowNametagOnHover					= false;
 
 	public boolean								allowPlayerKillExp						= true;
 	public boolean								allowNametagRename						= true;
@@ -205,6 +207,8 @@ public class MyDog extends JavaPlugin
 		this.instantSave = config.getBoolean("Settings.InstantSaveConfig", false);
 		this.randomCollarColor = config.getBoolean("DogSettings.RandomCollarColor", true);
 		this.useLevels = config.getBoolean("DogSettings.UseLevels", true);
+		this.teleportOnWorldChange = config.getBoolean("DogSettings.TeleportOnWorldChange", true);
+		this.onlyShowNametagOnHover = config.getBoolean("DogSettings.OnlyShowNametagOnHover", false);
 		this.allowPlayerKillExp = config.getBoolean("DogSettings.AllowPlayerKillExp", true);
 		this.allowNametagRename = config.getBoolean("DogSettings.AllowNametagRename", true);
 		if (config.contains("DogSettings.DogNames"))
@@ -266,6 +270,8 @@ public class MyDog extends JavaPlugin
 		config.set("Settings.InstantSaveConfig", Boolean.valueOf(this.instantSave));
 		config.set("DogSettings.RandomCollarColor", this.randomCollarColor);
 		config.set("DogSettings.UseLevels", this.useLevels);
+		config.set("DogSettings.TeleportOnWorldChange", this.teleportOnWorldChange);
+		config.set("DogSettings.OnlyShowNametagOnHover", this.onlyShowNametagOnHover);
 		config.set("DogSettings.AllowPlayerKillExp", this.allowPlayerKillExp);
 		config.set("DogSettings.AllowNametagRename", this.allowNametagRename);
 		config.set("DogSettings.DogNames", this.dogNames);
@@ -282,7 +288,7 @@ public class MyDog extends JavaPlugin
 		// Messages and sounds
 		config.set("PlayerInteraction.LevelUpSound", this.levelUpSound);
 		config.set("PlayerInteraction.LevelUpString", this.levelUpString);
-		config.set("PlayerInteraction.LevelUpString", this.cannotTeleportWolfString);
+		config.set("PlayerInteraction.CannotTeleportWolfString", this.cannotTeleportWolfString);
 		config.set("PlayerInteraction.NewDogString", this.newDogString);
 		config.set("PlayerInteraction.DeadDogString", this.deadDogString);
 		config.set("PlayerInteraction.DeadDogLevelString", this.deadDogLevelString);

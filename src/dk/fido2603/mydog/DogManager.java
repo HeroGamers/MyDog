@@ -31,7 +31,7 @@ public class DogManager
 	private FileConfiguration	dogsConfig			= null;
 	private File				dogsConfigFile		= null;
 	private Random				random				= new Random();
-	private long				lastSaveTime					= 0L;
+	private long				lastSaveTime		= 0L;
 
 	DogManager(MyDog plugin)
 	{
@@ -77,6 +77,67 @@ public class DogManager
 			{
 				dog.setCollarColor(ColorUtils.randomDyeColor());
 			}
+			this.collarColor = dog.getCollarColor();
+			this.nameColor = ColorUtils.getChatColorFromDyeColor(collarColor);
+			dogsConfig.set(dogId.toString() + ".NameChatColor", nameColor.name());
+
+			// Save the Dog's last seen location
+			this.location = dog.getLocation();
+			dogsConfig.set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
+			dogsConfig.set(dogId.toString() + ".LastSeen.X", location.getX());
+			dogsConfig.set(dogId.toString() + ".LastSeen.Y", location.getY());
+			dogsConfig.set(dogId.toString() + ".LastSeen.Z", location.getZ());
+
+			// Give the Dog a level
+			if (plugin.useLevels)
+			{
+				this.level = 1;
+				dogsConfig.set(dogId.toString() + ".Level.Level", level);
+				this.experience = 0;
+				dogsConfig.set(dogId.toString() + ".Level.Experience", experience);
+			}
+
+			// Set the current time as the Dog's birthday
+			this.birthday = new Date();
+			dogsConfig.set(dogId.toString() + ".Birthday", formatter.format(birthday));
+
+			saveTimed();
+		}
+
+		// For new, already-tamed dogs with old data
+		public Dog(Wolf dog, Player dogOwner, String customName, DyeColor collarColorImport, Integer dogUID)
+		{
+			// The UUID of the Dog
+			this.dogId = dog.getUniqueId();
+
+			// The UUID of the Dog's owner (Player)
+			this.dogOwnerId = dogOwner.getUniqueId();
+			dogsConfig.set(dogId.toString() + ".Owner", dogOwnerId.toString());
+
+			// Generate an ID for the Dog
+			this.dogIdentifier = dogUID;
+			dogsConfig.set(dogId.toString() + ".ID", dogIdentifier);
+
+			// Generate a new name for the Dog
+			if (customName == null || customName.isEmpty())
+			{
+				this.dogName = newDogName();
+			}
+			else
+			{
+				this.dogName = customName;
+			}
+			dogsConfig.set(dogId.toString() + ".Name", dogName);
+
+			// Generate a random Collar Color and set the Dog's Color
+			if (collarColorImport == null)
+			{
+				if (plugin.randomCollarColor)
+				{
+					dog.setCollarColor(ColorUtils.randomDyeColor());
+				}
+			}
+
 			this.collarColor = dog.getCollarColor();
 			this.nameColor = ColorUtils.getChatColorFromDyeColor(collarColor);
 			dogsConfig.set(dogId.toString() + ".NameChatColor", nameColor.name());
@@ -221,7 +282,14 @@ public class DogManager
 
 				plugin.logDebug("Setting customName to: " + nameColor + dogName);
 				dog.setCustomName(nameColor + dogName);
-				dog.setCustomNameVisible(true);
+				if (plugin.onlyShowNametagOnHover)
+				{
+					dog.setCustomNameVisible(false);
+				}
+				else
+				{
+					dog.setCustomNameVisible(true);
+				}
 			}
 			saveTimed();
 			return true;
@@ -253,7 +321,14 @@ public class DogManager
 
 				plugin.logDebug("Setting customName to: " + nameColor + dogName);
 				dog.setCustomName(nameColor + dogName);
-				dog.setCustomNameVisible(true);
+				if (plugin.onlyShowNametagOnHover)
+				{
+					dog.setCustomNameVisible(false);
+				}
+				else
+				{
+					dog.setCustomNameVisible(true);
+				}
 			}
 			saveTimed();
 			return true;
@@ -400,7 +475,14 @@ public class DogManager
 			{
 				plugin.logDebug("Setting customName to: " + nameColor + dogName);
 				dog.setCustomName(nameColor + dogName);
-				dog.setCustomNameVisible(true);
+				if (plugin.onlyShowNametagOnHover)
+				{
+					dog.setCustomNameVisible(false);
+				}
+				else
+				{
+					dog.setCustomNameVisible(true);
+				}
 				plugin.logDebug("Returning true!");
 				return true;
 			}
@@ -520,6 +602,7 @@ public class DogManager
 
 	public void save()
 	{
+		this.lastSaveTime = System.currentTimeMillis();
 		if ((this.dogsConfig == null) || (this.dogsConfigFile == null))
 		{
 			return;
@@ -586,6 +669,11 @@ public class DogManager
 	public Dog newDog(Wolf dog, Player dogOwner) {
 		Integer dogID = generateNewId(dogOwner.getUniqueId());
 		return new Dog(dog, dogOwner, dogID);
+	}
+
+	public Dog newDog(Wolf dog, Player dogOwner, String customName, DyeColor collarColor) {
+		Integer dogID = generateNewId(dogOwner.getUniqueId());
+		return new Dog(dog, dogOwner, customName, collarColor, dogID);
 	}
 
 	public Dog getDog(UUID dogId)
