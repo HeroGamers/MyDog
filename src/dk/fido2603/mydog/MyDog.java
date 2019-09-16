@@ -211,7 +211,7 @@ public class MyDog extends JavaPlugin
 		this.onlyShowNametagOnHover = config.getBoolean("DogSettings.OnlyShowNametagOnHover", false);
 		this.allowPlayerKillExp = config.getBoolean("DogSettings.AllowPlayerKillExp", true);
 		this.allowNametagRename = config.getBoolean("DogSettings.AllowNametagRename", true);
-		if (config.contains("DogSettings.DogNames"))
+		if (config.contains("DogSettings.DogNames") && !config.getStringList("DogSettings.DogNames").isEmpty())
 		{
 			this.dogNames = config.getStringList("DogSettings.DogNames");
 		}

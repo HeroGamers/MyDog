@@ -21,4 +21,23 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+# Libs and stuff
+/bukkit
+/lib
+/jar
+dependency-reduced-pom.xml
+
+# Eclipse Core
+/bin
+
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+.project
+/.settings/
+
+# IDEA-specific
+/.idea/
+
+# Maven build
 /target/
