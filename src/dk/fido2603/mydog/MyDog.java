@@ -4,6 +4,7 @@ import dk.fido2603.mydog.LevelFactory.Level;
 import dk.fido2603.mydog.listeners.DamageListener;
 import dk.fido2603.mydog.listeners.WolfMainListener;
 import dk.fido2603.mydog.utils.ParticleUtils;
+import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 
 import java.util.Arrays;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -147,18 +149,17 @@ public class MyDog extends JavaPlugin
 		// Check for Vault
 		if (pm.getPlugin("Vault") != null && pm.getPlugin("Vault").isEnabled())
 		{
-			this.vaultEnabled = true;
-
 			log("Vault detected.");
 
-			RegisteredServiceProvider<Economy> economyProvider = plugin.getServer().getServicesManager().getRegistration(Economy.class);
-			if (economyProvider != null)
+			RegisteredServiceProvider<Permission> permissionProvider = plugin.getServer().getServicesManager().getRegistration(Permission.class);
+			RegisteredServiceProvider<Chat> chatProvider = plugin.getServer().getServicesManager().getRegistration(Chat.class);
+			if (permissionProvider == null || chatProvider == null)
 			{
-				economy = economyProvider.getProvider();
+				plugin.log("A permission provider or a chat provider was not found! Will not enable the vault integration!");
 			}
 			else
 			{
-				plugin.log("Vault not found.");
+				this.vaultEnabled = true;
 			}
 		}
 		else
