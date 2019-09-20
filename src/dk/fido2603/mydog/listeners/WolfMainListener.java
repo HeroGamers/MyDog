@@ -139,7 +139,7 @@ public class WolfMainListener implements Listener
 		{
 			// Make the wolf into a dog, if it's tamed
 			Wolf wolf = (Wolf) entity;
-			if (wolf.isValid() && wolf.isTamed() && wolf.getOwner() != null)
+			if (wolf.isValid() && wolf.isTamed() && wolf.getOwner() != null && wolf.getOwner() instanceof Player)
 			{
 				Player owner = (Player) wolf.getOwner();
 				Dog dog = null;
