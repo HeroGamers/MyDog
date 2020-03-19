@@ -38,6 +38,8 @@ dependency-reduced-pom.xml
 
 # IDEA-specific
 /.idea/
+mydog.iml
 
 # Maven build
 /target/
+/.mvn/

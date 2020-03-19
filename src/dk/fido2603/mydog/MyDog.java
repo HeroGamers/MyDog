@@ -37,6 +37,8 @@ public class MyDog extends JavaPlugin
 	public boolean								debug									= false;
 	public boolean								instantSave								= false;
 	public boolean								teleportOnWorldChange					= true;
+	public boolean								teleportAllTameables					= false;
+	public boolean								expandedSearch							= false;
 	public boolean								onlyShowNametagOnHover					= false;
 
 	public boolean								allowPlayerKillExp						= true;
@@ -44,7 +46,7 @@ public class MyDog extends JavaPlugin
 
 	public String								levelUpSound							= "ENTITY_WOLF_HOWL";
 	public String								levelUpString							= "&5&l[{chatPrefix}] &r&5Your dog, {dogNameColor}{dogName}&5, just leveled up to &dLevel {level}&5!";
-	public String								cannotTeleportWolfString				= "&c&l[{chatPrefix}] &r&cHello! Looks like you just teleported away from your Dog(s)! " +
+	public String								cannotTeleportTameableString				= "&c&l[{chatPrefix}] &r&cHello! Looks like you just teleported away from your Pet(s)! " +
 																						"They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...";
 	public String								newDogString							= "&6&l[{chatPrefix}] &r&6Congratulations with your new dog, {dogNameColor}{dogName}&6!";
 	public String								deadDogString							= "&c&l[{chatPrefix}] &r&cYour dog, {dogNameColor}{dogName}&c, just passed away... {dogNameColor}{dogName}&c lived for {time}{deadDogLevelString}.";
@@ -102,8 +104,7 @@ public class MyDog extends JavaPlugin
 																										"Sparky", "Spencer", "Spike", "Spot", "Stanley", "Stewie", "Storm", "Taco", "Tank", "Taz", "Teddy", "Tesla",
 																										"Theo", "Thor", "Titus", "TJ", "Toby", "Trapper", "Tripp", "Tucker", "Tyler", "Tyson", "Vince", "Vinnie",
 																										"Wally", "Walter", "Watson", "Willy", "Winston", "Woody", "Wrigley", "Wyatt", "Yogi", "Yoshi", "Yukon",
-																										"Zane", "Zeus", "Ziggy"
-			);
+																										"Zane", "Zeus", "Ziggy");
 
 	public Map<Integer, Level>					dogLevels								= new HashMap<Integer, Level>();
 
@@ -249,6 +250,8 @@ public class MyDog extends JavaPlugin
 		this.serverName = config.getString("Settings.ServerName", "Your Server");
 		this.chatPrefix = config.getString("Settings.ChatPrefix", "MyDog");
 		this.instantSave = config.getBoolean("Settings.InstantSaveConfig", false);
+		this.teleportAllTameables = config.getBoolean("Settings.TeleportAllTameables", false);
+		this.expandedSearch = config.getBoolean("Settings.ExpandedSearch", false);
 		this.randomCollarColor = config.getBoolean("DogSettings.RandomCollarColor", true);
 		this.useLevels = config.getBoolean("DogSettings.UseLevels", true);
 		this.teleportOnWorldChange = config.getBoolean("DogSettings.TeleportOnWorldChange", true);
@@ -296,7 +299,7 @@ public class MyDog extends JavaPlugin
 		// Messages and sounds
 		this.levelUpSound = config.getString("PlayerInteraction.LevelUpSound", "ENTITY_WOLF_HOWL");
 		this.levelUpString = config.getString("PlayerInteraction.LevelUpString", "&5&l[{chatPrefix}] &r&5Your dog, {dogNameColor}{dogName}&5, just leveled up to &dLevel {level}&5!");
-		this.cannotTeleportWolfString = config.getString("PlayerInteraction.CannotTeleportWolfString", "&c&l[{chatPrefix}] &r&cHello! Looks like you just teleported away from your Dog(s)! " +
+		this.cannotTeleportTameableString = config.getString("PlayerInteraction.CannotTeleportTameableString", "&c&l[{chatPrefix}] &r&cHello! Looks like you just teleported away from your Pet(s)! " +
 				"They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...");
 		this.newDogString = config.getString("PlayerInteraction.NewDogString", "&6&l[{chatPrefix}] &r&6Congratulations with your new dog, {dogNameColor}{dogName}&6!");
 		this.deadDogString = config.getString("PlayerInteraction.DeadDogString", "&c&l[{chatPrefix}] &r&cYour dog, {dogNameColor}{dogName}&c, just passed away... {dogNameColor}{dogName}&c lived for {time}{deadDogLevelString}.");
@@ -312,9 +315,11 @@ public class MyDog extends JavaPlugin
 		config.set("Settings.Debug", Boolean.valueOf(this.debug));
 		config.set("Settings.ChatPrefix", this.chatPrefix);
 		config.set("Settings.InstantSaveConfig", Boolean.valueOf(this.instantSave));
+		config.set("Settings.ExpandedSearch", Boolean.valueOf(this.expandedSearch));
 		config.set("DogSettings.RandomCollarColor", this.randomCollarColor);
 		config.set("DogSettings.UseLevels", this.useLevels);
 		config.set("DogSettings.TeleportOnWorldChange", this.teleportOnWorldChange);
+		config.set("Settings.TeleportAllTameables", this.teleportAllTameables);
 		config.set("DogSettings.OnlyShowNametagOnHover", this.onlyShowNametagOnHover);
 		config.set("DogSettings.AllowPlayerKillExp", this.allowPlayerKillExp);
 		config.set("DogSettings.AllowNametagRename", this.allowNametagRename);
@@ -332,7 +337,7 @@ public class MyDog extends JavaPlugin
 		// Messages and sounds
 		config.set("PlayerInteraction.LevelUpSound", this.levelUpSound);
 		config.set("PlayerInteraction.LevelUpString", this.levelUpString);
-		config.set("PlayerInteraction.CannotTeleportWolfString", this.cannotTeleportWolfString);
+		config.set("PlayerInteraction.CannotTeleportTameableString", this.cannotTeleportTameableString);
 		config.set("PlayerInteraction.NewDogString", this.newDogString);
 		config.set("PlayerInteraction.DeadDogString", this.deadDogString);
 		config.set("PlayerInteraction.DeadDogLevelString", this.deadDogLevelString);

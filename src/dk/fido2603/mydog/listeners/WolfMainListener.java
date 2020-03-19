@@ -16,11 +16,7 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Sittable;
-import org.bukkit.entity.Wolf;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -473,55 +469,61 @@ public class WolfMainListener implements Listener
 		}
 
 		Location safeLocation = null;
-		Boolean isSafe = true;
 
 		Entity[] entities = event.getChunk().getEntities();
 		for (Entity e : entities)
 		{
-			if (isSafe && e != null && e.getType().equals(EntityType.WOLF))
+			// All tameables
+			if (e != null && e instanceof Sittable && e instanceof Tameable)
 			{
-				Wolf dog = (Wolf) e;
-				if (dog.getOwner() == null || !(dog.getOwner() instanceof Player))
+				Tameable tameableEntity = (Tameable) e;
+
+				if (tameableEntity.getOwner() instanceof Player)
 				{
-					plugin.logDebug("Owner is null or not instance of Player!");
-					return;
-				}
-				Player player = (Player) dog.getOwner();
-				if (MyDog.getDogManager().isDog(dog.getUniqueId()) && player != null && player.isOnline() && (!dog.isSitting() || (!dog.getWorld().equals(player.getWorld()) && plugin.teleportOnWorldChange)))
-				{
-					MyDog.getDogManager().getDog(dog.getUniqueId()).saveDogLocation();
-					if (MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport"))
+					Sittable sittingEntity = (Sittable) e;
+					Player player = (Player) tameableEntity.getOwner();
+
+					if (player != null && player.isOnline())
 					{
-						Location loc = null;
-						if (safeLocation == null)
+						// If it's a dog, or if the config allows all tameables to teleport
+						Boolean isDog = (e.getType().equals(EntityType.WOLF) && MyDog.getDogManager().isDog(tameableEntity.getUniqueId()));
+						if (isDog || plugin.teleportAllTameables)
 						{
-							loc = player.getLocation();
-							if (!isSafeLocation(loc))
+							// If the tameable is sitting, or is in another world
+							if (!sittingEntity.isSitting() || (!tameableEntity.getWorld().equals(player.getWorld()) && plugin.teleportOnWorldChange))
 							{
-								plugin.logDebug("Whoops, seems like our player isn't at a safe location, let's find a good spot for the doggo...");
-								loc = searchSafeLocation(loc);
-								if (loc == null)
+								// If dog, save location of the dog
+								if (isDog)
 								{
-									plugin.logDebug("Did not find a safe place to teleport a wolf! Keeping wolf at unloaded chunks!");
-									/*player.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Hello! Looks like you just teleported away from your Dog(s)! " +
-											"They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...");*/
-									player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.cannotTeleportWolfString));
-									isSafe = false;
-									return;
+									MyDog.getDogManager().getDog(tameableEntity.getUniqueId()).saveDogLocation();
+								}
+
+								// Begin teleport procedure!!
+								if (MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport"))
+								{
+									Location loc = player.getLocation();
+									if (!isSafeLocation(loc) && safeLocation == null)
+									{
+										plugin.logDebug("Whoops, seems like our player isn't at a safe location, let's find a good spot for the tameable...");
+										loc = searchSafeLocation(loc);
+										if (loc == null)
+										{
+											plugin.logDebug("Did not find a safe place to teleport the tameable! Keeping tameable at unloaded chunks!");
+											player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.cannotTeleportTameableString));
+											return;
+										}
+									}
+
+									plugin.logDebug("It's a safe location, teleporting!");
+									safeLocation = loc;
+									plugin.logDebug("Teleported a dog to a player! Chunk-unload!");
+									tameableEntity.teleport(safeLocation);
+									if (sittingEntity.isSitting())
+									{
+										sittingEntity.setSitting(false);
+									}
 								}
 							}
-						}
-						else
-						{
-							loc = safeLocation;
-						}
-
-						plugin.logDebug("It's a safe location, teleporting!");
-						plugin.logDebug("Teleported a dog to a player! Chunk-unload!");
-						dog.teleport(loc);
-						if (dog.isSitting())
-						{
-							dog.setSitting(false);
 						}
 					}
 				}
@@ -531,19 +533,50 @@ public class WolfMainListener implements Listener
 
 	public Location searchSafeLocation(Location loc)
 	{
-		double y;
-		for (y = 255; y > 1; y--)
+		if (plugin.expandedSearch)
 		{
-			loc.setY(y);
-			plugin.logDebug("Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
-			if (isSafeLocation(loc))
+			double y;
+			double x;
+			double z;
+			plugin.logDebug("Starting safe location search!");
+			for (z = 0; z <= 2; z++)
 			{
-				plugin.logDebug("Is safe location");
-				return loc;
+				loc.setZ(loc.getZ()+z);
+				plugin.logDebug("Setting 1 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
+				for (x = 0; x <= 2; x++)
+				{
+					loc.setX(loc.getX()+x);
+					plugin.logDebug("Setting 2 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
+					for (y = 255; y > 1; y--)
+					{
+						loc.setY(y);
+						plugin.logDebug("Setting 3 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
+						if (isSafeLocation(loc))
+						{
+							plugin.logDebug("is safe");
+							return loc;
+						}
+						plugin.logDebug("not safe");
+					}
+				}
 			}
-			plugin.logDebug("Not safe location");
 		}
-		
+		else
+		{
+			double y;
+			for (y = 255; y > 1; y--)
+			{
+				loc.setY(y);
+				plugin.logDebug("Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
+				if (isSafeLocation(loc))
+				{
+					plugin.logDebug("is safe");
+					return loc;
+				}
+				plugin.logDebug("not safe");
+			}
+		}
+
 		return null;
 	}
 
