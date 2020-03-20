@@ -7,6 +7,7 @@ import dk.fido2603.mydog.MyDog;
 import dk.fido2603.mydog.utils.TimeUtils;
 
 import java.util.Date;
+import java.util.HashMap;
 
 import org.bukkit.DyeColor;
 import org.bukkit.GameMode;
@@ -24,6 +25,7 @@ import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -435,6 +437,7 @@ public class WolfMainListener implements Listener
 		newDogBreed.runTaskLater(plugin, 2);
 	}
 
+	// Load dogs
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onChunkLoad(ChunkLoadEvent event)
 	{
@@ -460,9 +463,60 @@ public class WolfMainListener implements Listener
 		}
 	}
 
+	// If the player is teleporting, this would be used in regions that might be loaded already by other players, or spawn regions
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void onPlayerTeleport(PlayerTeleportEvent event)
+	{
+		if (!plugin.automaticTeleportation)
+		{
+			return;
+		}
+
+		Player player = event.getPlayer();
+
+		// Do the teleport task 3 ticks after the player has teleported
+		new BukkitRunnable()
+		{
+			@Override
+			public void run()
+			{
+				Location safeLocation = null;
+
+				// Check whether the player has any dogs
+				for (Dog dog : MyDog.getDogManager().getDogs(player.getUniqueId()))
+				{
+					Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+					if (wolf != null && !wolf.isSilent())
+					{
+						HashMap<Boolean, Location> teleportResult = teleportTameable(wolf, safeLocation, event.getTo());
+
+						// If the first entity didn't find a safe location
+						Boolean triedTeleporting = (Boolean) teleportResult.keySet().toArray()[0];
+						safeLocation = (Location) teleportResult.values().toArray()[0];
+
+						if (triedTeleporting && safeLocation == null)
+						{
+							return;
+						}
+						else if (triedTeleporting && safeLocation != null)
+						{
+							plugin.logDebug("Teleported a dog successfully, playerteleport!");
+						}
+					}
+				}
+			}
+		}.runTaskLater(this.plugin, 3);
+	}
+
+	// If a chunk is unloading, check if there are any tameables inside it
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onChunkUnload(ChunkUnloadEvent event)
 	{
+		if (!plugin.automaticTeleportation)
+		{
+			return;
+		}
+
 		if (event.getChunk().getEntities() == null)
 		{
 			return;
@@ -476,59 +530,89 @@ public class WolfMainListener implements Listener
 			// All tameables
 			if (e != null && e instanceof Sittable && e instanceof Tameable)
 			{
-				Tameable tameableEntity = (Tameable) e;
+				HashMap<Boolean, Location> teleportResult = teleportTameable(e, safeLocation, null);
 
-				if (tameableEntity.getOwner() instanceof Player)
+				// If the first entity didn't find a safe location
+				Boolean triedTeleporting = (Boolean) teleportResult.keySet().toArray()[0];
+				safeLocation = (Location) teleportResult.values().toArray()[0];
+
+				if (triedTeleporting && safeLocation == null)
 				{
-					Sittable sittingEntity = (Sittable) e;
-					Player player = (Player) tameableEntity.getOwner();
+					return;
+				}
+				else if (triedTeleporting && safeLocation != null)
+				{
+					plugin.logDebug("Teleported a dog successfully, chunkunload!");
+				}
+			}
+		}
+	}
 
-					if (player != null && player.isOnline())
+	public HashMap<Boolean, Location> teleportTameable(Entity e, Location safeLocation, Location searchLocation)
+	{
+		// We use this map to store whether it even tried searching for a location, and then to return with a safe location, so we don't have to search again
+		HashMap<Boolean, Location> teleportResult = new HashMap<>();
+
+		Tameable tameableEntity = (Tameable) e;
+
+		if (tameableEntity.getOwner() instanceof Player)
+		{
+			Sittable sittingEntity = (Sittable) e;
+			Player player = (Player) tameableEntity.getOwner();
+
+			if (player != null && player.isOnline() && MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport"))
+			{
+				// If it's a dog, or if the config allows all tameables to teleport
+				Boolean isDog = (e.getType().equals(EntityType.WOLF) && MyDog.getDogManager().isDog(tameableEntity.getUniqueId()));
+				if (isDog || plugin.teleportAllTameables)
+				{
+					// If the tameable is sitting, or is in another world
+					if (!sittingEntity.isSitting() || (!tameableEntity.getWorld().equals(player.getWorld()) && plugin.teleportOnWorldChange))
 					{
-						// If it's a dog, or if the config allows all tameables to teleport
-						Boolean isDog = (e.getType().equals(EntityType.WOLF) && MyDog.getDogManager().isDog(tameableEntity.getUniqueId()));
-						if (isDog || plugin.teleportAllTameables)
+						// If dog, save location of the dog
+						if (isDog)
 						{
-							// If the tameable is sitting, or is in another world
-							if (!sittingEntity.isSitting() || (!tameableEntity.getWorld().equals(player.getWorld()) && plugin.teleportOnWorldChange))
+							MyDog.getDogManager().getDog(tameableEntity.getUniqueId()).saveDogLocation();
+						}
+
+						// Begin teleport procedure!!
+						if (safeLocation == null) {
+							// If a search location is provided, like a player that is starting to teleport
+							if (searchLocation == null)
 							{
-								// If dog, save location of the dog
-								if (isDog)
+								searchLocation = player.getLocation();
+							}
+							if (!isSafeLocation(searchLocation))
+							{
+								plugin.logDebug("Whoops, seems like our player isn't at a safe location, let's find a good spot for the tameable...");
+								searchLocation = searchSafeLocation(searchLocation);
+								if (searchLocation == null)
 								{
-									MyDog.getDogManager().getDog(tameableEntity.getUniqueId()).saveDogLocation();
-								}
-
-								// Begin teleport procedure!!
-								if (MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport"))
-								{
-									Location loc = player.getLocation();
-									if (!isSafeLocation(loc) && safeLocation == null)
-									{
-										plugin.logDebug("Whoops, seems like our player isn't at a safe location, let's find a good spot for the tameable...");
-										loc = searchSafeLocation(loc);
-										if (loc == null)
-										{
-											plugin.logDebug("Did not find a safe place to teleport the tameable! Keeping tameable at unloaded chunks!");
-											player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.cannotTeleportTameableString));
-											return;
-										}
-									}
-
-									plugin.logDebug("It's a safe location, teleporting!");
-									safeLocation = loc;
-									plugin.logDebug("Teleported a dog to a player! Chunk-unload!");
-									tameableEntity.teleport(safeLocation);
-									if (sittingEntity.isSitting())
-									{
-										sittingEntity.setSitting(false);
-									}
+									plugin.logDebug("Did not find a safe place to teleport the tameable! Keeping tameable at unloaded chunks!");
+									player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.cannotTeleportTameableString.replace("{chatPrefix}", plugin.getChatPrefix())));
+									teleportResult.put(true, null);
+									return teleportResult;
 								}
 							}
+							safeLocation = searchLocation;
 						}
+
+						plugin.logDebug("It's a safe location, teleporting!");
+						tameableEntity.teleport(safeLocation);
+						if (sittingEntity.isSitting())
+						{
+							sittingEntity.setSitting(false);
+						}
+
+						// Return the found location
+						teleportResult.put(true, safeLocation);
+						return teleportResult;
 					}
 				}
 			}
 		}
+		teleportResult.put(false, safeLocation);
+		return teleportResult;
 	}
 
 	public Location searchSafeLocation(Location loc)
@@ -542,21 +626,21 @@ public class WolfMainListener implements Listener
 			for (z = 0; z <= 2; z++)
 			{
 				loc.setZ(loc.getZ()+z);
-				plugin.logDebug("Setting 1 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
+				//plugin.logDebug("Setting 1 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
 				for (x = 0; x <= 2; x++)
 				{
 					loc.setX(loc.getX()+x);
-					plugin.logDebug("Setting 2 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
+					//plugin.logDebug("Setting 2 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
 					for (y = 255; y > 1; y--)
 					{
 						loc.setY(y);
-						plugin.logDebug("Setting 3 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
+						//plugin.logDebug("Setting 3 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
 						if (isSafeLocation(loc))
 						{
-							plugin.logDebug("is safe");
+							//plugin.logDebug("is safe");
 							return loc;
 						}
-						plugin.logDebug("not safe");
+						//plugin.logDebug("not safe");
 					}
 				}
 			}
@@ -567,13 +651,13 @@ public class WolfMainListener implements Listener
 			for (y = 255; y > 1; y--)
 			{
 				loc.setY(y);
-				plugin.logDebug("Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
+				//plugin.logDebug("Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
 				if (isSafeLocation(loc))
 				{
-					plugin.logDebug("is safe");
+					//plugin.logDebug("is safe");
 					return loc;
 				}
-				plugin.logDebug("not safe");
+				//plugin.logDebug("not safe");
 			}
 		}
 
@@ -583,8 +667,8 @@ public class WolfMainListener implements Listener
 	public boolean isSafeLocation(Location location) {
 		Block feet = location.getBlock();
 		Block ground = feet.getRelative(BlockFace.DOWN);
-		plugin.logDebug("Feet: " + feet.getType().toString());
-		plugin.logDebug("Ground: " + ground.getType().toString());
+		//plugin.logDebug("Feet: " + feet.getType().toString());
+		//plugin.logDebug("Ground: " + ground.getType().toString());
 
 		return (isTransparent(feet.getType()) && (ground.getType().isSolid() || ground.getType() == Material.WATER));
     }

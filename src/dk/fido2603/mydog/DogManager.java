@@ -4,12 +4,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
@@ -500,6 +495,22 @@ public class DogManager
 			return dogsConfig.getInt(dogId.toString() + ".ID", -1);
 		}
 
+		public boolean setIdentifier(Integer id)
+		{
+			// If the ID is already used, return false
+			for (String dogIdString : dogsConfig.getKeys(false))
+			{
+				if (dogsConfig.getString(dogIdString + ".ID").equals(id.toString()) && dogsConfig.getString(dogIdString + ".Owner").contains(dogOwnerId.toString()))
+				{
+					return false;
+				}
+			}
+			// Otherwise, apply the new ID
+			this.dogIdentifier = id;
+			dogsConfig.set(dogId.toString() + ".ID", dogIdentifier);
+			return true;
+		}
+
 		public boolean setHealth()
 		{
 			Wolf wolf = (Wolf) plugin.getServer().getEntity(dogId);
@@ -689,7 +700,7 @@ public class DogManager
 	{
 		for (String dogIdString : dogsConfig.getKeys(false))
 		{
-			if (dogsConfig.getString(dogIdString + ".ID").contains(dogIdentifier) && dogsConfig.getString(dogIdString + ".Owner").contains(ownerId.toString()))
+			if (dogsConfig.getString(dogIdString + ".ID").equals(dogIdentifier) && dogsConfig.getString(dogIdString + ".Owner").contains(ownerId.toString()))
 			{
 				UUID dogId = UUID.fromString(dogIdString);
 				return new Dog(dogId, UUID.fromString(dogsConfig.getString(dogId.toString() + ".Owner")));
@@ -706,8 +717,7 @@ public class DogManager
 		for (String dogIdString : dogsConfig.getKeys(false))
 		{
 			UUID dogId = UUID.fromString(dogIdString);
-			// throws null if entity is unloaded
-			dogs.add(new Dog((Wolf) plugin.getServer().getEntity(dogId)));
+			dogs.add(new Dog((Wolf) Objects.requireNonNull(plugin.getServer().getEntity(dogId))));
 		}
 
 		return dogs;
@@ -733,6 +743,27 @@ public class DogManager
 	{
 		int dogNameNumber = random.nextInt(plugin.dogNames.size());
 		return plugin.dogNames.get(dogNameNumber);
+	}
+
+	public boolean setNewId(Dog dog, Integer id)
+	{
+		// If another dog is already using the ID
+		if (!dog.setIdentifier(id))
+		{
+			Dog dog2 = getDog(id.toString(), dog.getOwnerId());
+			if (dog2.setIdentifier(generateNewId(dog.getOwnerId())))
+			{
+				if (dog.setIdentifier(id))
+				{
+					return true;
+				}
+			}
+		}
+		else
+		{
+			return true;
+		}
+		return false;
 	}
 
 	private Integer generateNewId(UUID dogOwnerId)

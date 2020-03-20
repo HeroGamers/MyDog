@@ -13,11 +13,14 @@ import java.util.List;
 import java.util.Map;
 
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.Bukkit;
 import org.bukkit.Server;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Wolf;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -36,8 +39,10 @@ public class MyDog extends JavaPlugin
 	public static Server						server									= null;
 	public boolean								debug									= false;
 	public boolean								instantSave								= false;
+	public boolean								automaticTeleportation					= true;
 	public boolean								teleportOnWorldChange					= true;
 	public boolean								teleportAllTameables					= false;
+	private boolean								playerDistanceCheck						= true;
 	public boolean								expandedSearch							= false;
 	public boolean								onlyShowNametagOnHover					= false;
 
@@ -221,6 +226,36 @@ public class MyDog extends JavaPlugin
 
 		getServer().getPluginManager().registerEvents(tameListener, this);
 		getServer().getPluginManager().registerEvents(damageListener, this);
+
+		// The dog distance checker, might take some extra powerrr. Checks every ~30 seconds. Starts after 1,5 minutes.
+		if (playerDistanceCheck && automaticTeleportation)
+		{
+			Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					plugin.logDebug("Running the distance checker!");
+					for (Player player : getServer().getOnlinePlayers())
+					{
+						for (DogManager.Dog dog : MyDog.getDogManager().getDogs((player.getUniqueId())))
+						{
+							Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+							if (wolf != null)
+							{
+								double distance = player.getLocation().distance(wolf.getLocation());
+
+								// A quick dirty check for ground below player
+								if (distance >= 200 && player.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().isSolid())
+								{
+									wolf.teleport(player);
+								}
+							}
+						}
+					}
+				}
+			}, 20L*90L, 20L*30L);
+		}
 	}
 
 	public void log(String message)
@@ -250,7 +285,9 @@ public class MyDog extends JavaPlugin
 		this.serverName = config.getString("Settings.ServerName", "Your Server");
 		this.chatPrefix = config.getString("Settings.ChatPrefix", "MyDog");
 		this.instantSave = config.getBoolean("Settings.InstantSaveConfig", false);
+		this.automaticTeleportation = config.getBoolean("Settings.AutomaticTeleportation", true);
 		this.teleportAllTameables = config.getBoolean("Settings.TeleportAllTameables", false);
+		this.playerDistanceCheck = config.getBoolean("Settings.PlayerDistanceCheck", true);
 		this.expandedSearch = config.getBoolean("Settings.ExpandedSearch", false);
 		this.randomCollarColor = config.getBoolean("DogSettings.RandomCollarColor", true);
 		this.useLevels = config.getBoolean("DogSettings.UseLevels", true);
@@ -315,7 +352,9 @@ public class MyDog extends JavaPlugin
 		config.set("Settings.Debug", Boolean.valueOf(this.debug));
 		config.set("Settings.ChatPrefix", this.chatPrefix);
 		config.set("Settings.InstantSaveConfig", Boolean.valueOf(this.instantSave));
+		config.set("Settings.AutomaticTeleportation", Boolean.valueOf(this.automaticTeleportation));
 		config.set("Settings.ExpandedSearch", Boolean.valueOf(this.expandedSearch));
+		config.set("Settings.PlayerDistanceCheck", Boolean.valueOf(this.playerDistanceCheck));
 		config.set("DogSettings.RandomCollarColor", this.randomCollarColor);
 		config.set("DogSettings.UseLevels", this.useLevels);
 		config.set("DogSettings.TeleportOnWorldChange", this.teleportOnWorldChange);

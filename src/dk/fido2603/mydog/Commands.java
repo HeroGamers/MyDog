@@ -1,10 +1,7 @@
 package dk.fido2603.mydog;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.ChatColor;
@@ -108,7 +105,7 @@ public class Commands
 			}
 			else if ((args.length == 2) && (player != null))
 			{
-				if (((args[0].equalsIgnoreCase("putdown")) || (args[0].equalsIgnoreCase("kill"))) && (player != null))
+				if ((args[0].equalsIgnoreCase("putdown")) || (args[0].equalsIgnoreCase("kill")))
 				{
 					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown")))
 					{
@@ -119,7 +116,7 @@ public class Commands
 
 					return true;
 				}
-				if (((args[0].equalsIgnoreCase("free")) || (args[0].equalsIgnoreCase("setfree"))) && (player != null))
+				if ((args[0].equalsIgnoreCase("free")) || (args[0].equalsIgnoreCase("setfree")))
 				{
 					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.free")))
 					{
@@ -130,7 +127,7 @@ public class Commands
 
 					return true;
 				}
-				if (((args[0].equalsIgnoreCase("stats")) || (args[0].equalsIgnoreCase("info"))) && (player != null))
+				if ((args[0].equalsIgnoreCase("stats")) || (args[0].equalsIgnoreCase("info")))
 				{
 					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.stats")))
 					{
@@ -141,7 +138,7 @@ public class Commands
 
 					return true;
 				}
-				if (((args[0].equalsIgnoreCase("comehere"))) && (player != null))
+				if ((args[0].equalsIgnoreCase("comehere")))
 				{
 					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.stats")))
 					{
@@ -155,6 +152,20 @@ public class Commands
 			}
 			else if ((args.length == 3) && (player != null))
 			{
+				if ((args[0].equalsIgnoreCase("setid")) || (args[0].equalsIgnoreCase("changeid")))
+				{
+					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.setid")))
+					{
+						return false;
+					}
+
+					commandDogSetId(sender, args);
+
+					return true;
+				}
+			}
+			else if ((args.length >= 3) && (player != null))
+			{
 				if (((args[0].equalsIgnoreCase("rename"))) && (player != null))
 				{
 					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.rename")))
@@ -166,10 +177,12 @@ public class Commands
 
 					return true;
 				}
-			}
-			else if ((args.length > 4) && (player != null))
-			{
 				sender.sendMessage(ChatColor.RED + "Too many arguments! Check /mydog help");
+				return true;
+			}
+			else
+			{
+				sender.sendMessage(ChatColor.RED + "Not a MyDog Command! Check /mydog help");
 				return true;
 			}
 		}
@@ -238,6 +251,10 @@ public class Commands
 			{
 				sender.sendMessage(ChatColor.AQUA + "/mydog rename <id> <name>" + ChatColor.WHITE + " - Renames a Dog you own");
 			}
+			if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.setid")))
+			{
+				sender.sendMessage(ChatColor.AQUA + "/mydog setid <id> <newid>" + ChatColor.WHITE + " - Assigns a custom ID to a Dog you own");
+			}
 		}
 
 		return true;
@@ -245,10 +262,17 @@ public class Commands
 
 	private boolean commandDogList(CommandSender sender)
 	{
-		sender.sendMessage(ChatColor.YELLOW + "------------------ " + this.plugin.getDescription().getFullName() + " ------------------");
+		// Sort the dogs after their ID (identifier)
+		TreeMap<Integer, Dog> dogsSorted = new TreeMap();
 		for (Dog dog : MyDog.getDogManager().getDogs(((Player) sender).getUniqueId()))
 		{
-			Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+			dogsSorted.put(dog.getIdentifier(), dog);
+		}
+
+		sender.sendMessage(ChatColor.YELLOW + "------------------ " + this.plugin.getDescription().getFullName() + " ------------------");
+		for (Map.Entry entry : dogsSorted.entrySet())
+		{
+			Wolf wolf = (Wolf) plugin.getServer().getEntity(((Dog) entry.getValue()).getDogId());
 			String healthString = "";
 			if (wolf != null)
 			{
@@ -257,7 +281,7 @@ public class Commands
 				healthString = " " + ChatColor.BLUE + "(HP: " + health + "/" + maxHealth + ")";
 			}
 
-			sender.sendMessage(ChatColor.AQUA + "#" + dog.getIdentifier() + ChatColor.WHITE + " - " + ChatColor.AQUA + dog.getDogName() + healthString);
+			sender.sendMessage(ChatColor.AQUA + "#" + ((Dog) entry.getValue()).getIdentifier() + ChatColor.WHITE + " - " + ChatColor.AQUA + ((Dog) entry.getValue()).getDogName() + healthString);
 		}
 		return true;
 	}
@@ -266,6 +290,12 @@ public class Commands
 	{
 		String dogIdentifier = args[1];
 		String name = args[2];
+
+		for (int i=3; i<args.length; i++)
+		{
+			name += " " + args[i];
+		}
+
 		Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
 		if (dog == null)
 		{
@@ -275,7 +305,7 @@ public class Commands
 
 		if (name.isEmpty() || name.length() > 16)
 		{
-			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please choose a name under 16 characters for your Dog!");
+			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please choose a name between 1 and 16 characters for your Dog!");
 			return false;
 		}
 
@@ -286,6 +316,47 @@ public class Commands
 		}
 
 		sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + "From now on, I will call you " + dog.getDogColor() + dog.getDogName() + ChatColor.RESET + ChatColor.AQUA + "!");
+
+		return true;
+	}
+
+	private boolean commandDogSetId(CommandSender sender, String[] args)
+	{
+		String dogIdentifier = args[1];
+		String new_id = args[2];
+
+		Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
+		if (dog == null)
+		{
+			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
+			return false;
+		}
+
+		if (new_id.isEmpty() || new_id.length() > 10)
+		{
+			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please choose an identifier between 1 and 10 figures for your Dog!");
+			return false;
+		}
+
+		int id;
+		try
+		{
+			id = Integer.parseInt(new_id);
+		}
+		catch (NumberFormatException e)
+		{
+			plugin.logDebug("Error while trying to format ID from string: " + e);
+			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Your Dog's identifier can only consist of numbers!");
+			return false;
+		}
+
+		if (!MyDog.getDogManager().setNewId(dog, id))
+		{
+			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "An error occured! Could not set new Dog ID!");
+			return false;
+		}
+
+		sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + "New Dog ID successfully set!");
 
 		return true;
 	}
@@ -365,7 +436,6 @@ public class Commands
 			// Calculate and make experience string
 			String experienceString = "";
 			double exp = dog.getExperience();
-			//double levelStartExp = 0;
 			double maxExp = 0;
 			
 			Map<Integer, Level> levels = plugin.dogLevels;
@@ -380,13 +450,11 @@ public class Commands
 					// If there is a level under the current one, check if the exp is over or equals to the value of that levelup
 					if (levels.containsKey((levelInt-1)) && exp >= levels.get((levelInt-1)).exp)
 					{
-						//levelStartExp = levels.get((levelInt-1));
 						maxExp = levelExp;
 						break;
 					}
 					// Exp is under needed, and there is no level under. Lowest level found. User is at lowest level then
 
-					//levelStartExp = 0;
 					maxExp = levelExp;
 					break;
 				}
@@ -397,21 +465,9 @@ public class Commands
 						plugin.logDebug("Something went wrong! Last level, there is no level under! Return!");
 						return false;
 					}
-					//levelStartExp = levels.get((levelInt-1));
 					maxExp = levelExp;
 				}
 			}
-
-			/*
-			if (exp < 10) { levelStartExp = 0; maxExp = 10; } // to level 2
-			else if (exp >= 10 && exp < 100) { levelStartExp = 10; maxExp = 100; } // to level 3
-			else if (exp >= 100 && exp < 200) { levelStartExp = 100; maxExp = 200; } // to level 4
-			else if (exp >= 200 && exp < 500) { levelStartExp = 200; maxExp = 500; }
-			else if (exp >= 500 && exp < 1000) { levelStartExp = 500; maxExp = 1000; }
-			else if (exp >= 1000 && exp < 2000) { levelStartExp = 1000; maxExp = 2000; }
-			else if (exp >= 2000 && exp < 3000) { levelStartExp = 2000; maxExp = 3000; }
-			else if (exp >= 3000 && exp < 4000) { levelStartExp = 3000; maxExp = 4000; }
-			else if (exp >= 4000 && exp < 5000) { levelStartExp = 4000; maxExp = 5000; }*/
 
 			plugin.logDebug("Exp: " + exp + " - MaxExp: " + maxExp);
 			if (maxExp != 0)
@@ -626,6 +682,10 @@ public class Commands
 			{
 				arg1.add("rename");
 			}
+			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.setid")))
+			{
+				arg1.add("setid");
+			}
 			Iterable<String> FIRST_ARGUMENTS = arg1;
 			StringUtil.copyPartialMatches(args[0], FIRST_ARGUMENTS, result);
 		}
@@ -633,7 +693,7 @@ public class Commands
 		{
 			List<String> arg2 = new ArrayList<String>();
 
-			if (player != null && (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("comehere") || args[0].equalsIgnoreCase("free") || args[0].equalsIgnoreCase("setfree") || args[0].equalsIgnoreCase("rename") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("stats")))
+			if (player != null && (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("comehere") || args[0].equalsIgnoreCase("free") || args[0].equalsIgnoreCase("setfree") || args[0].equalsIgnoreCase("rename") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("setid")  || args[0].equalsIgnoreCase("stats")))
 			{
 				List<Dog> dogs = MyDog.getDogManager().getDogs(player.getUniqueId());
 				for (Dog dog : dogs)
@@ -652,6 +712,10 @@ public class Commands
 			if (args[0].equalsIgnoreCase("rename"))
 			{
 				arg3.add("<name>");
+			}
+			else if (args[0].equalsIgnoreCase("setid"))
+			{
+				arg3.add("<custom_id>");
 			}
 
 			Iterable<String> SECOND_ARGUMENTS = arg3;
