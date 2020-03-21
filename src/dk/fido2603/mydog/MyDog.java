@@ -241,7 +241,7 @@ public class MyDog extends JavaPlugin
 						for (DogManager.Dog dog : MyDog.getDogManager().getDogs((player.getUniqueId())))
 						{
 							Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
-							if (wolf != null)
+							if (wolf != null && !wolf.isSitting())
 							{
 								double distance = player.getLocation().distance(wolf.getLocation());
 
