@@ -150,7 +150,7 @@ public class Commands
 					return true;
 				}
 			}
-			else if ((args.length == 3) && (player != null))
+			else if ((args.length >= 3) && (player != null))
 			{
 				if ((args[0].equalsIgnoreCase("setid")) || (args[0].equalsIgnoreCase("changeid")))
 				{
@@ -163,10 +163,8 @@ public class Commands
 
 					return true;
 				}
-			}
-			else if ((args.length >= 3) && (player != null))
-			{
-				if (((args[0].equalsIgnoreCase("rename"))) && (player != null))
+
+				if ((args[0].equalsIgnoreCase("rename")))
 				{
 					if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.rename")))
 					{
