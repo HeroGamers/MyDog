@@ -528,7 +528,7 @@ public class WolfMainListener implements Listener
 		for (Entity e : entities)
 		{
 			// All tameables
-			if (e != null && e instanceof Sittable && e instanceof Tameable)
+			if (e != null && e instanceof Sittable && e instanceof Tameable && !((Sittable)e).isSitting())
 			{
 				HashMap<Boolean, Location> teleportResult = teleportTameable(e, safeLocation, null);
 
