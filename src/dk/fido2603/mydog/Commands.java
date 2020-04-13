@@ -620,7 +620,7 @@ public class Commands
 
 		if (useLocation)
 		{
-			dogLocation.getChunk().unload();
+			dogLocation.getChunk().unload(true);
 			plugin.logDebug("Unloaded the chunk sucessfully!");
 		}
 

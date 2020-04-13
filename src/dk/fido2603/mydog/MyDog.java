@@ -7,10 +7,7 @@ import dk.fido2603.mydog.utils.ParticleUtils;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
@@ -19,6 +16,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 import org.bukkit.plugin.PluginManager;
@@ -42,6 +40,7 @@ public class MyDog extends JavaPlugin
 	public boolean								automaticTeleportation					= true;
 	public boolean								teleportOnWorldChange					= true;
 	public boolean								teleportAllTameables					= false;
+	public boolean                              experimentalTeleport                    = false;
 	private boolean								playerDistanceCheck						= true;
 	public boolean								expandedSearch							= false;
 	public boolean								onlyShowNametagOnHover					= false;
@@ -62,6 +61,7 @@ public class MyDog extends JavaPlugin
 	private static FileConfiguration			config									= null;
 	private static PermissionsManager			permissionsManager						= null;
 	private static DogManager					dogManager								= null;
+	private static TeleportationManager         teleportationManager                    = null;
 	private static LevelFactory					levelFactory							= null;
 	private static ParticleUtils				particleUtils							= null;
 
@@ -133,6 +133,10 @@ public class MyDog extends JavaPlugin
 		return dogManager;
 	}
 
+	public static TeleportationManager getTeleportationManager() {
+	    return teleportationManager;
+    }
+
 	public static LevelFactory getLevelFactory()
 	{
 		return levelFactory;
@@ -191,6 +195,7 @@ public class MyDog extends JavaPlugin
 		tameListener = new WolfMainListener(this);
 		damageListener = new DamageListener(this);
 		dogManager = new DogManager(this);
+		teleportationManager = new TeleportationManager(this);
 		levelFactory = new LevelFactory(this);
 
 		PluginManager pm = getServer().getPluginManager();
@@ -236,6 +241,8 @@ public class MyDog extends JavaPlugin
 				public void run()
 				{
 					plugin.logDebug("Running the distance checker!");
+                    List<Entity> entities = new ArrayList<>();
+
 					for (Player player : getServer().getOnlinePlayers())
 					{
 						for (DogManager.Dog dog : MyDog.getDogManager().getDogs((player.getUniqueId())))
@@ -246,15 +253,27 @@ public class MyDog extends JavaPlugin
 								double distance = player.getLocation().distance(wolf.getLocation());
 
 								// A quick dirty check for ground below player
-								if (distance >= 200 && player.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().isSolid())
+								if (distance >= 30 && player.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().isSolid())
 								{
-									wolf.teleport(player);
+								    if (!experimentalTeleport)
+                                    {
+                                        wolf.teleport(player);
+                                    }
+								    else
+                                    {
+                                        entities.add(wolf);
+                                    }
 								}
 							}
 						}
 					}
+
+					if (experimentalTeleport)
+                    {
+                        MyDog.getTeleportationManager().teleportEntities(entities, null, "DistanceChecker");
+                    }
 				}
-			}, 20L*90L, 20L*30L);
+			}, 20L*60L, 20L*10L);
 		}
 	}
 
@@ -287,6 +306,7 @@ public class MyDog extends JavaPlugin
 		this.instantSave = config.getBoolean("Settings.InstantSaveConfig", false);
 		this.automaticTeleportation = config.getBoolean("Settings.AutomaticTeleportation", true);
 		this.teleportAllTameables = config.getBoolean("Settings.TeleportAllTameables", false);
+		this.experimentalTeleport = config.getBoolean("Settings.EnableExperimentalTeleport", false);
 		this.playerDistanceCheck = config.getBoolean("Settings.PlayerDistanceCheck", true);
 		this.expandedSearch = config.getBoolean("Settings.ExpandedSearch", false);
 		this.randomCollarColor = config.getBoolean("DogSettings.RandomCollarColor", true);
@@ -354,6 +374,7 @@ public class MyDog extends JavaPlugin
 		config.set("Settings.InstantSaveConfig", Boolean.valueOf(this.instantSave));
 		config.set("Settings.AutomaticTeleportation", Boolean.valueOf(this.automaticTeleportation));
 		config.set("Settings.ExpandedSearch", Boolean.valueOf(this.expandedSearch));
+		config.set("Settings.EnableExperimentalTeleport", Boolean.valueOf(this.experimentalTeleport));
 		config.set("Settings.PlayerDistanceCheck", Boolean.valueOf(this.playerDistanceCheck));
 		config.set("DogSettings.RandomCollarColor", this.randomCollarColor);
 		config.set("DogSettings.UseLevels", this.useLevels);

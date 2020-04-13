@@ -2,17 +2,16 @@ package dk.fido2603.mydog.listeners;
 
 import dk.fido2603.mydog.DogManager.Dog;
 import dk.fido2603.mydog.LevelFactory.Level;
+import dk.fido2603.mydog.TeleportationManager;
 import net.md_5.bungee.api.ChatColor;
 import dk.fido2603.mydog.MyDog;
 import dk.fido2603.mydog.utils.TimeUtils;
 
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
-import org.bukkit.DyeColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
@@ -474,38 +473,34 @@ public class WolfMainListener implements Listener
 
 		Player player = event.getPlayer();
 
-		// Do the teleport task 3 ticks after the player has teleported
-		new BukkitRunnable()
+		List<Entity> entities = new ArrayList<>();
+
+		// Check whether the player has any dogs
+		for (Dog dog : MyDog.getDogManager().getDogs(player.getUniqueId()))
 		{
-			@Override
-			public void run()
+			Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+			if (wolf != null && !wolf.isSilent())
 			{
-				Location safeLocation = null;
-
-				// Check whether the player has any dogs
-				for (Dog dog : MyDog.getDogManager().getDogs(player.getUniqueId()))
-				{
-					Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
-					if (wolf != null && !wolf.isSilent())
-					{
-						HashMap<Boolean, Location> teleportResult = teleportTameable(wolf, safeLocation, event.getTo());
-
-						// If the first entity didn't find a safe location
-						Boolean triedTeleporting = (Boolean) teleportResult.keySet().toArray()[0];
-						safeLocation = (Location) teleportResult.values().toArray()[0];
-
-						if (triedTeleporting && safeLocation == null)
-						{
-							return;
-						}
-						else if (triedTeleporting && safeLocation != null)
-						{
-							plugin.logDebug("Teleported a dog successfully, playerteleport!");
-						}
-					}
-				}
+				entities.add(wolf);
 			}
-		}.runTaskLater(this.plugin, 3);
+		}
+
+		if (plugin.experimentalTeleport)
+		{
+			MyDog.getTeleportationManager().teleportEntities(entities, event.getTo(), "PlayerTeleport");
+		}
+		else
+		{
+			new BukkitRunnable()
+			{
+				@Override
+				public void run()
+				{
+					MyDog.getTeleportationManager().doTeleportEntities(entities, event.getTo());
+				}
+			}.runTaskLater(this.plugin, 3);
+		}
+
 	}
 
 	// If a chunk is unloading, check if there are any tameables inside it
@@ -517,234 +512,17 @@ public class WolfMainListener implements Listener
 			return;
 		}
 
-		if (event.getChunk().getEntities() == null)
+		List<Entity> entities = Arrays.asList(event.getChunk().getEntities());
+
+		if (plugin.experimentalTeleport)
 		{
-			return;
-		}
-
-		Location safeLocation = null;
-
-		Entity[] entities = event.getChunk().getEntities();
-		for (Entity e : entities)
-		{
-			// All tameables
-			if (e != null && e instanceof Sittable && e instanceof Tameable)
-			{
-				HashMap<Boolean, Location> teleportResult = teleportTameable(e, safeLocation, null);
-
-				// If the first entity didn't find a safe location
-				Boolean triedTeleporting = (Boolean) teleportResult.keySet().toArray()[0];
-				safeLocation = (Location) teleportResult.values().toArray()[0];
-
-				if (triedTeleporting && safeLocation == null)
-				{
-					return;
-				}
-				else if (triedTeleporting && safeLocation != null)
-				{
-					plugin.logDebug("Teleported a dog successfully, chunkunload!");
-				}
-			}
-		}
-	}
-
-	public HashMap<Boolean, Location> teleportTameable(Entity e, Location safeLocation, Location searchLocation)
-	{
-		// We use this map to store whether it even tried searching for a location, and then to return with a safe location, so we don't have to search again
-		HashMap<Boolean, Location> teleportResult = new HashMap<>();
-
-		Tameable tameableEntity = (Tameable) e;
-
-		if (tameableEntity.getOwner() instanceof Player)
-		{
-			Sittable sittingEntity = (Sittable) e;
-			Player player = (Player) tameableEntity.getOwner();
-
-			if (player != null && player.isOnline() && MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport"))
-			{
-				// If it's a dog, or if the config allows all tameables to teleport
-				Boolean isDog = (e.getType().equals(EntityType.WOLF) && MyDog.getDogManager().isDog(tameableEntity.getUniqueId()));
-				if (isDog || plugin.teleportAllTameables)
-				{
-					// If the tameable is sitting, or is in another world
-					if (!sittingEntity.isSitting() || (!tameableEntity.getWorld().equals(player.getWorld()) && plugin.teleportOnWorldChange))
-					{
-						// If dog, save location of the dog
-						if (isDog)
-						{
-							MyDog.getDogManager().getDog(tameableEntity.getUniqueId()).saveDogLocation();
-						}
-
-						// Begin teleport procedure!!
-						if (safeLocation == null) {
-							// If a search location is provided, like a player that is starting to teleport
-							if (searchLocation == null)
-							{
-								searchLocation = player.getLocation();
-							}
-							if (!isSafeLocation(searchLocation))
-							{
-								plugin.logDebug("Whoops, seems like our player isn't at a safe location, let's find a good spot for the tameable...");
-								searchLocation = searchSafeLocation(searchLocation);
-								if (searchLocation == null)
-								{
-									plugin.logDebug("Did not find a safe place to teleport the tameable! Keeping tameable at unloaded chunks!");
-									player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.cannotTeleportTameableString.replace("{chatPrefix}", plugin.getChatPrefix())));
-									teleportResult.put(true, null);
-									return teleportResult;
-								}
-							}
-							safeLocation = searchLocation;
-						}
-
-						plugin.logDebug("It's a safe location, teleporting!");
-						tameableEntity.teleport(safeLocation);
-						if (sittingEntity.isSitting())
-						{
-							sittingEntity.setSitting(false);
-						}
-
-						// Return the found location
-						teleportResult.put(true, safeLocation);
-						return teleportResult;
-					}
-				}
-			}
-		}
-		teleportResult.put(false, safeLocation);
-		return teleportResult;
-	}
-
-	public Location searchSafeLocation(Location loc)
-	{
-		if (plugin.expandedSearch)
-		{
-			double y;
-			double x;
-			double z;
-			plugin.logDebug("Starting safe location search!");
-			for (z = 0; z <= 2; z++)
-			{
-				loc.setZ(loc.getZ()+z);
-				//plugin.logDebug("Setting 1 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
-				for (x = 0; x <= 2; x++)
-				{
-					loc.setX(loc.getX()+x);
-					//plugin.logDebug("Setting 2 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
-					for (y = 255; y > 1; y--)
-					{
-						loc.setY(y);
-						//plugin.logDebug("Setting 3 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
-						if (isSafeLocation(loc))
-						{
-							//plugin.logDebug("is safe");
-							return loc;
-						}
-						//plugin.logDebug("not safe");
-					}
-				}
-			}
+			MyDog.getTeleportationManager().teleportEntities(entities, null, "ChunkUnload");
 		}
 		else
 		{
-			double y;
-			for (y = 255; y > 1; y--)
-			{
-				loc.setY(y);
-				//plugin.logDebug("Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
-				if (isSafeLocation(loc))
-				{
-					//plugin.logDebug("is safe");
-					return loc;
-				}
-				//plugin.logDebug("not safe");
-			}
-		}
-
-		return null;
-	}
-
-	public boolean isSafeLocation(Location location) {
-		Block feet = location.getBlock();
-		Block ground = feet.getRelative(BlockFace.DOWN);
-		//plugin.logDebug("Feet: " + feet.getType().toString());
-		//plugin.logDebug("Ground: " + ground.getType().toString());
-
-		return (isTransparent(feet.getType()) && (ground.getType().isSolid() || ground.getType() == Material.WATER));
-    }
-
-	public boolean isTransparent(Material materialType)
-	{
-		switch (materialType)
-		{
-		case AIR:
-		case GRASS:
-		case OAK_SAPLING:
-		case SPRUCE_SAPLING:
-		case JUNGLE_SAPLING:
-		case BIRCH_SAPLING:
-		case ACACIA_SAPLING:
-		case DARK_OAK_SAPLING:
-		case DEAD_BUSH:
-		case VINE:
-		case LILY_PAD:
-		case LILAC:
-		case ROSE_BUSH:
-		case TALL_GRASS:
-		case PEONY:
-		case OAK_SIGN:
-		case SPRUCE_SIGN:
-		case BIRCH_SIGN:
-		case JUNGLE_SIGN:
-		case ACACIA_SIGN:
-		case DARK_OAK_SIGN:
-		case SUNFLOWER:
-		case WHITE_CARPET:
-		case ORANGE_CARPET:
-		case MAGENTA_CARPET:
-		case LIGHT_BLUE_CARPET:
-		case YELLOW_CARPET:
-		case LIME_CARPET:
-		case PINK_CARPET:
-		case GRAY_CARPET:
-		case LIGHT_GRAY_CARPET:
-		case CYAN_CARPET:
-		case PURPLE_CARPET:
-		case BLUE_CARPET:
-		case BROWN_CARPET:
-		case GREEN_CARPET:
-		case RED_CARPET:
-		case BLACK_CARPET:
-		case DANDELION:
-		case POPPY:
-		case BLUE_ORCHID:
-		case ALLIUM:
-		case AZURE_BLUET:
-		case RED_TULIP:
-		case ORANGE_TULIP:
-		case WHITE_TULIP:
-		case PINK_TULIP:
-		case OXEYE_DAISY:
-		case CORNFLOWER:
-		case LILY_OF_THE_VALLEY:
-		case BROWN_MUSHROOM:
-		case RED_MUSHROOM:
-		case TORCH:
-		case REDSTONE_TORCH:
-		case SNOW:
-		case LARGE_FERN:
-		case FERN:
-		case BAMBOO:
-		case SUGAR_CANE:
-		case WHEAT:
-		case TRIPWIRE:
-		case PUMPKIN_STEM:
-		case MELON_STEM:
-		case NETHER_WART:
-		case BEETROOTS:
-			return true;
-		default:
-			return false;
+			MyDog.getTeleportationManager().doTeleportEntities(entities, null);
 		}
 	}
+
+
 }

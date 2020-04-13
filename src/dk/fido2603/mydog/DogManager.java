@@ -551,6 +551,46 @@ public class DogManager
 			return true;
 		}
 
+//		public boolean setSpeed()
+//		{
+//			Wolf wolf = (Wolf) plugin.getServer().getEntity(dogId);
+//
+//			if (wolf == null)
+//			{
+//				plugin.logDebug("Failed to set Dog speed, Wolf entity is null!");
+//				return false;
+//			}
+//
+//			Integer dogsLevel = getLevel();
+//			if (dogsLevel == null || dogsLevel < 1)
+//			{
+//				plugin.logDebug("Level was under 1 or null, setting level to 1");
+//				dogsLevel = 1;
+//			}
+//
+//			Level level = plugin.dogLevels.get(dogsLevel);
+//			if (level == null)
+//			{
+//				plugin.logDebug("Level object is null, returning!");
+//				return false;
+//			}
+//
+//			double speed = level.speed;
+//			if (speed < 1.0)
+//			{
+//				speed = 1.0;
+//			}
+//
+//			AttributeInstance wolfSpeed = wolf.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
+//			plugin.logDebug("Dog Maxhealth Before: " + wolfSpeed.getValue());
+//			// wolfMaxHealth.setBaseValue((wolfMaxHealth.getValue()/(0.5*(getLevel()-1)))*(0.5*getLevel()));
+//			wolfSpeed.setBaseValue(speed);
+//			wolf.setSpeed(wolfSpeed.getValue()); // Needs working on
+//			plugin.logDebug("Dog Maxhealth After: " + wolfSpeed.getValue());
+//
+//			return true;
+//		}
+
 		public boolean setDamage()
 		{
 			Wolf wolf = (Wolf) plugin.getServer().getEntity(dogId);

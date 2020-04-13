@@ -45,10 +45,10 @@ public class PermissionsManager
 
 	public boolean hasPermission(Player player, String node)
 	{
-		this.plugin.logDebug("Checking for perm.. Player: " + player.getName() + " - Node: " + node);
+		//this.plugin.logDebug("Checking for perm.. Player: " + player.getName() + " - Node: " + node);
 		if (this.plugin.vaultEnabled)
 		{
-			this.plugin.logDebug("Vault is enabled, checking there...");
+			//this.plugin.logDebug("Vault is enabled, checking there...");
 			return vaultPermission.has(player, node);
 		}
 		else
