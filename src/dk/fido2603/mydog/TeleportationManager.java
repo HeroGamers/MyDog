@@ -100,7 +100,7 @@ public class TeleportationManager
         for (Entity e : entities)
         {
             // All tameables
-            if (e instanceof Sittable && e instanceof Tameable && !teleportingEntities.contains(e.getUniqueId()))
+            if (e instanceof Sittable && e instanceof Tameable && !teleportingEntities.contains(e.getUniqueId()) && !((Sittable)e).isSitting())
             {
                 teleportingEntities.add(e.getUniqueId());
                 HashMap<Boolean, Location> teleportResult = teleportTameable(e, safeLocation, location, executor);
@@ -261,7 +261,7 @@ public class TeleportationManager
         for (Entity e : entities)
         {
             // All tameables
-            if (e instanceof Sittable && e instanceof Tameable)
+            if (e instanceof Sittable && e instanceof Tameable && !((Sittable)e).isSitting())
             {
                 HashMap<Boolean, Location> teleportResult = teleportTameable(e, safeLocation, location);
 
