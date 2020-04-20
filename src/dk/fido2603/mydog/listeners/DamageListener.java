@@ -128,6 +128,10 @@ public class DamageListener implements Listener
 							gainedExp = 70;
 							break;
 						}
+						else {
+							gainedExp = 0;
+							break;
+						}
 					case ELDER_GUARDIAN:
 					case GIANT:
 						gainedExp = 90;

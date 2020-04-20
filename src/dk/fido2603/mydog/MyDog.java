@@ -44,6 +44,7 @@ public class MyDog extends JavaPlugin
 	private boolean								playerDistanceCheck						= true;
 	public boolean								expandedSearch							= false;
 	public boolean								onlyShowNametagOnHover					= false;
+	public boolean								showLevelsInNametag						= true;
 
 	public boolean								allowPlayerKillExp						= true;
 	public boolean								allowNametagRename						= true;
@@ -313,6 +314,7 @@ public class MyDog extends JavaPlugin
 		this.useLevels = config.getBoolean("DogSettings.UseLevels", true);
 		this.teleportOnWorldChange = config.getBoolean("DogSettings.TeleportOnWorldChange", true);
 		this.onlyShowNametagOnHover = config.getBoolean("DogSettings.OnlyShowNametagOnHover", false);
+		this.showLevelsInNametag = config.getBoolean("DogSettings.ShowLevelsInNametag", true);
 		this.allowPlayerKillExp = config.getBoolean("DogSettings.AllowPlayerKillExp", true);
 		this.allowNametagRename = config.getBoolean("DogSettings.AllowNametagRename", true);
 		if (config.contains("DogSettings.DogNames") && !config.getStringList("DogSettings.DogNames").isEmpty())
@@ -381,6 +383,7 @@ public class MyDog extends JavaPlugin
 		config.set("DogSettings.TeleportOnWorldChange", this.teleportOnWorldChange);
 		config.set("Settings.TeleportAllTameables", this.teleportAllTameables);
 		config.set("DogSettings.OnlyShowNametagOnHover", this.onlyShowNametagOnHover);
+		config.set("DogSettings.ShowLevelsInNametag", this.showLevelsInNametag);
 		config.set("DogSettings.AllowPlayerKillExp", this.allowPlayerKillExp);
 		config.set("DogSettings.AllowNametagRename", this.allowNametagRename);
 		config.set("DogSettings.DogNames", this.dogNames);

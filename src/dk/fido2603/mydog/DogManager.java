@@ -275,8 +275,16 @@ public class DogManager
 					this.dogName = getDogName();
 				}
 
-				plugin.logDebug("Setting customName to: " + nameColor + dogName);
-				dog.setCustomName(nameColor + dogName);
+
+				if (plugin.useLevels && plugin.showLevelsInNametag) {
+					plugin.logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
+					dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
+				}
+				else {
+					plugin.logDebug("Setting customName to: " + nameColor + dogName);
+					dog.setCustomName(nameColor + dogName);
+				}
+
 				if (plugin.onlyShowNametagOnHover)
 				{
 					dog.setCustomNameVisible(false);
@@ -314,8 +322,14 @@ public class DogManager
 					this.dogName = getDogName();
 				}
 
-				plugin.logDebug("Setting customName to: " + nameColor + dogName);
-				dog.setCustomName(nameColor + dogName);
+				if (plugin.useLevels && plugin.showLevelsInNametag) {
+					plugin.logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
+					dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
+				}
+				else {
+					plugin.logDebug("Setting customName to: " + nameColor + dogName);
+					dog.setCustomName(nameColor + dogName);
+				}
 				if (plugin.onlyShowNametagOnHover)
 				{
 					dog.setCustomNameVisible(false);
@@ -468,8 +482,14 @@ public class DogManager
 
 			if (dogsConfig.contains(dogId.toString()))
 			{
-				plugin.logDebug("Setting customName to: " + nameColor + dogName);
-				dog.setCustomName(nameColor + dogName);
+				if (plugin.useLevels && plugin.showLevelsInNametag) {
+					plugin.logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
+					dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
+				}
+				else {
+					plugin.logDebug("Setting customName to: " + nameColor + dogName);
+					dog.setCustomName(nameColor + dogName);
+				}
 				if (plugin.onlyShowNametagOnHover)
 				{
 					dog.setCustomNameVisible(false);
@@ -871,6 +891,9 @@ public class DogManager
 			{
 				sound = Sound.valueOf(plugin.levelUpSound);
 			}
+
+			dog.setDogName(dog.dogName);
+
 			owner.playSound(owner.getLocation(), sound, 3.0F, 1.0F);
 		}
 
