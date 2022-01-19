@@ -430,7 +430,8 @@ public class WolfMainListener implements Listener
 		newDogBreed.runTaskLater(plugin, 2);
 	}
 
-	private void checkForDogs(Entity[] entities) {
+	// package-private
+	static void checkForDogs(Entity[] entities) {
 		for (Entity e : entities)
 		{
 			if (e != null && e.getType().equals(EntityType.WOLF))
@@ -440,12 +441,12 @@ public class WolfMainListener implements Listener
 				{
 					customName = e.getCustomName();
 				}
-				plugin.logDebug("There is a wolf in the loaded chunk! Name: " + customName);
+				MyDog.instance().logDebug("There is a wolf in the loaded chunk! Name: " + customName);
 
 				Wolf dog = (Wolf) e;
 				if (MyDog.getDogManager().isDog(dog.getUniqueId()))
 				{
-					plugin.logDebug("Updated loaded wolf with health and damage!");
+					MyDog.instance().logDebug("Updated loaded wolf with health and damage!");
 					MyDog.getDogManager().getDog(dog.getUniqueId()).updateWolf();
 				}
 			}
@@ -467,11 +468,6 @@ public class WolfMainListener implements Listener
 		if (entities.length != 0) {
 			checkForDogs(entities);
 		}
-	}
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onEntityLoad(EntitiesLoadEvent event)
-	{
-		checkForDogs(event.getEntities().toArray(new Entity[0]));
 	}
 
 	// If the player is teleporting, this would be used in regions that might be loaded already by other players, or spawn regions
@@ -529,26 +525,6 @@ public class WolfMainListener implements Listener
 		if (plugin.experimentalTeleport)
 		{
 			MyDog.getTeleportationManager().teleportEntities(entities, null, "ChunkUnload");
-		}
-		else
-		{
-			MyDog.getTeleportationManager().doTeleportEntities(entities, null);
-		}
-	}
-	// If entities are unloaded, check if any of them are tameables
-	@EventHandler(priority = EventPriority.LOWEST)
-	public void oneEntityUnload(EntitiesUnloadEvent event)
-	{
-		if (!plugin.automaticTeleportation)
-		{
-			return;
-		}
-
-		List<Entity> entities = event.getEntities();
-
-		if (plugin.experimentalTeleport)
-		{
-			MyDog.getTeleportationManager().teleportEntities(entities, null, "EntityUnload");
 		}
 		else
 		{

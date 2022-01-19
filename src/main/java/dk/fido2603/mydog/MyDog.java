@@ -1,5 +1,6 @@
 package dk.fido2603.mydog;
 
+import dk.fido2603.mydog.listeners.WolfMainListener_1_18;
 import dk.fido2603.mydog.objects.Dog;
 import dk.fido2603.mydog.objects.LevelFactory;
 import dk.fido2603.mydog.objects.LevelFactory.Level;
@@ -10,6 +11,8 @@ import dk.fido2603.mydog.managers.DogManager;
 import dk.fido2603.mydog.managers.PermissionsManager;
 import dk.fido2603.mydog.managers.TeleportationManager;
 import dk.fido2603.mydog.utils.ParticleUtils;
+import dk.fido2603.mydog.utils.versioning.Version;
+import dk.fido2603.mydog.utils.versioning.VersionFactory;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 
@@ -188,6 +191,7 @@ public class MyDog extends JavaPlugin
 	public void onEnable()
 	{
 		WolfMainListener tameListener = null;
+		WolfMainListener_1_18 tameListener_1_18 = null;
 		DamageListener damageListener = null;
 		
 		plugin = this;
@@ -200,6 +204,7 @@ public class MyDog extends JavaPlugin
 		pluginEnabled = true;
 
 		tameListener = new WolfMainListener(this);
+		tameListener_1_18 = new WolfMainListener_1_18(this);
 		damageListener = new DamageListener(this);
 		dogManager = new DogManager(this);
 		teleportationManager = new TeleportationManager(this);
@@ -235,8 +240,12 @@ public class MyDog extends JavaPlugin
 		saveSettings();
 
 		permissionsManager.load();
+		Version version = VersionFactory.getServerVersion();
 
 		getServer().getPluginManager().registerEvents(tameListener, this);
+		if (version.isCompatible("1.18")) {
+			getServer().getPluginManager().registerEvents(tameListener_1_18, this);
+		}
 		getServer().getPluginManager().registerEvents(damageListener, this);
 
 		// The dog distance checker, might take some extra powerrr. Checks every ~30 seconds. Starts after 1,5 minutes.

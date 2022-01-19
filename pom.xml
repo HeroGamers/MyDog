@@ -17,7 +17,7 @@
     <properties>
         <github.repo>DoggyCraft/MyDog</github.repo>
         <bukkitAPIVersion>1.18.1-R0.1-SNAPSHOT</bukkitAPIVersion>
-        <jdk.version>17</jdk.version>
+        <jdk.version>8</jdk.version>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
         <maven.compiler.release>${jdk.version}</maven.compiler.release>
         <maven.compiler.target>${jdk.version}</maven.compiler.target>
