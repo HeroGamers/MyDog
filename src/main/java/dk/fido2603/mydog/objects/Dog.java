@@ -37,7 +37,6 @@ public class Dog
     // For new dogs
     public Dog(Wolf dog, Player dogOwner, int dogUID)
     {
-        
         // The UUID of the Dog
         this.dogId = dog.getUniqueId();
 

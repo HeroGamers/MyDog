@@ -20,8 +20,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.event.world.*;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -431,11 +430,7 @@ public class WolfMainListener implements Listener
 		newDogBreed.runTaskLater(plugin, 2);
 	}
 
-	// Load dogs
-	@EventHandler(priority = EventPriority.HIGHEST)
-	public void onChunkLoad(ChunkLoadEvent event)
-	{
-		Entity[] entities = event.getChunk().getEntities();
+	private void checkForDogs(Entity[] entities) {
 		for (Entity e : entities)
 		{
 			if (e != null && e.getType().equals(EntityType.WOLF))
@@ -455,6 +450,28 @@ public class WolfMainListener implements Listener
 				}
 			}
 		}
+	}
+
+
+//	@EventHandler(priority = EventPriority.HIGHEST)
+//	public void onChunkPopulate(ChunkPopulateEvent event)
+//	{
+//		checkChunkDogs(event.getChunk());
+//	}
+
+	// Load dogs
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onChunkLoad(ChunkLoadEvent event)
+	{
+		Entity[] entities = event.getChunk().getEntities();
+		if (entities.length != 0) {
+			checkForDogs(entities);
+		}
+	}
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onEntityLoad(EntitiesLoadEvent event)
+	{
+		checkForDogs(event.getEntities().toArray(new Entity[0]));
 	}
 
 	// If the player is teleporting, this would be used in regions that might be loaded already by other players, or spawn regions
@@ -512,6 +529,26 @@ public class WolfMainListener implements Listener
 		if (plugin.experimentalTeleport)
 		{
 			MyDog.getTeleportationManager().teleportEntities(entities, null, "ChunkUnload");
+		}
+		else
+		{
+			MyDog.getTeleportationManager().doTeleportEntities(entities, null);
+		}
+	}
+	// If entities are unloaded, check if any of them are tameables
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void oneEntityUnload(EntitiesUnloadEvent event)
+	{
+		if (!plugin.automaticTeleportation)
+		{
+			return;
+		}
+
+		List<Entity> entities = event.getEntities();
+
+		if (plugin.experimentalTeleport)
+		{
+			MyDog.getTeleportationManager().teleportEntities(entities, null, "EntityUnload");
 		}
 		else
 		{
