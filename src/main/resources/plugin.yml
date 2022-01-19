@@ -3,7 +3,7 @@ main: dk.fido2603.mydog.MyDog
 author: Fido2603
 version: ${project.version}
 api-version: 1.13
-load: POSTWORLD
+load: STARTUP
 description: Tamed wolves but at least 10x better!
 depend: []
 softdepend: [Vault]
