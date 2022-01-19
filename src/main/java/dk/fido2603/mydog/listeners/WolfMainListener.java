@@ -1,21 +1,16 @@
 package dk.fido2603.mydog.listeners;
 
-import dk.fido2603.mydog.DogManager.Dog;
-import dk.fido2603.mydog.LevelFactory.Level;
-import dk.fido2603.mydog.TeleportationManager;
+import dk.fido2603.mydog.objects.Dog;
+import dk.fido2603.mydog.objects.LevelFactory.Level;
 import net.md_5.bungee.api.ChatColor;
 import dk.fido2603.mydog.MyDog;
 import dk.fido2603.mydog.utils.TimeUtils;
 
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -90,7 +85,7 @@ public class WolfMainListener implements Listener
 			if (plugin.useLevels)
 			{
 				//levelText = ", and got to " + ChatColor.DARK_RED + "Level " + dog.getLevel() + ChatColor.RED + ".";
-				levelText = plugin.deadDogLevelString.replace("{level}", dog.getLevel().toString());
+				levelText = plugin.deadDogLevelString.replace("{level}", Integer.toString(dog.getLevel()));
 			}
 
 			/*owner.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Your dog, " + dog.getDogColor() + dog.getDogName() + ChatColor.RED + 
@@ -314,10 +309,10 @@ public class WolfMainListener implements Listener
 			if (healthPoints != 0.0)
 			{
 				plugin.logDebug("Item is food!");
-				Integer dogsLevel = dog.getLevel();
-				if (dogsLevel == null || dogsLevel < 1)
+				int dogsLevel = dog.getLevel();
+				if (dogsLevel < 1)
 				{
-					plugin.logDebug("Level was under 1 or null, setting level to 1");
+					plugin.logDebug("Level was under 1, setting level to 1");
 					dogsLevel = 1;
 				}
 

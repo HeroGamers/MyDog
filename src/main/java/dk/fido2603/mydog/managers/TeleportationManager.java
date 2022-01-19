@@ -1,5 +1,6 @@
-package dk.fido2603.mydog;
+package dk.fido2603.mydog.managers;
 
+import dk.fido2603.mydog.MyDog;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;

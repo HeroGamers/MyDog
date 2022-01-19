@@ -1,22 +1,24 @@
-package dk.fido2603.mydog;
+package dk.fido2603.mydog.objects;
+
+import dk.fido2603.mydog.MyDog;
 
 public class LevelFactory
 {
-	private MyDog				plugin				= null;
+	private MyDog plugin				= null;
 
-	LevelFactory(MyDog plugin)
+	public LevelFactory(MyDog plugin)
 	{
 		this.plugin = plugin;
 	}
 
 	public class Level
 	{
-		public Integer level;
-		public Integer exp;
+		public int level;
+		public int exp;
 		public double health;
 		public double damage;
 
-		public Level(Integer levelInt, Integer expNeeded, double healthStat, double damageStat)
+		public Level(int levelInt, int expNeeded, double healthStat, double damageStat)
 		{
 			this.level = levelInt;
 			this.exp = expNeeded;
@@ -26,7 +28,7 @@ public class LevelFactory
 		}
 	}
 
-	public Level newLevel(Integer level, Integer exp, double health, double damage) {
+	public Level newLevel(int level, int exp, double health, double damage) {
 		return new Level(level, exp, health, damage);
 	}
 }

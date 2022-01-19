@@ -1,8 +1,9 @@
-package dk.fido2603.mydog;
+package dk.fido2603.mydog.managers;
 
 import java.text.DecimalFormat;
 import java.util.*;
 
+import dk.fido2603.mydog.MyDog;
 import org.apache.commons.lang.Validate;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -13,14 +14,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 import org.bukkit.util.StringUtil;
 
-import dk.fido2603.mydog.DogManager.Dog;
-import dk.fido2603.mydog.LevelFactory.Level;
+import dk.fido2603.mydog.objects.Dog;
+import dk.fido2603.mydog.objects.LevelFactory.Level;
 
-public class Commands
+public class CommandManager
 {
-	private MyDog	plugin = null;
+	private MyDog plugin = null;
 
-	Commands(MyDog p)
+	public CommandManager(MyDog p)
 	{
 		this.plugin = p;
 	}
@@ -111,8 +112,16 @@ public class Commands
 					{
 						return false;
 					}
+					int dogIdentifier;
+					try {
+						dogIdentifier = Integer.parseInt(args[1]);
+					}
+					catch (NumberFormatException e) {
+						sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+						return true;
+					}
 
-					commandDogPutdown(sender, args[1]);
+					commandDogPutdown(sender, dogIdentifier);
 
 					return true;
 				}
@@ -122,8 +131,16 @@ public class Commands
 					{
 						return false;
 					}
+					int dogIdentifier;
+					try {
+						dogIdentifier = Integer.parseInt(args[1]);
+					}
+					catch (NumberFormatException e) {
+						sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+						return true;
+					}
 
-					commandDogFree(sender, args[1]);
+					commandDogFree(sender, dogIdentifier);
 
 					return true;
 				}
@@ -133,8 +150,16 @@ public class Commands
 					{
 						return false;
 					}
+					int dogIdentifier;
+					try {
+						dogIdentifier = Integer.parseInt(args[1]);
+					}
+					catch (NumberFormatException e) {
+						sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+						return true;
+					}
 
-					commandDogStats(sender, args[1]);
+					commandDogStats(sender, dogIdentifier);
 
 					return true;
 				}
@@ -144,8 +169,16 @@ public class Commands
 					{
 						return false;
 					}
+					int dogIdentifier;
+					try {
+						dogIdentifier = Integer.parseInt(args[1]);
+					}
+					catch (NumberFormatException e) {
+						sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+						return true;
+					}
 
-					commandDogComehere(sender, args[1]);
+					commandDogComehere(sender, dogIdentifier);
 
 					return true;
 				}
@@ -189,10 +222,10 @@ public class Commands
 	
 	private boolean commandHelp(CommandSender sender)
 	{
-		sender.sendMessage(ChatColor.YELLOW + "------------------ " + plugin.getDescription().getFullName() + " ------------------");
+		sender.sendMessage(ChatColor.YELLOW + "---------------- " + plugin.getDescription().getFullName() + " ----------------");
 		sender.sendMessage(ChatColor.AQUA + "By Fido2603");
 		sender.sendMessage(ChatColor.AQUA + "");
-		Integer dogsOwned = MyDog.getDogManager().dogsOwned((Player) sender);
+		int dogsOwned = MyDog.getDogManager().dogsOwned((Player) sender);
 		String dogs = " dogs!";
 		if (dogsOwned == 1)
 		{
@@ -207,7 +240,7 @@ public class Commands
 
 	private boolean commandList(CommandSender sender)
 	{
-		sender.sendMessage(ChatColor.YELLOW + "------------------ " + this.plugin.getDescription().getFullName() + " ------------------");
+		sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
 		sender.sendMessage(ChatColor.AQUA + "/mydog" + ChatColor.WHITE + " - Basic info");
 		if (sender instanceof Player)
 		{
@@ -267,7 +300,7 @@ public class Commands
 			dogsSorted.put(dog.getIdentifier(), dog);
 		}
 
-		sender.sendMessage(ChatColor.YELLOW + "------------------ " + this.plugin.getDescription().getFullName() + " ------------------");
+		sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
 		for (Map.Entry entry : dogsSorted.entrySet())
 		{
 			Wolf wolf = (Wolf) plugin.getServer().getEntity(((Dog) entry.getValue()).getDogId());
@@ -286,10 +319,18 @@ public class Commands
 
 	private boolean commandDogRename(CommandSender sender, String[] args)
 	{
-		String dogIdentifier = args[1];
+		int dogIdentifier;
+		try {
+			dogIdentifier = Integer.parseInt(args[1]);
+		}
+		catch (NumberFormatException e) {
+			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+			return false;
+		}
+
 		String name = args[2];
 
-		for (int i=3; i<args.length; i++)
+		for (int i=3; i < args.length; i++)
 		{
 			name += " " + args[i];
 		}
@@ -320,7 +361,15 @@ public class Commands
 
 	private boolean commandDogSetId(CommandSender sender, String[] args)
 	{
-		String dogIdentifier = args[1];
+		int dogIdentifier;
+		try {
+			dogIdentifier = Integer.parseInt(args[1]);
+		}
+
+		catch (NumberFormatException e) {
+			sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+			return false;
+		}
 		String new_id = args[2];
 
 		Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
@@ -359,7 +408,7 @@ public class Commands
 		return true;
 	}
 
-	private boolean commandDogPutdown(CommandSender sender, String dogIdentifier)
+	private boolean commandDogPutdown(CommandSender sender, int dogIdentifier)
 	{
 		Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
 		if (dog == null)
@@ -382,7 +431,7 @@ public class Commands
 		return true;
 	}
 
-	private boolean commandDogFree(CommandSender sender, String dogIdentifier)
+	private boolean commandDogFree(CommandSender sender, int dogIdentifier)
 	{
 		Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
 		if (dog == null)
@@ -411,7 +460,7 @@ public class Commands
 		return true;
 	}
 
-	private boolean commandDogStats(CommandSender sender, String dogIdentifier)
+	private boolean commandDogStats(CommandSender sender, int dogIdentifier)
 	{
 		Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
 		if (dog == null)
@@ -423,7 +472,7 @@ public class Commands
 		Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
 		DecimalFormat df = new DecimalFormat("#.#");
 
-		sender.sendMessage(ChatColor.YELLOW + "------------------ " + this.plugin.getDescription().getFullName() + " ------------------");
+		sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
 		
 		sender.sendMessage(ChatColor.AQUA + "Name: " + dog.getDogColor() + dog.getDogName());
 
@@ -440,7 +489,7 @@ public class Commands
 
 			for (Integer levelInt : levels.keySet())
 			{
-				Integer levelExp = levels.get(levelInt).exp;
+				int levelExp = levels.get(levelInt).exp;
 
 				// If experience is under the experience needed to level up
 				if (exp < levelExp)
@@ -554,7 +603,7 @@ public class Commands
 		return ChatColor.AQUA + "" + ChatColor.BOLD + "[" + percentString + ChatColor.AQUA + "" + ChatColor.BOLD + "]";
 	}
 
-	private boolean commandDogComehere(CommandSender sender, String dogIdentifier)
+	private boolean commandDogComehere(CommandSender sender, int dogIdentifier)
 	{
 		Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
 		if (dog == null)
@@ -696,7 +745,7 @@ public class Commands
 				List<Dog> dogs = MyDog.getDogManager().getDogs(player.getUniqueId());
 				for (Dog dog : dogs)
 				{
-					arg2.add(dog.getIdentifier().toString());
+					arg2.add(Integer.toString(dog.getIdentifier()));
 				}
 			}
 
