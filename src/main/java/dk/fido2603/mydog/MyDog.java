@@ -257,10 +257,17 @@ public class MyDog extends JavaPlugin
 							Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
 							if (wolf != null && !wolf.isSitting())
 							{
-								double distance = player.getLocation().distance(wolf.getLocation());
+								double distance = 0.0;
+								// if they are in two seperate worlds, it's safe to say that the distance is above 30 lol
+								if (!player.getWorld().getUID().equals(wolf.getWorld().getUID())) {
+									distance = 1000;
+								}
+								else {
+									distance = player.getLocation().distance(wolf.getLocation());
+								}
 
 								// A quick dirty check for ground below player
-								if (distance >= 30 && player.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().isSolid())
+								if (distance >= 30.0 && player.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().isSolid())
 								{
 								    if (!experimentalTeleport)
                                     {
