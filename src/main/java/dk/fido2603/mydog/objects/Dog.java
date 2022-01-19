@@ -31,105 +31,89 @@ public class Dog
     private DyeColor collarColor;
     private ChatColor nameColor;
 
-    private static DogManager dogManager;
-    private static MyDog plugin;
-
     private String pattern = "dd-MM-yyyy HH:mm";
     private DateFormat formatter = new SimpleDateFormat(pattern);
 
     // For new dogs
     public Dog(Wolf dog, Player dogOwner, int dogUID)
     {
-        if (dogManager == null) {
-            dogManager = MyDog.getDogManager();
-        }
-        if (plugin == null) {
-            plugin = MyDog.instance();
-        }
         
         // The UUID of the Dog
         this.dogId = dog.getUniqueId();
 
         // The UUID of the Dog's owner (Player)
         this.dogOwnerId = dogOwner.getUniqueId();
-        dogManager.getDogsConfig().set(dogId.toString() + ".Owner", dogOwnerId.toString());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Owner", dogOwnerId.toString());
 
         // Generate an ID for the Dog
         this.dogIdentifier = dogUID;
-        dogManager.getDogsConfig().set(dogId.toString() + ".ID", dogIdentifier);
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".ID", dogIdentifier);
 
         // Generate a new name for the Dog
-        this.dogName = dogManager.newDogName();
-        dogManager.getDogsConfig().set(dogId.toString() + ".Name", dogName);
+        this.dogName = MyDog.getDogManager().newDogName();
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Name", dogName);
 
         // Generate a random Collar Color and set the Dog's Color
-        if (plugin.randomCollarColor)
+        if (MyDog.instance().randomCollarColor)
         {
             dog.setCollarColor(ColorUtils.randomDyeColor());
         }
         this.collarColor = dog.getCollarColor();
         this.nameColor = ColorUtils.getChatColorFromDyeColor(collarColor);
-        dogManager.getDogsConfig().set(dogId.toString() + ".NameChatColor", nameColor.name());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".NameChatColor", nameColor.name());
 
         // Save the Dog's last seen location
         this.location = dog.getLocation();
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
 
         // Give the Dog a level
-        if (plugin.useLevels)
+        if (MyDog.instance().useLevels)
         {
             this.level = 1;
-            dogManager.getDogsConfig().set(dogId.toString() + ".Level.Level", level);
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Level.Level", level);
             this.experience = 0;
-            dogManager.getDogsConfig().set(dogId.toString() + ".Level.Experience", experience);
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Level.Experience", experience);
         }
 
         // Set the current time as the Dog's birthday
         this.birthday = new Date();
-        dogManager.getDogsConfig().set(dogId.toString() + ".Birthday", formatter.format(birthday));
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Birthday", formatter.format(birthday));
 
-        dogManager.saveTimed();
+        MyDog.getDogManager().saveTimed();
     }
 
     // For new, already-tamed dogs with old data
     public Dog(Wolf dog, Player dogOwner, String customName, DyeColor collarColorImport, int dogUID)
     {
-        if (dogManager == null) {
-            dogManager = MyDog.getDogManager();
-        }
-        if (plugin == null) {
-            plugin = MyDog.instance();
-        }
-        
         // The UUID of the Dog
         this.dogId = dog.getUniqueId();
 
         // The UUID of the Dog's owner (Player)
         this.dogOwnerId = dogOwner.getUniqueId();
-        dogManager.getDogsConfig().set(dogId.toString() + ".Owner", dogOwnerId.toString());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Owner", dogOwnerId.toString());
 
         // Generate an ID for the Dog
         this.dogIdentifier = dogUID;
-        dogManager.getDogsConfig().set(dogId.toString() + ".ID", dogIdentifier);
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".ID", dogIdentifier);
 
         // Generate a new name for the Dog
         if (customName == null || customName.isEmpty())
         {
-            this.dogName = dogManager.newDogName();
+            this.dogName = MyDog.getDogManager().newDogName();
         }
         else
         {
             this.dogName = customName;
         }
-        dogManager.getDogsConfig().set(dogId.toString() + ".Name", dogName);
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Name", dogName);
 
         // Generate a random Collar Color and set the Dog's Color
         if (collarColorImport == null)
         {
-            if (plugin.randomCollarColor)
+            if (MyDog.instance().randomCollarColor)
             {
                 dog.setCollarColor(ColorUtils.randomDyeColor());
             }
@@ -137,35 +121,35 @@ public class Dog
 
         this.collarColor = dog.getCollarColor();
         this.nameColor = ColorUtils.getChatColorFromDyeColor(collarColor);
-        dogManager.getDogsConfig().set(dogId.toString() + ".NameChatColor", nameColor.name());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".NameChatColor", nameColor.name());
 
         // Save the Dog's last seen location
         this.location = dog.getLocation();
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
 
         // Give the Dog a level
-        if (plugin.useLevels)
+        if (MyDog.instance().useLevels)
         {
             this.level = 1;
-            dogManager.getDogsConfig().set(dogId.toString() + ".Level.Level", level);
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Level.Level", level);
             this.experience = 0;
-            dogManager.getDogsConfig().set(dogId.toString() + ".Level.Experience", experience);
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Level.Experience", experience);
         }
 
         // Set the current time as the Dog's birthday
         this.birthday = new Date();
-        dogManager.getDogsConfig().set(dogId.toString() + ".Birthday", formatter.format(birthday));
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Birthday", formatter.format(birthday));
 
-        dogManager.saveTimed();
+        MyDog.getDogManager().saveTimed();
     }
 
     // For old, already created, dogs
     public Dog(Wolf dog)
     {
-        if (dogManager.getDogsConfig().contains(dog.getUniqueId().toString()))
+        if (MyDog.getDogManager().getDogsConfig().contains(dog.getUniqueId().toString()))
         {
             this.dogId = dog.getUniqueId();
             this.dogOwnerId = dog.getOwner().getUniqueId();
@@ -181,7 +165,7 @@ public class Dog
     // For old, already created, dogs
     public Dog(UUID dogUUID, UUID playerUUID)
     {
-        if (dogManager.getDogsConfig().contains(dogUUID.toString()))
+        if (MyDog.getDogManager().getDogsConfig().contains(dogUUID.toString()))
         {
             this.dogId = dogUUID;
             this.dogOwnerId = playerUUID;
@@ -201,17 +185,17 @@ public class Dog
             return dogName;
         }
 
-        return dogManager.getDogsConfig().getString(dogId.toString() + ".Name", "UNKNOWN DOGNAME");
+        return MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".Name", "UNKNOWN DOGNAME");
     }
 
     public Wolf getWolf()
     {
-        if (!plugin.getServer().getEntity(dogId).isValid() || !(plugin.getServer().getEntity(dogId) instanceof Wolf))
+        if (!MyDog.instance().getServer().getEntity(dogId).isValid() || !(MyDog.instance().getServer().getEntity(dogId) instanceof Wolf))
         {
             return null;
         }
 
-        return (Wolf) plugin.getServer().getEntity(dogId);
+        return (Wolf) MyDog.instance().getServer().getEntity(dogId);
     }
 
     public Date getBirthday()
@@ -223,7 +207,7 @@ public class Dog
 
         try
         {
-            return formatter.parse(dogManager.getDogsConfig().getString(dogId.toString() + ".Birthday"));
+            return formatter.parse(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".Birthday"));
         }
         catch (ParseException e)
         {
@@ -239,16 +223,16 @@ public class Dog
             return nameColor;
         }
 
-        if (plugin.getServer().getEntity(dogId) == null || !plugin.getServer().getEntity(dogId).isValid())
+        if (MyDog.instance().getServer().getEntity(dogId) == null || !MyDog.instance().getServer().getEntity(dogId).isValid())
         {
-            if (dogManager.getDogsConfig().getString(dogId.toString() + ".NameChatColor") != null)
+            if (MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".NameChatColor") != null)
             {
-                return ChatColor.valueOf(dogManager.getDogsConfig().getString(dogId.toString() + ".NameChatColor"));
+                return ChatColor.valueOf(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".NameChatColor"));
             }
             return ChatColor.WHITE;
         }
 
-        return ColorUtils.getChatColorFromDyeColor(((Wolf) plugin.getServer().getEntity(dogId)).getCollarColor());
+        return ColorUtils.getChatColorFromDyeColor(((Wolf) MyDog.instance().getServer().getEntity(dogId)).getCollarColor());
     }
 
     public boolean setDogColor(DyeColor color)
@@ -257,18 +241,18 @@ public class Dog
         {
             return false;
         }
-        if (dogManager.getDogsConfig().contains(dogId.toString()))
+        if (MyDog.getDogManager().getDogsConfig().contains(dogId.toString()))
         {
             ChatColor chatColor = ColorUtils.getChatColorFromDyeColor(color);
 
             this.nameColor = chatColor;
-            dogManager.getDogsConfig().set(dogId.toString() + ".NameChatColor", nameColor.name());
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".NameChatColor", nameColor.name());
 
-            Wolf dog = (Wolf) plugin.getServer().getEntity(dogId);
+            Wolf dog = (Wolf) MyDog.instance().getServer().getEntity(dogId);
 
             if (dog == null)
             {
-                plugin.logDebug("Dog is null");
+                MyDog.instance().logDebug("Dog is null");
                 return false;
             }
 
@@ -278,16 +262,16 @@ public class Dog
             }
 
 
-            if (plugin.useLevels && plugin.showLevelsInNametag) {
-                plugin.logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
+            if (MyDog.instance().useLevels && MyDog.instance().showLevelsInNametag) {
+                MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
                 dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
             }
             else {
-                plugin.logDebug("Setting customName to: " + nameColor + dogName);
+                MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName);
                 dog.setCustomName(nameColor + dogName);
             }
 
-            if (plugin.onlyShowNametagOnHover)
+            if (MyDog.instance().onlyShowNametagOnHover)
             {
                 dog.setCustomNameVisible(false);
             }
@@ -296,7 +280,7 @@ public class Dog
                 dog.setCustomNameVisible(true);
             }
         }
-        dogManager.saveTimed();
+        MyDog.getDogManager().saveTimed();
         return true;
     }
 
@@ -306,16 +290,16 @@ public class Dog
         {
             return false;
         }
-        if (dogManager.getDogsConfig().contains(dogId.toString()))
+        if (MyDog.getDogManager().getDogsConfig().contains(dogId.toString()))
         {
             this.dogName = name;
-            dogManager.getDogsConfig().set(dogId.toString() + ".Name", dogName);
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Name", dogName);
 
-            Wolf dog = (Wolf) plugin.getServer().getEntity(dogId);
+            Wolf dog = (Wolf) MyDog.instance().getServer().getEntity(dogId);
 
             if (dog == null)
             {
-                plugin.logDebug("Dog is null");
+                MyDog.instance().logDebug("Dog is null");
                 return false;
             }
 
@@ -324,15 +308,15 @@ public class Dog
                 this.dogName = getDogName();
             }
 
-            if (plugin.useLevels && plugin.showLevelsInNametag) {
-                plugin.logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
+            if (MyDog.instance().useLevels && MyDog.instance().showLevelsInNametag) {
+                MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
                 dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
             }
             else {
-                plugin.logDebug("Setting customName to: " + nameColor + dogName);
+                MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName);
                 dog.setCustomName(nameColor + dogName);
             }
-            if (plugin.onlyShowNametagOnHover)
+            if (MyDog.instance().onlyShowNametagOnHover)
             {
                 dog.setCustomNameVisible(false);
             }
@@ -341,45 +325,45 @@ public class Dog
                 dog.setCustomNameVisible(true);
             }
         }
-        dogManager.saveTimed();
+        MyDog.getDogManager().saveTimed();
         return true;
     }
 
     public Location getDogLocation()
     {
-        if (plugin.getServer().getEntity(dogId) == null || !plugin.getServer().getEntity(dogId).isValid())
+        if (MyDog.instance().getServer().getEntity(dogId) == null || !MyDog.instance().getServer().getEntity(dogId).isValid())
         {
-            if (dogManager.getDogsConfig().getString(dogId.toString() + ".LastSeen.World") != null)
+            if (MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".LastSeen.World") != null)
             {
-                return new Location(plugin.getServer().getWorld(dogManager.getDogsConfig().getString(dogId.toString() + ".LastSeen.World")), dogManager.getDogsConfig().getInt(dogId.toString() + ".LastSeen.X"), dogManager.getDogsConfig().getInt(dogId.toString() + ".LastSeen.Y"), dogManager.getDogsConfig().getInt(dogId.toString() + ".LastSeen.Z"));
+                return new Location(MyDog.instance().getServer().getWorld(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".LastSeen.World")), MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".LastSeen.X"), MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".LastSeen.Y"), MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".LastSeen.Z"));
             }
             return null;
         }
 
-        this.location = plugin.getServer().getEntity(dogId).getLocation();
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
+        this.location = MyDog.instance().getServer().getEntity(dogId).getLocation();
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
 
-        dogManager.saveTimed();
+        MyDog.getDogManager().saveTimed();
         return location;
     }
 
     public boolean saveDogLocation()
     {
-        if (plugin.getServer().getEntity(dogId) == null || !plugin.getServer().getEntity(dogId).isValid())
+        if (MyDog.instance().getServer().getEntity(dogId) == null || !MyDog.instance().getServer().getEntity(dogId).isValid())
         {
             return false;
         }
 
-        this.location = plugin.getServer().getEntity(dogId).getLocation();
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
-        dogManager.getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
+        this.location = MyDog.instance().getServer().getEntity(dogId).getLocation();
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
 
-        dogManager.saveTimed();
+        MyDog.getDogManager().saveTimed();
         return true;
     }
 
@@ -405,7 +389,7 @@ public class Dog
             return level;
         }
 
-        return dogManager.getDogsConfig().getInt(dogId.toString() + ".Level.Level", 1);
+        return MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".Level.Level", 1);
     }
 
     public void setLevel(int lvl)
@@ -415,7 +399,7 @@ public class Dog
             this.level = lvl;
         }
 
-        dogManager.getDogsConfig().set(dogId.toString() + ".Level.Level", lvl);
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Level.Level", lvl);
     }
 
     public int getExperience()
@@ -425,7 +409,7 @@ public class Dog
             return experience;
         }
 
-        return dogManager.getDogsConfig().getInt(dogId.toString() + ".Level.Experience", 0);
+        return MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".Level.Experience", 0);
     }
 
     public void giveExperience(int exp)
@@ -437,11 +421,11 @@ public class Dog
     public void setExperience(int exp)
     {
         this.experience = exp;
-        dogManager.getDogsConfig().set(dogId.toString() + ".Level.Experience", exp);
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Level.Experience", exp);
 
         int levelBefore = level;
         int newLevel = 1;
-        Map<Integer, LevelFactory.Level> levels = plugin.dogLevels;
+        Map<Integer, LevelFactory.Level> levels = MyDog.instance().dogLevels;
 
         for (Integer levelInt : levels.keySet())
         {
@@ -451,14 +435,14 @@ public class Dog
             // The new level variable must be smaller than the level checking against
             if (exp >= levelExp && levelInt > levelBefore && newLevel < levelInt)
             {
-                plugin.logDebug("Iterating through levels... Possible new level: " + levelInt);
+                MyDog.instance().logDebug("Iterating through levels... Possible new level: " + levelInt);
                 newLevel = levelInt;
             }
         }
 
         if (newLevel != 1)
         {
-            plugin.logDebug("Setting new level to level: " + newLevel + "! Old level: " + this.level);
+            MyDog.instance().logDebug("Setting new level to level: " + newLevel + "! Old level: " + this.level);
             this.level = newLevel;
         }
 
@@ -473,26 +457,26 @@ public class Dog
 
     public boolean setDogCustomName()
     {
-        plugin.logDebug("Setting custom name... dogId: " + dogId);
-        if (plugin.getServer().getEntity(dogId) == null || !plugin.getServer().getEntity(dogId).isValid() || !(plugin.getServer().getEntity(dogId) instanceof Wolf))
+        MyDog.instance().logDebug("Setting custom name... dogId: " + dogId);
+        if (MyDog.instance().getServer().getEntity(dogId) == null || !MyDog.instance().getServer().getEntity(dogId).isValid() || !(MyDog.instance().getServer().getEntity(dogId) instanceof Wolf))
         {
-            plugin.logDebug("Retuning false!");
+            MyDog.instance().logDebug("Retuning false!");
             return false;
         }
 
-        Wolf dog = (Wolf) plugin.getServer().getEntity(dogId);
+        Wolf dog = (Wolf) MyDog.instance().getServer().getEntity(dogId);
 
-        if (dogManager.getDogsConfig().contains(dogId.toString()))
+        if (MyDog.getDogManager().getDogsConfig().contains(dogId.toString()))
         {
-            if (plugin.useLevels && plugin.showLevelsInNametag) {
-                plugin.logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
+            if (MyDog.instance().useLevels && MyDog.instance().showLevelsInNametag) {
+                MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
                 dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
             }
             else {
-                plugin.logDebug("Setting customName to: " + nameColor + dogName);
+                MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName);
                 dog.setCustomName(nameColor + dogName);
             }
-            if (plugin.onlyShowNametagOnHover)
+            if (MyDog.instance().onlyShowNametagOnHover)
             {
                 dog.setCustomNameVisible(false);
             }
@@ -500,10 +484,10 @@ public class Dog
             {
                 dog.setCustomNameVisible(true);
             }
-            plugin.logDebug("Returning true!");
+            MyDog.instance().logDebug("Returning true!");
             return true;
         }
-        plugin.logDebug("Retuning false!");
+        MyDog.instance().logDebug("Retuning false!");
         return false;
     }
 
@@ -514,46 +498,46 @@ public class Dog
             return dogIdentifier;
         }
 
-        return dogManager.getDogsConfig().getInt(dogId.toString() + ".ID", -1);
+        return MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".ID", -1);
     }
 
     public boolean setIdentifier(int id)
     {
         // If the ID is already used, return false
-        for (String dogIdString : dogManager.getDogsConfig().getKeys(false))
+        for (String dogIdString : MyDog.getDogManager().getDogsConfig().getKeys(false))
         {
-            if (dogManager.getDogsConfig().getString(dogIdString + ".ID").equals(Integer.toString(id)) && dogManager.getDogsConfig().getString(dogIdString + ".Owner").contains(dogOwnerId.toString()))
+            if (MyDog.getDogManager().getDogsConfig().getString(dogIdString + ".ID").equals(Integer.toString(id)) && MyDog.getDogManager().getDogsConfig().getString(dogIdString + ".Owner").contains(dogOwnerId.toString()))
             {
                 return false;
             }
         }
         // Otherwise, apply the new ID
         this.dogIdentifier = id;
-        dogManager.getDogsConfig().set(dogId.toString() + ".ID", dogIdentifier);
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".ID", dogIdentifier);
         return true;
     }
 
     public boolean setHealth()
     {
-        Wolf wolf = (Wolf) plugin.getServer().getEntity(dogId);
+        Wolf wolf = (Wolf) MyDog.instance().getServer().getEntity(dogId);
 
         if (wolf == null)
         {
-            plugin.logDebug("Failed to set Dog health, Wolf entity is null!");
+            MyDog.instance().logDebug("Failed to set Dog health, Wolf entity is null!");
             return false;
         }
 
         int dogsLevel = getLevel();
         if (dogsLevel < 1)
         {
-            plugin.logDebug("Level was under 1, setting level to 1");
+            MyDog.instance().logDebug("Level was under 1, setting level to 1");
             dogsLevel = 1;
         }
 
-        LevelFactory.Level level = plugin.dogLevels.get(dogsLevel);
+        LevelFactory.Level level = MyDog.instance().dogLevels.get(dogsLevel);
         if (level == null)
         {
-            plugin.logDebug("Level object is null, returning!");
+            MyDog.instance().logDebug("Level object is null, returning!");
             return false;
         }
 
@@ -564,36 +548,36 @@ public class Dog
         }
 
         AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-        plugin.logDebug("Dog Maxhealth Before: " + wolfMaxHealth.getValue());
+        MyDog.instance().logDebug("Dog Maxhealth Before: " + wolfMaxHealth.getValue());
         // wolfMaxHealth.setBaseValue((wolfMaxHealth.getValue()/(0.5*(getLevel()-1)))*(0.5*getLevel()));
         wolfMaxHealth.setBaseValue(health);
         wolf.setHealth(wolfMaxHealth.getValue());
-        plugin.logDebug("Dog Maxhealth After: " + wolfMaxHealth.getValue());
+        MyDog.instance().logDebug("Dog Maxhealth After: " + wolfMaxHealth.getValue());
 
         return true;
     }
 
 //		public boolean setSpeed()
 //		{
-//			Wolf wolf = (Wolf) plugin.getServer().getEntity(dogId);
+//			Wolf wolf = (Wolf) MyDog.instance().getServer().getEntity(dogId);
 //
 //			if (wolf == null)
 //			{
-//				plugin.logDebug("Failed to set Dog speed, Wolf entity is null!");
+//				MyDog.instance().logDebug("Failed to set Dog speed, Wolf entity is null!");
 //				return false;
 //			}
 //
 //			int dogsLevel = getLevel();
 //			if (dogsLevel < 1)
 //			{
-//				plugin.logDebug("Level was under 1, setting level to 1");
+//				MyDog.instance().logDebug("Level was under 1, setting level to 1");
 //				dogsLevel = 1;
 //			}
 //
-//			Level level = plugin.dogLevels.get(dogsLevel);
+//			Level level = MyDog.instance().dogLevels.get(dogsLevel);
 //			if (level == null)
 //			{
-//				plugin.logDebug("Level object is null, returning!");
+//				MyDog.instance().logDebug("Level object is null, returning!");
 //				return false;
 //			}
 //
@@ -604,36 +588,36 @@ public class Dog
 //			}
 //
 //			AttributeInstance wolfSpeed = wolf.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
-//			plugin.logDebug("Dog Maxhealth Before: " + wolfSpeed.getValue());
+//			MyDog.instance().logDebug("Dog Maxhealth Before: " + wolfSpeed.getValue());
 //			// wolfMaxHealth.setBaseValue((wolfMaxHealth.getValue()/(0.5*(getLevel()-1)))*(0.5*getLevel()));
 //			wolfSpeed.setBaseValue(speed);
 //			wolf.setSpeed(wolfSpeed.getValue()); // Needs working on
-//			plugin.logDebug("Dog Maxhealth After: " + wolfSpeed.getValue());
+//			MyDog.instance().logDebug("Dog Maxhealth After: " + wolfSpeed.getValue());
 //
 //			return true;
 //		}
 
     public boolean setDamage()
     {
-        Wolf wolf = (Wolf) plugin.getServer().getEntity(dogId);
+        Wolf wolf = (Wolf) MyDog.instance().getServer().getEntity(dogId);
 
         if (wolf == null)
         {
-            plugin.logDebug("Failed to set Dog damage, Wolf entity is null!");
+            MyDog.instance().logDebug("Failed to set Dog damage, Wolf entity is null!");
             return false;
         }
 
         int dogsLevel = getLevel();
         if (dogsLevel < 1)
         {
-            plugin.logDebug("Level was under 1, setting level to 1");
+            MyDog.instance().logDebug("Level was under 1, setting level to 1");
             dogsLevel = 1;
         }
 
-        LevelFactory.Level level = plugin.dogLevels.get(dogsLevel);
+        LevelFactory.Level level = MyDog.instance().dogLevels.get(dogsLevel);
         if (level == null)
         {
-            plugin.logDebug("Level object is null, returning!");
+            MyDog.instance().logDebug("Level object is null, returning!");
             return false;
         }
 
@@ -644,18 +628,18 @@ public class Dog
         }
 
         AttributeInstance wolfDamage = wolf.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
-        plugin.logDebug("Dog Damage Before: " + wolfDamage.getValue());
+        MyDog.instance().logDebug("Dog Damage Before: " + wolfDamage.getValue());
         // wolfDamage.setBaseValue((wolfDamage.getValue()/(0.5*(getLevel()-1)))*(0.5*getLevel()));
         wolfDamage.setBaseValue(damage);
-        plugin.logDebug("Dog Damage After: " + wolfDamage.getValue());
+        MyDog.instance().logDebug("Dog Damage After: " + wolfDamage.getValue());
         return true;
     }
 
     public boolean updateWolf()
     {
-        if (!plugin.useLevels)
+        if (!MyDog.instance().useLevels)
         {
-            plugin.logDebug("Not updating wolf, levels are disabled!");
+            MyDog.instance().logDebug("Not updating wolf, levels are disabled!");
             return true;
         }
 
