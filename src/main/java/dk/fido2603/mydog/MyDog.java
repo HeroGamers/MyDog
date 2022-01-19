@@ -1,8 +1,14 @@
 package dk.fido2603.mydog;
 
-import dk.fido2603.mydog.LevelFactory.Level;
+import dk.fido2603.mydog.objects.Dog;
+import dk.fido2603.mydog.objects.LevelFactory;
+import dk.fido2603.mydog.objects.LevelFactory.Level;
 import dk.fido2603.mydog.listeners.DamageListener;
 import dk.fido2603.mydog.listeners.WolfMainListener;
+import dk.fido2603.mydog.managers.CommandManager;
+import dk.fido2603.mydog.managers.DogManager;
+import dk.fido2603.mydog.managers.PermissionsManager;
+import dk.fido2603.mydog.managers.TeleportationManager;
 import dk.fido2603.mydog.utils.ParticleUtils;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
@@ -60,10 +66,10 @@ public class MyDog extends JavaPlugin
 
 	private static MyDog						plugin;
 	private static FileConfiguration			config									= null;
-	private static PermissionsManager			permissionsManager						= null;
-	private static DogManager					dogManager								= null;
-	private static TeleportationManager         teleportationManager                    = null;
-	private static LevelFactory					levelFactory							= null;
+	private static PermissionsManager permissionsManager						= null;
+	private static DogManager dogManager								= null;
+	private static TeleportationManager teleportationManager                    = null;
+	private static LevelFactory levelFactory							= null;
 	private static ParticleUtils				particleUtils							= null;
 
 	public boolean								randomCollarColor						= true;
@@ -115,7 +121,7 @@ public class MyDog extends JavaPlugin
 	public Map<Integer, Level>					dogLevels								= new HashMap<Integer, Level>();
 
 	private static Economy						economy									= null;
-	private Commands							commands								= null;
+	private CommandManager commands								= null;
 	private String								chatPrefix								= "MyDog";
 	public String								serverName								= "Your Server";
 
@@ -189,7 +195,7 @@ public class MyDog extends JavaPlugin
 		server = getServer();
 		config = getConfig();
 
-		this.commands = new Commands(this);
+		this.commands = new CommandManager(this);
 
 		pluginEnabled = true;
 
@@ -246,7 +252,7 @@ public class MyDog extends JavaPlugin
 
 					for (Player player : getServer().getOnlinePlayers())
 					{
-						for (DogManager.Dog dog : MyDog.getDogManager().getDogs((player.getUniqueId())))
+						for (Dog dog : MyDog.getDogManager().getDogs((player.getUniqueId())))
 						{
 							Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
 							if (wolf != null && !wolf.isSitting())
@@ -330,7 +336,7 @@ public class MyDog extends JavaPlugin
 			{
 				if (config.getConfigurationSection("DogSettings.Levels." + level) != null)
 				{
-					Integer exp = config.getInt("DogSettings.Levels." + level + ".Experience");
+					int exp = config.getInt("DogSettings.Levels." + level + ".Experience");
 					double health = config.getInt("DogSettings.Levels." + level + ".Health");
 					double damage = config.getInt("DogSettings.Levels." + level + ".Damage");
 
