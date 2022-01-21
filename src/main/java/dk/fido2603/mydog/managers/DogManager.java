@@ -1,34 +1,54 @@
 package dk.fido2603.mydog.managers;
 
 import java.io.File;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
 import java.util.*;
 
 import dk.fido2603.mydog.MyDog;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
-import org.bukkit.Location;
 import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 
-import dk.fido2603.mydog.objects.LevelFactory.Level;
-import dk.fido2603.mydog.utils.ColorUtils;
 import dk.fido2603.mydog.objects.Dog;
+import org.intellij.lang.annotations.Language;
 
 public class DogManager
 {
-	private MyDog plugin				= null;
-	private FileConfiguration	dogsConfig			= null;
-	private File				dogsConfigFile		= null;
+	private MyDog 				plugin				= null;
+	private Connection			dogsDB				= null;
 	private Random				random				= new Random();
 	private long				lastSaveTime		= 0L;
+
+	private @Language("SQL")String[] 			setupSQL 			= new String[] {
+			"CREATE TABLE IF NOT EXISTS player(\n"
+					+ "uuid     TEXT PRIMARY KEY\n"
+					+");",
+
+			"CREATE TABLE IF NOT EXISTS dog(\n"
+					+ "uuid     TEXT PRIMARY KEY,\n"
+					+ "id       INTEGER NOT NULL,\n"
+					+ "name     TEXT NOT NULL,\n"
+					+ "color    TEXT NOT NULL,\n"
+					+ "level    INTEGER NOT NULL,\n"
+					+ "exp      INTEGER NOT NULL,\n"
+					+ "creation TEXT NOT NULL,\n"
+					+ "owner    TEXT NOT NULL,\n"
+					+ "FOREIGN KEY(owner) REFERENCES player(uuid)\n"
+					+");",
+
+			"CREATE TABLE IF NOT EXISTS location(\n"
+					+ "uuid     TEXT PRIMARY KEY,\n"
+					+ "world    TEXT NOT NULL,\n"
+					+ "x        REAL NOT NULL,\n"
+					+ "y        REAL NOT NULL,\n"
+					+ "z        REAL NOT NULL,\n"
+					+ "FOREIGN KEY(uuid) REFERENCES dog(uuid)\n"
+					+");"
+	};
 
 	public DogManager(MyDog plugin)
 	{
@@ -37,61 +57,75 @@ public class DogManager
 
 	public void load()
 	{
-		if (this.dogsConfigFile == null)
-		{
-			this.dogsConfigFile = new File(this.plugin.getDataFolder(), "dogs.yml");
-		}
-		this.dogsConfig = YamlConfiguration.loadConfiguration(this.dogsConfigFile);
-		this.plugin.log("Loaded " + this.dogsConfig.getKeys(false).size() + " dogs.");
-	}
+		// connect to the database
+		if (this.dogsDB == null) {
+			try {
+				this.dogsDB = DriverManager.getConnection("jdbc:sqlite:"+(new File(this.plugin.getDataFolder(), "MyDog.db")).toURI());
+			}
+			catch (SQLException e) {
+				plugin.log("Could not load/connect to SQLite database! - " + e.getMessage());
+			}
 
-	public void save()
-	{
-		this.lastSaveTime = System.currentTimeMillis();
-		if ((this.dogsConfig == null) || (this.dogsConfigFile == null))
-		{
-			return;
-		}
-		try
-		{
-			this.dogsConfig.save(this.dogsConfigFile);
-		}
-		catch (Exception ex)
-		{
-			this.plugin.log("Could not save config to " + this.dogsConfigFile + ": " + ex.getMessage());
-		}
-	}
+			if (this.dogsDB != null) {
+				// debug
+				try {
+					DatabaseMetaData dbMeta = this.dogsDB.getMetaData();
+					plugin.logDebug("DB driver name: " + dbMeta.getDriverName());
+				}
+				catch (SQLException e) {
+					plugin.logDebug("Could not get database metadata! - " + e.getMessage());
+				}
 
-	public void saveTimed()
-	{
-		if (plugin.instantSave) {
-			save();
-			return;
-		}
+				// run setup SQL
+				try {
+					Statement stmt = this.dogsDB.createStatement();
+					for (String sql : this.setupSQL) {
+						stmt.execute(sql);
+					}
+				}
+				catch (SQLException e) {
+					plugin.logDebug("Could not run setup SQL! - " + e.getMessage());
+				}
 
-		if (System.currentTimeMillis() - this.lastSaveTime < 180000L)
-		{
-			return;
+
+			}
 		}
 
-		save();
-	}
-
-	public FileConfiguration getDogsConfig() {
-		return dogsConfig;
+		// check if old configuration file exists
+		File dogsConfigFile = new File(this.plugin.getDataFolder(), "dogs.yml");
+		if (dogsConfigFile.exists())
+		{
+			FileConfiguration dogsConfig = YamlConfiguration.loadConfiguration(dogsConfigFile);
+			int size = dogsConfig.getKeys(false).size();
+			this.plugin.log("Loaded " + size + " dogs from an old configuration file.");
+			if (size > 0) {
+				// todo: convert old dogs
+			}
+		}
 	}
 
 	public boolean isDog(UUID dogId)
 	{
-		return dogsConfig.contains(dogId.toString());
+		try {
+			PreparedStatement pstmt = this.dogsDB.prepareStatement("SELECT EXISTS(SELECT uuid FROM dog WHERE uuid = ? LIMIT 1)");
+			pstmt.setString(1, dogId.toString());
+			return (pstmt.executeQuery().getInt(1) == 1);
+		}
+		catch (SQLException e) {
+			plugin.logDebug(e.getMessage());
+		}
+		return false;
 	}
 
 	public void removeDog(UUID dogId)
 	{
-		if (dogsConfig.contains(dogId.toString()))
-		{
-			dogsConfig.set(dogId.toString(), null);
-			saveTimed();
+		try {
+			PreparedStatement pstmt = this.dogsDB.prepareStatement("DELETE FROM dog WHERE uuid = ?");
+			pstmt.setString(1, dogId.toString());
+			pstmt.executeUpdate();
+		}
+		catch (SQLException e) {
+			plugin.logDebug(e.getMessage());
 		}
 	}
 
@@ -102,17 +136,7 @@ public class DogManager
 
 	public int dogsOwned(UUID playerId)
 	{
-		int dogs = 0;
-		for (String dogUUID : dogsConfig.getKeys(false))
-		{
-			plugin.logDebug(dogUUID);
-			UUID ownerId = UUID.fromString(dogsConfig.getString(dogUUID + ".Owner"));
-			if (ownerId.equals(playerId))
-			{
-				dogs++;
-			}
-		}
-		return dogs;
+		return getDogs(playerId).size();
 	}
 
 	public Dog newDog(Wolf dog, Player dogOwner) {
@@ -127,35 +151,53 @@ public class DogManager
 
 	public Dog getDog(UUID dogId)
 	{
-		if (dogsConfig.contains(dogId.toString()))
-		{
-			return new Dog(dogId, UUID.fromString(dogsConfig.getString(dogId.toString() + ".Owner")));
+		try {
+			PreparedStatement pstmt = this.dogsDB.prepareStatement("SELECT (uuid, owner) FROM dog WHERE uuid = ? LIMIT 1");
+			pstmt.setString(1, dogId.toString());
+			ResultSet rs = pstmt.executeQuery();
+
+			if (rs.next()) {
+				return new Dog(UUID.fromString(rs.getString("uuid")), UUID.fromString(rs.getString("owner")));
+			}
+		}
+		catch (SQLException e) {
+			plugin.logDebug(e.getMessage());
 		}
 		return null;
 	}
 
 	public Dog getDog(int dogIdentifier, UUID ownerId)
 	{
-		for (String dogIdString : dogsConfig.getKeys(false))
-		{
-			if (dogsConfig.getString(dogIdString + ".ID").equals(Integer.toString(dogIdentifier)) && dogsConfig.getString(dogIdString + ".Owner").contains(ownerId.toString()))
-			{
-				UUID dogId = UUID.fromString(dogIdString);
-				return new Dog(dogId, UUID.fromString(dogsConfig.getString(dogId.toString() + ".Owner")));
+		try {
+			PreparedStatement pstmt = this.dogsDB.prepareStatement("SELECT uuid FROM dog WHERE id = ? AND owner = ? LIMIT 1");
+			pstmt.setInt(1, dogIdentifier);
+			pstmt.setString(2, ownerId.toString());
+			ResultSet rs = pstmt.executeQuery();
+
+			if (rs.next()) {
+				return new Dog(UUID.fromString(rs.getString("uuid")), ownerId);
 			}
 		}
-
+		catch (SQLException e) {
+			plugin.logDebug(e.getMessage());
+		}
 		return null;
 	}
 
 	public List<Dog> getDogs()
 	{
-		List<Dog> dogs = new ArrayList<Dog>();
+		List<Dog> dogs = new ArrayList<>();
 
-		for (String dogIdString : dogsConfig.getKeys(false))
-		{
-			UUID dogId = UUID.fromString(dogIdString);
-			dogs.add(new Dog((Wolf) Objects.requireNonNull(plugin.getServer().getEntity(dogId))));
+		try {
+			PreparedStatement pstmt = this.dogsDB.prepareStatement("SELECT uuid FROM dog");
+			ResultSet rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				dogs.add(new Dog((Wolf) Objects.requireNonNull(plugin.getServer().getEntity(UUID.fromString(rs.getString("uuid"))))));
+			}
+		}
+		catch (SQLException e) {
+			plugin.logDebug(e.getMessage());
 		}
 
 		return dogs;
@@ -163,15 +205,19 @@ public class DogManager
 
 	public List<Dog> getDogs(UUID ownerId)
 	{
-		List<Dog> dogs = new ArrayList<Dog>();
+		List<Dog> dogs = new ArrayList<>();
 
-		for (String dogIdString : dogsConfig.getKeys(false))
-		{
-			if (dogsConfig.getString(dogIdString + ".Owner").contains(ownerId.toString()))
-			{
-				UUID dogId = UUID.fromString(dogIdString);
-				dogs.add(new Dog(dogId, ownerId));
+		try {
+			PreparedStatement pstmt = this.dogsDB.prepareStatement("SELECT uuid FROM dog WHERE owner = ?");
+			pstmt.setString(1, ownerId.toString());
+			ResultSet rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				dogs.add(new Dog(UUID.fromString(rs.getString("uuid")), ownerId));
 			}
+		}
+		catch (SQLException e) {
+			plugin.logDebug(e.getMessage());
 		}
 
 		return dogs;
