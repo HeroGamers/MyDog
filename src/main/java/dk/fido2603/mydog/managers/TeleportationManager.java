@@ -1,6 +1,7 @@
 package dk.fido2603.mydog.managers;
 
 import dk.fido2603.mydog.MyDog;
+import dk.fido2603.mydog.objects.Dog;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -329,6 +330,8 @@ public class TeleportationManager
 
                         plugin.logDebug("It's a safe location, teleporting!");
                         tameableEntity.teleport(safeLocation);
+                        MyDog.getDogManager().getDog(tameableEntity.getUniqueId()).updateWolf();
+
                         if (sittingEntity.isSitting())
                         {
                             sittingEntity.setSitting(false);
