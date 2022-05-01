@@ -72,8 +72,8 @@ public class WolfMainListener implements Listener
 
 		Dog dog = MyDog.getDogManager().getDog(event.getEntity().getUniqueId());
 		Player owner = plugin.getServer().getPlayer(dog.getOwnerId());
-
-		if (owner != null && owner.isOnline())
+		
+		if (owner.isOnline())
 		{
 			Date dogBirthday = dog.getBirthday();
 			Date today = new Date();
