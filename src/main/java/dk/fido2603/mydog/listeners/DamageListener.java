@@ -32,6 +32,19 @@ public class DamageListener implements Listener
 	}
 
 	@EventHandler
+	public void onEntityDamage(EntityDamageByEntityEvent e) {
+		if (e.getEntity().getType() != EntityType.WOLF || !(MyDog.getDogManager().isDog(e.getEntity().getUniqueId()))) {
+			return;
+		}
+		if (e.getDamager().getType() == EntityType.PLAYER) {
+			Dog wolf = MyDog.getDogManager().getDog(e.getEntity().getUniqueId());
+			if (wolf.getOwnerId().equals(e.getDamager().getUniqueId())) {
+				e.setCancelled(true);
+			}
+		}
+	}
+
+	@EventHandler
 	public void onEntityDeath(EntityDamageEvent event)
 	{
 		if (event instanceof EntityDamageByEntityEvent)
