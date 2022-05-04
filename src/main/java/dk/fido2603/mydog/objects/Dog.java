@@ -21,6 +21,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Dog {
+    private static final String ANGRY_MODE = ChatColor.GRAY + "[" + ChatColor.RED + "⚔" + ChatColor.GRAY + "]";
+    private static final String DEFENCE_MODE = ChatColor.GRAY + "[" + ChatColor.GREEN + "⛨" + ChatColor.GRAY + "]";
+
     private UUID dogId;
     private UUID dogOwnerId;
     private int dogIdentifier;
@@ -32,6 +35,7 @@ public class Dog {
     private DyeColor collarColor;
     private ChatColor nameColor;
     private Boolean isDead = false;
+    private Boolean isAngry;
 
     private String pattern = "dd-MM-yyyy HH:mm";
     private DateFormat formatter = new SimpleDateFormat(pattern);
@@ -83,6 +87,7 @@ public class Dog {
         // Set the current time as the Dog's birthday
         this.birthday = new Date();
         MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Birthday", formatter.format(birthday));
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Angry", (isAngry != null) ? isAngry.toString() : "false");
 
         MyDog.getDogManager().saveTimed();
     }
@@ -137,6 +142,7 @@ public class Dog {
         // Set the current time as the Dog's birthday
         this.birthday = new Date();
         MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Birthday", formatter.format(birthday));
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Angry", (isAngry != null) ? isAngry.toString() : "false");
 
         MyDog.getDogManager().saveTimed();
     }
@@ -200,6 +206,11 @@ public class Dog {
         }
 
         return (Wolf) MyDog.instance().getServer().getEntity(dogId);
+    }
+
+    public void setIsAngry(boolean isAngry) {
+        this.isAngry = isAngry;
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Angry", this.isAngry.toString());
     }
 
     public void setBirthday(Date birthday) {
@@ -266,8 +277,9 @@ public class Dog {
 
 
             if (MyDog.instance().useLevels && MyDog.instance().showLevelsInNametag) {
-                MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
-                dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
+                String dogNamePlate = nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]" + (isAngry() ? ANGRY_MODE : DEFENCE_MODE);
+                MyDog.instance().logDebug("Setting customName to: " + dogNamePlate);
+                dog.setCustomName(dogNamePlate);
             } else {
                 MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName);
                 dog.setCustomName(nameColor + dogName);
@@ -281,6 +293,28 @@ public class Dog {
         }
         MyDog.getDogManager().saveTimed();
         return true;
+    }
+
+    public void toggleMode() {
+        Wolf dog = (Wolf) MyDog.instance().getServer().getEntity(dogId);
+        if (dog == null) {
+            return;
+        }
+        this.setIsAngry(!isAngry());
+        dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]" + (isAngry() ? ANGRY_MODE : DEFENCE_MODE));
+        dog.setCustomNameVisible(!MyDog.instance().onlyShowNametagOnHover);
+        MyDog.getDogManager().saveTimed();
+    }
+
+    public boolean isAngry() {
+        if (isAngry != null) {
+            return isAngry;
+        }
+
+        if (this.isDead) {
+            return Boolean.parseBoolean(MyDog.getDogManager().getRipDogsConfig().getString(dogId.toString() + ".Angry"));
+        }
+        return Boolean.parseBoolean(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".Angry"));
     }
 
     public boolean setDogName(String name) {
@@ -303,8 +337,8 @@ public class Dog {
             }
 
             if (MyDog.instance().useLevels && MyDog.instance().showLevelsInNametag) {
-                MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
-                dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
+                MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]" + (isAngry() ? ANGRY_MODE : DEFENCE_MODE));
+                dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]" + (isAngry() ? ANGRY_MODE : DEFENCE_MODE));
             } else {
                 MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName);
                 dog.setCustomName(nameColor + dogName);
@@ -364,8 +398,8 @@ public class Dog {
         return dogOwnerId;
     }
 
-    public int getPrice(){
-        return (int)(level * 1000 / 5);
+    public int getPrice() {
+        return (int) (level * 1000 / 5);
     }
 
     public int getLevel() {
@@ -444,8 +478,8 @@ public class Dog {
 
         if (MyDog.getDogManager().getDogsConfig().contains(dogId.toString())) {
             if (MyDog.instance().useLevels && MyDog.instance().showLevelsInNametag) {
-                MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
-                dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]");
+                MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]" + (isAngry() ? ANGRY_MODE : DEFENCE_MODE));
+                dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]" + (isAngry() ? ANGRY_MODE : DEFENCE_MODE));
             } else {
                 MyDog.instance().logDebug("Setting customName to: " + nameColor + dogName);
                 dog.setCustomName(nameColor + dogName);

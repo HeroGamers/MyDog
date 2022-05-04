@@ -606,6 +606,7 @@ public class CommandManager {
         dog.setLevel(ripDog.getLevel());
         dog.setExperience(ripDog.getExperience());
         dog.setBirthday(ripDog.getBirthday());
+        dog.setIsAngry(ripDog.isAngry());
         dog.setDogName(ripDog.getDogName());
         dog.updateWolf();
 

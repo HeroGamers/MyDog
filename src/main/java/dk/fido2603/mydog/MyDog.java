@@ -25,9 +25,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Wolf;
+import org.bukkit.entity.*;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -278,6 +276,44 @@ public class MyDog extends JavaPlugin {
                 }
             }, 20L * 60L, 20L * 10L);
         }
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+            @Override
+            public void run() {
+                plugin.logDebug("Angry checker!");
+                for (Player player : getServer().getOnlinePlayers()) {
+                    for (Dog dog : MyDog.getDogManager().getDogs((player.getUniqueId()))) {
+                        if (dog.isAngry()) {
+                            Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+                            if (wolf != null && !wolf.isSitting()) {
+                                double distance = 0.0;
+                                // if they are in two seperate worlds, it's safe to say that the distance is above 30 lol
+                                if (!player.getWorld().getUID().equals(wolf.getWorld().getUID())) {
+                                    distance = 1000;
+                                } else {
+                                    distance = player.getLocation().distance(wolf.getLocation());
+                                }
+                                // A quick dirty check for ground below player
+                                if (distance <= 20.0) {
+                                    List<Entity> entities = player.getNearbyEntities(10, 10, 10);
+                                    double lastDistance = Double.MAX_VALUE;
+                                    Entity closest = null;
+                                    for (Entity entity : entities) {
+                                        double distanceToTarget = player.getLocation().distance(entity.getLocation());
+                                        if (entity instanceof Monster && distanceToTarget < lastDistance) {
+                                            lastDistance = distanceToTarget;
+                                            closest = entity;
+                                        }
+                                    }
+                                    if (closest != null) {
+                                        wolf.setTarget((LivingEntity) closest);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }, 20L * 30L, 20L * 2L);
     }
 
     public void log(String message) {
