@@ -92,7 +92,8 @@ public class WolfMainListener implements Listener
 			String deadDogString = plugin.deadDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName()).replace("{time}", time).replace("{deadDogLevelString}", levelText);
 			owner.sendMessage(ChatColor.translateAlternateColorCodes('&', deadDogString));
 		}
-	
+
+		MyDog.getDogManager().dogDied(event.getEntity().getUniqueId());
 		MyDog.getDogManager().removeDog(event.getEntity().getUniqueId());
 	}
 
