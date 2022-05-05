@@ -202,7 +202,7 @@ public class WolfMainListener implements Listener
 
 		if (item.getType() == Material.AIR)
 		{
-			if(player.isSneaking()) {
+			if(player.isSneaking() && dog.getOwnerId().equals(player.getUniqueId())){
 				dog.toggleMode();
                 event.setCancelled(true);
 			}
@@ -308,7 +308,7 @@ public class WolfMainListener implements Listener
 				healthPoints = 2.0;
 				break;
 			default:
-				if(player.isSneaking()) {
+				if(player.isSneaking() && dog.getOwnerId().equals(player.getUniqueId())) {
 					dog.toggleMode();
                     event.setCancelled(true);
 				}
