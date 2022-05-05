@@ -66,4 +66,13 @@ permissions:
         default: false
     mydog.save:
         description: Player can save the configuration(s)
-        default: false       
+        default: false
+    mydog.rip:
+      description: RIP dogs list
+      default: true
+    mydog.editlevel:
+      description: Player can edit the level of their Dogs
+      default: false
+    mydog.revive:
+      description: Revive dogs for money
+      default: false

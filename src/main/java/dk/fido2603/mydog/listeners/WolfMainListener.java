@@ -18,6 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
+import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.*;
@@ -72,8 +73,8 @@ public class WolfMainListener implements Listener
 
 		Dog dog = MyDog.getDogManager().getDog(event.getEntity().getUniqueId());
 		Player owner = plugin.getServer().getPlayer(dog.getOwnerId());
-		
-		if (owner.isOnline())
+
+		if (owner != null && owner.isOnline())
 		{
 			Date dogBirthday = dog.getBirthday();
 			Date today = new Date();
@@ -92,7 +93,8 @@ public class WolfMainListener implements Listener
 			String deadDogString = plugin.deadDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName()).replace("{time}", time).replace("{deadDogLevelString}", levelText);
 			owner.sendMessage(ChatColor.translateAlternateColorCodes('&', deadDogString));
 		}
-	
+
+		MyDog.getDogManager().dogDied(event.getEntity().getUniqueId());
 		MyDog.getDogManager().removeDog(event.getEntity().getUniqueId());
 	}
 
@@ -200,6 +202,10 @@ public class WolfMainListener implements Listener
 
 		if (item.getType() == Material.AIR)
 		{
+			if(player.isSneaking() && dog.getOwnerId().equals(player.getUniqueId())){
+				dog.toggleMode();
+                event.setCancelled(true);
+			}
 			plugin.logDebug("Item is null, retuning!");
 			return;
 		}
@@ -302,6 +308,10 @@ public class WolfMainListener implements Listener
 				healthPoints = 2.0;
 				break;
 			default:
+				if(player.isSneaking() && dog.getOwnerId().equals(player.getUniqueId())) {
+					dog.toggleMode();
+                    event.setCancelled(true);
+				}
 				break;
 			}
 
@@ -531,6 +541,4 @@ public class WolfMainListener implements Listener
 			MyDog.getTeleportationManager().doTeleportEntities(entities, null);
 		}
 	}
-
-
 }
