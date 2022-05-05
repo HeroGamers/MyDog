@@ -1,6 +1,7 @@
 package dk.fido2603.mydog.managers;
 
 import dk.fido2603.mydog.MyDog;
+import dk.fido2603.mydog.objects.Dog;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -18,33 +19,27 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class TeleportationManager
-{
+public class TeleportationManager {
     private MyDog plugin = null;
     private List<UUID> teleportingEntities = new ArrayList<>();
     private List<Chunk> entityChunks = new ArrayList<>();
 
-    public TeleportationManager(MyDog p)
-    {
+    public TeleportationManager(MyDog p) {
         this.plugin = p;
     }
 
     // Experimental function
-    public void teleportEntities(List<Entity> entities, Location location, String reason)
-    {
+    public void teleportEntities(List<Entity> entities, Location location, String reason) {
         // Let's start by actually seeing whether there is a tameable in the entity list, before we create a new thread pool
         boolean foundTameable = false;
-        for (Entity e : entities)
-        {
+        for (Entity e : entities) {
             // All tameables
-            if (e instanceof Sittable && e instanceof Tameable && !teleportingEntities.contains(e.getUniqueId()))
-            {
+            if (e instanceof Sittable && e instanceof Tameable && !teleportingEntities.contains(e.getUniqueId())) {
                 foundTameable = true;
                 break;
             }
         }
-        if (!foundTameable)
-        {
+        if (!foundTameable) {
             return;
         }
 
@@ -52,57 +47,45 @@ public class TeleportationManager
         plugin.logDebug("Creating a new threadpool! - " + reason);
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
-        if (reason.equals("PlayerTeleport"))
-        {
+        if (reason.equals("PlayerTeleport")) {
             // Do the teleport task 3 ticks after the player has teleported
-            new BukkitRunnable()
-            {
+            new BukkitRunnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     doTeleportEntities(entities, location, executor, reason);
                 }
             }.runTaskLater(this.plugin, 3);
-        }
-        else
-        {
+        } else {
             doTeleportEntities(entities, location, executor, reason);
         }
 
         // Let's remove the entities we just teleported from the list of teleporting entities, once the thread pool has terminated
-        new BukkitRunnable()
-        {
+        new BukkitRunnable() {
             @Override
-            public void run()
-            {
-                if (executor.isTerminated())
-                {
+            public void run() {
+                if (executor.isTerminated()) {
                     plugin.logDebug("The thread pool is terminated successfully. Removing teleporting entities! - " + reason);
-                    for (Entity e : entities)
-                    {
+                    for (Entity e : entities) {
                         teleportingEntities.remove(e.getUniqueId());
                     }
 
-                    for (Chunk c : entityChunks)
-                    {
+                    for (Chunk c : entityChunks) {
                         c.unload(true);
                     }
 
                     this.cancel();
                 }
             }
-        }.runTaskTimer(this.plugin, 20L*10L, 20L);
+        }.runTaskTimer(this.plugin, 20L * 10L, 20L);
     }
 
     // Experimental function
     private void doTeleportEntities(List<Entity> entities, Location location, ThreadPoolExecutor executor, String reason) {
         Location safeLocation = null;
 
-        for (Entity e : entities)
-        {
+        for (Entity e : entities) {
             // All tameables
-            if (e instanceof Sittable && e instanceof Tameable && !teleportingEntities.contains(e.getUniqueId()) && !((Sittable)e).isSitting())
-            {
+            if (e instanceof Sittable && e instanceof Tameable && !teleportingEntities.contains(e.getUniqueId()) && !((Sittable) e).isSitting()) {
                 teleportingEntities.add(e.getUniqueId());
                 HashMap<Boolean, Location> teleportResult = teleportTameable(e, safeLocation, location, executor);
 
@@ -110,8 +93,7 @@ public class TeleportationManager
                 Boolean triedTeleporting = (Boolean) teleportResult.keySet().toArray()[0];
                 safeLocation = (Location) teleportResult.values().toArray()[0];
 
-                if (triedTeleporting && safeLocation == null)
-                {
+                if (triedTeleporting && safeLocation == null) {
                     break;
                 }
             }
@@ -123,49 +105,40 @@ public class TeleportationManager
     }
 
     // Experimental function
-    private HashMap<Boolean, Location> teleportTameable(Entity e, Location safeLocation, Location searchLocation, ThreadPoolExecutor executor)
-    {
+    private HashMap<Boolean, Location> teleportTameable(Entity e, Location safeLocation, Location searchLocation, ThreadPoolExecutor executor) {
         // We use this map to store whether it even tried searching for a location, and then to return with a safe location, so we don't have to search again
         HashMap<Boolean, Location> teleportResult = new HashMap<>();
 
         Tameable tameableEntity = (Tameable) e;
 
-        if (tameableEntity.getOwner() instanceof Player)
-        {
+        if (tameableEntity.getOwner() instanceof Player) {
             Sittable sittingEntity = (Sittable) e;
             Player player = (Player) tameableEntity.getOwner();
 
-            if (player != null && player.isOnline() && MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport"))
-            {
+            if (player != null && player.isOnline() && MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport")) {
                 // If it's a dog, or if the config allows all tameables to teleport
                 Boolean isDog = (e.getType().equals(EntityType.WOLF) && MyDog.getDogManager().isDog(tameableEntity.getUniqueId()));
-                if (isDog || plugin.teleportAllTameables)
-                {
+                if (isDog || plugin.teleportAllTameables) {
                     // If the tameable is sitting, or is in another world
-                    if (!sittingEntity.isSitting() || (!tameableEntity.getWorld().equals(player.getWorld()) && plugin.teleportOnWorldChange))
-                    {
+                    if (!sittingEntity.isSitting() || (!tameableEntity.getWorld().equals(player.getWorld()) && plugin.teleportOnWorldChange)) {
                         plugin.logDebug("An entity that needs to be teleported was found! Running teleporting procedure!");
                         plugin.logDebug("UUID: " + tameableEntity.getUniqueId());
                         plugin.logDebug("Owner: " + ((Player) tameableEntity.getOwner()).getDisplayName());
                         // If dog, save location of the dog
-                        if (isDog)
-                        {
+                        if (isDog) {
                             MyDog.getDogManager().getDog(tameableEntity.getUniqueId()).saveDogLocation();
                         }
 
                         // Begin teleport procedure!!
                         if (safeLocation == null) {
                             // If a search location is provided, like a player that is starting to teleport
-                            if (searchLocation == null)
-                            {
+                            if (searchLocation == null) {
                                 searchLocation = player.getLocation();
                             }
-                            if (!isSafeLocation(searchLocation))
-                            {
+                            if (!isSafeLocation(searchLocation)) {
                                 plugin.logDebug("Whoops, seems like our player isn't at a safe location, let's find a good spot for the tameable...");
                                 searchLocation = searchSafeLocation(searchLocation);
-                                if (searchLocation == null)
-                                {
+                                if (searchLocation == null) {
                                     plugin.logDebug("Did not find a safe place to teleport the tameable! Keeping tameable at unloaded chunks!");
                                     player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.cannotTeleportTameableString.replace("{chatPrefix}", plugin.getChatPrefix())));
                                     teleportResult.put(true, null);
@@ -173,67 +146,50 @@ public class TeleportationManager
                                 }
                             }
                             safeLocation = searchLocation;
-                        }
-                        else
-                        {
+                        } else {
                             plugin.logDebug("Using an already found safe location!");
                         }
 
                         plugin.logDebug("Teleporting to a safe location! - X:" + safeLocation.getX() + " Y:" + safeLocation.getY() + " Z:" + safeLocation.getZ());
 
                         Location finalSafeLocation = safeLocation;
-                        Runnable teleport = new Runnable()
-                        {
-                            public void run()
-                            {
+                        Runnable teleport = new Runnable() {
+                            public void run() {
                                 boolean teleported = true;
 
                                 plugin.logDebug("Teleporting...");
 
-                                if (!tameableEntity.teleport(finalSafeLocation))
-                                {
+                                if (!tameableEntity.teleport(finalSafeLocation)) {
                                     Chunk chunk = tameableEntity.getLocation().getChunk();
-                                    if (!entityChunks.contains(chunk))
-                                    {
-                                        if (chunk.load(false))
-                                        {
+                                    if (!entityChunks.contains(chunk)) {
+                                        if (chunk.load(false)) {
                                             plugin.logDebug("Loaded the chunk sucessfully, no generate!");
                                             entityChunks.add(chunk);
-                                        }
-                                        else if (chunk.load(true))
-                                        {
+                                        } else if (chunk.load(true)) {
                                             plugin.logDebug("Loaded the chunk sucessfully, generated!");
                                             entityChunks.add(chunk);
                                         }
 
                                         // Try teleporting again
-                                        if (!tameableEntity.teleport(finalSafeLocation))
-                                        {
+                                        if (!tameableEntity.teleport(finalSafeLocation)) {
                                             teleported = false;
                                         }
-                                    }
-                                    else
-                                    {
+                                    } else {
                                         teleported = false;
                                     }
                                 }
 
                                 // If the entity got teleported
-                                if (teleported)
-                                {
-                                    if (sittingEntity.isSitting())
-                                    {
+                                if (teleported) {
+                                    if (sittingEntity.isSitting()) {
                                         sittingEntity.setSitting(false);
                                     }
 
                                     // Sleep
-                                    try
-                                    {
+                                    try {
                                         Thread.sleep(1000);
                                         plugin.logDebug("Sleep over!");
-                                    }
-                                    catch (InterruptedException ex)
-                                    {
+                                    } catch (InterruptedException ex) {
                                         plugin.logDebug("Error in thread!");
                                     }
                                 }
@@ -259,65 +215,53 @@ public class TeleportationManager
     public void doTeleportEntities(List<Entity> entities, Location location) {
         Location safeLocation = null;
 
-        for (Entity e : entities)
-        {
+        for (Entity e : entities) {
             // All tameables
-            if (e instanceof Sittable && e instanceof Tameable && !((Sittable)e).isSitting())
-            {
+            if (e instanceof Sittable && e instanceof Tameable && !((Sittable) e).isSitting()) {
                 HashMap<Boolean, Location> teleportResult = teleportTameable(e, safeLocation, location);
 
                 // If the first entity didn't find a safe location
                 Boolean triedTeleporting = (Boolean) teleportResult.keySet().toArray()[0];
                 safeLocation = (Location) teleportResult.values().toArray()[0];
 
-                if (triedTeleporting && safeLocation == null)
-                {
+                if (triedTeleporting && safeLocation == null) {
                     break;
                 }
             }
         }
     }
 
-    private HashMap<Boolean, Location> teleportTameable(Entity e, Location safeLocation, Location searchLocation)
-    {
+    private HashMap<Boolean, Location> teleportTameable(Entity e, Location safeLocation, Location searchLocation) {
         // We use this map to store whether it even tried searching for a location, and then to return with a safe location, so we don't have to search again
         HashMap<Boolean, Location> teleportResult = new HashMap<>();
 
         Tameable tameableEntity = (Tameable) e;
 
-        if (tameableEntity.getOwner() instanceof Player)
-        {
+        if (tameableEntity.getOwner() instanceof Player) {
             Sittable sittingEntity = (Sittable) e;
             Player player = (Player) tameableEntity.getOwner();
 
-            if (player != null && player.isOnline() && MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport"))
-            {
+            if (player != null && player.isOnline() && MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport")) {
                 // If it's a dog, or if the config allows all tameables to teleport
                 Boolean isDog = (e.getType().equals(EntityType.WOLF) && MyDog.getDogManager().isDog(tameableEntity.getUniqueId()));
-                if (isDog || plugin.teleportAllTameables)
-                {
+                if (isDog || plugin.teleportAllTameables) {
                     // If the tameable is sitting, or is in another world
-                    if (!sittingEntity.isSitting() || (!tameableEntity.getWorld().equals(player.getWorld()) && plugin.teleportOnWorldChange))
-                    {
+                    if (!sittingEntity.isSitting() || (!tameableEntity.getWorld().equals(player.getWorld()) && plugin.teleportOnWorldChange)) {
                         // If dog, save location of the dog
-                        if (isDog)
-                        {
+                        if (isDog) {
                             MyDog.getDogManager().getDog(tameableEntity.getUniqueId()).saveDogLocation();
                         }
 
                         // Begin teleport procedure!!
                         if (safeLocation == null) {
                             // If a search location is provided, like a player that is starting to teleport
-                            if (searchLocation == null)
-                            {
+                            if (searchLocation == null) {
                                 searchLocation = player.getLocation();
                             }
-                            if (!isSafeLocation(searchLocation))
-                            {
+                            if (!isSafeLocation(searchLocation)) {
                                 plugin.logDebug("Whoops, seems like our player isn't at a safe location, let's find a good spot for the tameable...");
                                 searchLocation = searchSafeLocation(searchLocation);
-                                if (searchLocation == null)
-                                {
+                                if (searchLocation == null) {
                                     plugin.logDebug("Did not find a safe place to teleport the tameable! Keeping tameable at unloaded chunks!");
                                     player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.cannotTeleportTameableString.replace("{chatPrefix}", plugin.getChatPrefix())));
                                     teleportResult.put(true, null);
@@ -329,8 +273,12 @@ public class TeleportationManager
 
                         plugin.logDebug("It's a safe location, teleporting!");
                         tameableEntity.teleport(safeLocation);
-                        if (sittingEntity.isSitting())
-                        {
+                        Dog wolf = MyDog.getDogManager().getDog(tameableEntity.getUniqueId());
+                        if (wolf != null) {
+                            wolf.updateWolf();
+                        }
+
+                        if (sittingEntity.isSitting()) {
                             sittingEntity.setSitting(false);
                         }
 
@@ -345,28 +293,22 @@ public class TeleportationManager
         return teleportResult;
     }
 
-    private Location searchSafeLocation(Location loc)
-    {
-        if (plugin.expandedSearch)
-        {
+    private Location searchSafeLocation(Location loc) {
+        if (plugin.expandedSearch) {
             double y;
             double x;
             double z;
             plugin.logDebug("Starting safe location search!");
-            for (z = 0; z <= 2; z++)
-            {
-                loc.setZ(loc.getZ()+z);
+            for (z = 0; z <= 2; z++) {
+                loc.setZ(loc.getZ() + z);
                 //plugin.logDebug("Setting 1 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
-                for (x = 0; x <= 2; x++)
-                {
-                    loc.setX(loc.getX()+x);
+                for (x = 0; x <= 2; x++) {
+                    loc.setX(loc.getX() + x);
                     //plugin.logDebug("Setting 2 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
-                    for (y = 255; y > 1; y--)
-                    {
+                    for (y = 255; y > 1; y--) {
                         loc.setY(y);
                         //plugin.logDebug("Setting 3 Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
-                        if (isSafeLocation(loc))
-                        {
+                        if (isSafeLocation(loc)) {
                             //plugin.logDebug("is safe");
                             return loc;
                         }
@@ -374,16 +316,12 @@ public class TeleportationManager
                     }
                 }
             }
-        }
-        else
-        {
+        } else {
             double y;
-            for (y = 255; y > 1; y--)
-            {
+            for (y = 255; y > 1; y--) {
                 loc.setY(y);
                 //plugin.logDebug("Current location = X: " + loc.getX() + " Y: " + loc.getY() + " Z: " + loc.getZ());
-                if (isSafeLocation(loc))
-                {
+                if (isSafeLocation(loc)) {
                     //plugin.logDebug("is safe");
                     return loc;
                 }
@@ -403,10 +341,8 @@ public class TeleportationManager
         return (isTransparent(feet.getType()) && (ground.getType().isSolid() || ground.getType() == Material.WATER));
     }
 
-    private boolean isTransparent(Material materialType)
-    {
-        switch (materialType)
-        {
+    private boolean isTransparent(Material materialType) {
+        switch (materialType) {
             case AIR:
             case GRASS:
             case OAK_SAPLING:
