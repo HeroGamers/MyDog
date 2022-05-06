@@ -284,7 +284,7 @@ public class MyDog extends JavaPlugin {
                     for (Dog dog : MyDog.getDogManager().getDogs((player.getUniqueId()))) {
                         if (dog.isAngry()) {
                             Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
-                            if (wolf != null && !wolf.isSitting()) {
+                            if (wolf != null && !wolf.isSitting() && wolf.getTarget() == null) {
                                 double distance = 0.0;
                                 // if they are in two seperate worlds, it's safe to say that the distance is above 30 lol
                                 if (!player.getWorld().getUID().equals(wolf.getWorld().getUID())) {
@@ -294,7 +294,7 @@ public class MyDog extends JavaPlugin {
                                 }
                                 // A quick dirty check for ground below player
                                 if (distance <= 20.0) {
-                                    List<Entity> entities = player.getNearbyEntities(10, 10, 10);
+                                    List<Entity> entities = player.getNearbyEntities(13, 13, 13);
                                     double lastDistance = Double.MAX_VALUE;
                                     Entity closest = null;
                                     for (Entity entity : entities) {
