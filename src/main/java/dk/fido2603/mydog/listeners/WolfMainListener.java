@@ -232,10 +232,9 @@ public class WolfMainListener implements Listener {
 
         if (dc == null) {
             // Check if the player has a name_tag equipped
-            if (item.getType().equals(Material.NAME_TAG) && item.getItemMeta().hasDisplayName()
-                    && dog.getOwnerId().equals(player.getUniqueId())) {
-                if (!plugin.allowNametagRename) {
-                    plugin.logDebug("NametagRename is disabled, cancelling interact event!");
+            if (item.getType().equals(Material.NAME_TAG) && item.getItemMeta().hasDisplayName()) {
+                if (!plugin.allowNametagRename || !dog.getOwnerId().equals(player.getUniqueId())) {
+                    plugin.logDebug("NametagRename is disabled or not owner trying to rename dog!");
                     event.setCancelled(true);
                     return;
                 }
