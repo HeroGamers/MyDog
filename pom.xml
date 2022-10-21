@@ -1,75 +1,129 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>dk.fido2603</groupId>
-  <artifactId>mydog</artifactId>
-  <version>0.0.9</version>
-  <name>MyDog</name>
-  <description>Tamed wolves but at least 10x better!</description>
-  <url>https://github.com/DoggyCraftDK/MyDog</url>
-  <packaging>jar</packaging>
-  <licenses>
-	<license>
-		<name>MIT License</name>    	
-		<url>https://raw.githubusercontent.com/DoggyCraftDK/MyDog/master/LICENSE</url>
-  	</license>
-  </licenses>  
-  <properties>
-    <jdk.version>1.8</jdk.version>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<sonar.host.url>http://localhost:9000/</sonar.host.url>
-    <!--suppress UnresolvedMavenProperty -->
-    <sonar.dependencyCheck.reportPath>${dependency.check.report.dir}/dependency-check-report.xml</sonar.dependencyCheck.reportPath>
-    <!--suppress UnresolvedMavenProperty -->
-    <sonar.dependencyCheck.htmlReportPath>${dependency.check.report.dir}/dependency-check-report.html</sonar.dependencyCheck.htmlReportPath>  </properties>
-  <repositories>
-    <!-- Spigot Repo for Spigot and Bukkit -->
-    <repository>
-	    <id>spigot-repo</id>
-	    <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
-    </repository>
-    <!-- Vault repo for Vault -->
-    <repository>
-		<id>vault-repo</id>
-		<url>http://nexus.hc.to/content/repositories/pub_releases</url>
-    </repository>
-  </repositories>
-  <dependencies>
-  	<!-- Spigot -->
-    <dependency>
-		<groupId>org.spigotmc</groupId>
-		<artifactId>spigot-api</artifactId>
-		<version>1.14.4-R0.1-SNAPSHOT</version>
-		<scope>provided</scope>
-    </dependency>
-	<!-- VaultAPI -->
-    <dependency>
-		<groupId>net.milkbowl.vault</groupId>
-		<artifactId>VaultAPI</artifactId>
-		<version>1.7</version>
-		<scope>provided</scope>
-    </dependency>
-  </dependencies>     
-  <build>
-    <defaultGoal>clean package</defaultGoal>
-    <finalName>${project.name}-${project.version}</finalName>
-    <sourceDirectory>${project.basedir}/src/</sourceDirectory>
-    <resources>
-      <resource>
-        <filtering>true</filtering>
-        <directory>${project.basedir}/src/resources</directory>
-        <includes>
-          <include>*.yml</include>
-        </includes>
-      </resource>
-    </resources>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.1</version>
-      </plugin>
-    </plugins>
-  </build>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>dk.fido2603</groupId>
+    <artifactId>mydog</artifactId>
+    <version>0.1.4-SNAPSHOT</version>
+    <name>MyDog</name>
+    <description>Tamed wolves but at least 10x better!</description>
+    <url>https://github.com/${github.repo}</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://raw.githubusercontent.com/DoggyCraftDK/MyDog/master/LICENSE</url>
+        </license>
+    </licenses>
+
+    <properties>
+        <github.repo>DoggyCraft/MyDog</github.repo>
+        <bukkitAPIVersion>1.18.1-R0.1-SNAPSHOT</bukkitAPIVersion>
+        <jdk.version>8</jdk.version>
+        <maven.compiler.source>${jdk.version}</maven.compiler.source>
+        <maven.compiler.release>${jdk.version}</maven.compiler.release>
+        <maven.compiler.target>${jdk.version}</maven.compiler.target>
+        <encoding>UTF-8</encoding>
+        <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
+
+        <!-- Sonar -->
+        <sonar.host.url>http://localhost:9000/</sonar.host.url>
+        <!--suppress UnresolvedMavenProperty -->
+        <sonar.dependencyCheck.reportPath>${dependency.check.report.dir}/dependency-check-report.xml</sonar.dependencyCheck.reportPath>
+        <!--suppress UnresolvedMavenProperty -->
+        <sonar.dependencyCheck.htmlReportPath>${dependency.check.report.dir}/dependency-check-report.html</sonar.dependencyCheck.htmlReportPath>
+    </properties>
+
+    <scm>
+        <url>git@github.com:${github.repo}.git</url>
+        <connection>scm:git:${project.scm.url}</connection>
+        <developerConnection>scm:git:${project.scm.url}</developerConnection>
+      <tag>HEAD</tag>
+  </scm>
+
+    <repositories>
+        <!-- Spigot Repo for Spigot and Bukkit -->
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
+        </repository>
+        <!-- Vault repo for Vault -->
+        <repository>
+            <id>vault-repo</id>
+            <url>https://nexus.hc.to/content/repositories/pub_releases</url>
+        </repository>
+    </repositories>
+    <dependencies>
+        <!-- Spigot -->
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>${bukkitAPIVersion}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- VaultAPI -->
+        <dependency>
+            <groupId>net.milkbowl.vault</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- junit 5, unit tests -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.8.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <packaging>jar</packaging>
+    <build>
+        <defaultGoal>clean package</defaultGoal>
+        <finalName>${project.name}-${project.version}</finalName>
+        <resources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <includes>
+                    <include>*.yml</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.4.3</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/${github.repo}</url>
+        </repository>
+    </distributionManagement>
 </project>

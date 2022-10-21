@@ -3,7 +3,7 @@ main: dk.fido2603.mydog.MyDog
 author: Fido2603
 version: ${project.version}
 api-version: 1.13
-load: POSTWORLD
+load: STARTUP
 description: Tamed wolves but at least 10x better!
 depend: []
 softdepend: [Vault]
@@ -33,6 +33,7 @@ permissions:
             mydog.comehere: true
             mydog.rename: true
             mydog.free: true
+            mydog.setid: true
     mydog.teleport:
         description: Player's tamed wolves will teleport to the player
         default: true
@@ -52,8 +53,11 @@ permissions:
         description: Player can view stats about their Dogs
         default: true
     mydog.rename:
-        description: Player can rename their Dogs
-        default: true
+      description: Player can rename their Dogs
+      default: true
+    mydog.setid:
+      description: Player can set a custom ID to their Dogs
+      default: true
     mydog.free:
         description: Player can set their Dogs free
         default: true
