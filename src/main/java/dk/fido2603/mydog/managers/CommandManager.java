@@ -104,7 +104,7 @@ public class CommandManager {
                     try {
                         dogIdentifier = Integer.parseInt(args[1]);
                     } catch (NumberFormatException e) {
-                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "ID собаки не верный! Введите /mydog dogs для посмотра цифрового ID");
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
                         return true;
                     }
 
@@ -120,7 +120,7 @@ public class CommandManager {
                     try {
                         dogIdentifier = Integer.parseInt(args[1]);
                     } catch (NumberFormatException e) {
-                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "ID собаки не верный! Введите /mydog dogs для посмотра цифрового ID");
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
                         return true;
                     }
 
@@ -136,7 +136,7 @@ public class CommandManager {
                     try {
                         dogIdentifier = Integer.parseInt(args[1]);
                     } catch (NumberFormatException e) {
-                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "ID собаки не верный! Введите /mydog dogs для посмотра цифрового ID");
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
                         return true;
                     }
 
@@ -152,7 +152,7 @@ public class CommandManager {
                     try {
                         dogIdentifier = Integer.parseInt(args[1]);
                     } catch (NumberFormatException e) {
-                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "ID собаки не верный! Введите /mydog dogs для посмотра цифрового ID");
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
                         return true;
                     }
 
@@ -172,7 +172,7 @@ public class CommandManager {
                     try {
                         dogIdentifier = Integer.parseInt(args[1]);
                     } catch (NumberFormatException e) {
-                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "ID собаки не верный! Введите /mydog rip для посмотра цифрового ID");
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
                         return true;
                     }
 
@@ -193,7 +193,7 @@ public class CommandManager {
                         dogIdentifier = Integer.parseInt(args[1]);
                         dogLevel = Integer.parseInt(args[2]);
                     } catch (NumberFormatException e) {
-                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "ID собаки не верный! Введите /mydog rip для посмотра цифрового ID");
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
                         return true;
                     }
 
@@ -232,7 +232,7 @@ public class CommandManager {
 
     private boolean commandHelp(CommandSender sender) {
         sender.sendMessage(ChatColor.YELLOW + "---------------- " + plugin.getDescription().getFullName() + " ----------------");
-        sender.sendMessage(ChatColor.AQUA + "By Fido2603");
+        sender.sendMessage(ChatColor.AQUA + "By Fido2603 / HeroGamers");
         sender.sendMessage(ChatColor.AQUA + "");
         int dogsOwned = MyDog.getDogManager().dogsOwned((Player) sender);
         String dogs = " dogs!";
@@ -253,40 +253,40 @@ public class CommandManager {
             Player player = (Player) sender;
 
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.help"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog help" + ChatColor.WHITE + " - Этот список");
+                sender.sendMessage(ChatColor.AQUA + "/mydog help" + ChatColor.WHITE + " - This command");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.reload"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog reload" + ChatColor.WHITE + " - Перегрузить конфиг");
+                sender.sendMessage(ChatColor.AQUA + "/mydog reload" + ChatColor.WHITE + " - Reloads the MyDog system");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.save"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog save" + ChatColor.WHITE + " - Сохранение всех домашних питомцев");
+                sender.sendMessage(ChatColor.AQUA + "/mydog save" + ChatColor.WHITE + " - Saves the current changes to the MyDog system");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.dogs"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog list" + ChatColor.WHITE + " - Список ваших собак");
+                sender.sendMessage(ChatColor.AQUA + "/mydog list" + ChatColor.WHITE + " - View a list with your current Dogs");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog putdown <id>" + ChatColor.WHITE + " - Убить собаку");
+                sender.sendMessage(ChatColor.AQUA + "/mydog putdown <id>" + ChatColor.WHITE + " - Get rid of a Dog you own");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.free"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog free <id>" + ChatColor.WHITE + " - Отпустить собаку на волю");
+                sender.sendMessage(ChatColor.AQUA + "/mydog free <id>" + ChatColor.WHITE + " - Set one of your Dogs free!");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog comehere <id>" + ChatColor.WHITE + " - Призвать собаку к себе");
+                sender.sendMessage(ChatColor.AQUA + "/mydog comehere <id>" + ChatColor.WHITE + " - Forces your Dog to teleport to your location");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.stats"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog info <id>" + ChatColor.WHITE + " - Показывает информацию о вашем питомце");
+                sender.sendMessage(ChatColor.AQUA + "/mydog info <id>" + ChatColor.WHITE + " - Gets stats and other info about a Dog you own");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.rename"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog rename <id> <name>" + ChatColor.WHITE + " - Переименовывает вашего питомца");
+                sender.sendMessage(ChatColor.AQUA + "/mydog rename <id> <name>" + ChatColor.WHITE + " - Renames a Dog you own");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.setid"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog setid <id> <newid>" + ChatColor.WHITE + " - Присваивает новый идентификатор для вашего питомца");
+                sender.sendMessage(ChatColor.AQUA + "/mydog setid <id> <newid>" + ChatColor.WHITE + " - Assigns a custom ID to a Dog you own");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.rip"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog rip" + ChatColor.WHITE + " - Список собак которые отошли в иной мир");
+                sender.sendMessage(ChatColor.AQUA + "/mydog rip" + ChatColor.WHITE + " - List of Dogs that have gone to another world");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.revive"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog revive <ID>" + ChatColor.WHITE + " - Воскрешает питомца за денюжку");
+                sender.sendMessage(ChatColor.AQUA + "/mydog revive <ID>" + ChatColor.WHITE + " - Resurrects a Dog for a fee");
             }
         }
 
@@ -316,13 +316,9 @@ public class CommandManager {
     }
 
     private boolean commandDogRip(CommandSender sender) {
-        // Sort the dogs after their ID (identifier)
-        TreeMap<Integer, Dog> dogsSorted = new TreeMap<>();
-
         int id = 0;
         sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
         for (Dog dog : MyDog.getDogManager().getRipDogs(((Player) sender).getUniqueId())) {
-            dogsSorted.put(++id, dog);
             sender.sendMessage(ChatColor.AQUA + "#" + id + ChatColor.WHITE + " - " + ChatColor.AQUA + dog.getDogName() + ChatColor.WHITE + " LVL " + dog.getLevel() + " " + ChatColor.GREEN + " $" + dog.getPrice());
         }
         return true;
@@ -333,7 +329,7 @@ public class CommandManager {
         try {
             dogIdentifier = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "ID собаки не верный! Введите /mydog dogs для посмотра цифрового ID");
+            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
             return false;
         }
 
@@ -369,7 +365,7 @@ public class CommandManager {
         try {
             dogIdentifier = Integer.parseInt(args[1]);
         } catch (NumberFormatException e) {
-            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "ID собаки не верный! Введите /mydog dogs для посмотра цифрового ID");
+            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Invalid ID! Type /mydog dogs to find the ID.");
             return false;
         }
         String new_id = args[2];
@@ -395,7 +391,7 @@ public class CommandManager {
         }
 
         if (!MyDog.getDogManager().setNewId(dog, id)) {
-            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "An error occured! Could not set new Dog ID!");
+            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "An error occurred! Could not set new Dog ID!");
             return false;
         }
 
@@ -561,39 +557,17 @@ public class CommandManager {
         return ChatColor.AQUA + "" + ChatColor.BOLD + "[" + percentString + ChatColor.AQUA + "" + ChatColor.BOLD + "]";
     }
 
-    private boolean commandRipDogs(CommandSender sender, int dogIdentifier) {
-        // Sort the dogs after their ID (identifier)
-        TreeMap<Integer, Dog> dogsSorted = new TreeMap<>();
-        for (Dog dog : MyDog.getDogManager().getDogs(((Player) sender).getUniqueId())) {
-            dogsSorted.put(dog.getIdentifier(), dog);
-        }
-
-        sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
-        for (Map.Entry<Integer, Dog> entry : dogsSorted.entrySet()) {
-            Wolf wolf = (Wolf) plugin.getServer().getEntity(((Dog) entry.getValue()).getDogId());
-            String healthString = "";
-            if (wolf != null) {
-                double maxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-                double health = wolf.getHealth();
-                healthString = " " + ChatColor.BLUE + "(HP: " + health + "/" + maxHealth + ")";
-            }
-
-            sender.sendMessage(ChatColor.AQUA + "#" + ((Dog) entry.getValue()).getIdentifier() + ChatColor.WHITE + " - " + ChatColor.AQUA + ((Dog) entry.getValue()).getDogName() + healthString);
-        }
-        return true;
-    }
-
     private boolean commandReviveDog(Player player, CommandSender sender, int dogIdentifier) {
         List<Dog> dogs = MyDog.getDogManager().getRipDogs(player.getUniqueId());
         dogIdentifier--;
         if (dogs.size() <= dogIdentifier) {
-            sender.sendMessage(ChatColor.RED + "У тебя нет собаки с таким идентификатором.");
+            sender.sendMessage(ChatColor.RED + "You don't have a dog with that ID.");
             return false;
         }
         Dog ripDog = dogs.get(dogIdentifier);
 
         if (!MyDog.getEconomy().has(player, ripDog.getPrice())) {
-            sender.sendMessage(ChatColor.RED + "У тебя недостаточно средств для воскрешения собаки.");
+            sender.sendMessage(ChatColor.RED + "You don't have enough funds to resurrect the dog.");
             return false;
         }
         MyDog.getEconomy().withdrawPlayer(player, ripDog.getPrice());
@@ -611,7 +585,7 @@ public class CommandManager {
         dog.updateWolf();
 
         MyDog.getDogManager().removeRipDog(ripDog.getDogId());
-        sender.sendMessage(ChatColor.GREEN + "Твоя собака воскрешена.");
+        sender.sendMessage(ChatColor.GREEN + "Your dog is resurrected.");
         return true;
     }
 
@@ -678,11 +652,11 @@ public class CommandManager {
     private boolean commandEditLevel(CommandSender sender, int dogIdentifier, int dogLevel) {
         Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
         if (dog == null) {
-            sender.sendMessage("Не удалось найти пса с таким идентификатором!");
+            sender.sendMessage("Could not find a dog with this ID!");
             return false;
         }
         if (dogLevel < 1 || dogLevel > 100) {
-            sender.sendMessage("Уровень должен быть в пределах от 1 до 100!");
+            sender.sendMessage("Level must be between 0 and 100!");
         }
         dog.setLevel(dogLevel);
         dog.updateWolf();

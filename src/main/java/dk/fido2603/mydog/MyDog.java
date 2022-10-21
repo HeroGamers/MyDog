@@ -74,7 +74,8 @@ public class MyDog extends JavaPlugin {
 
     public boolean randomCollarColor = true;
     public boolean useLevels = true;
-    public List<String> dogNames = Arrays.asList("Fido", "Queen", "King", "Doggy", "Charlie", "Max", "Milo", "Ollie", "Toby", "Teddy", "Molly", "Rosie", "Bella",
+    public List<String> dogNames = Arrays.asList(
+            "Fido", "Queen", "King", "Doggy", "Charlie", "Max", "Milo", "Ollie", "Toby", "Teddy", "Molly", "Rosie", "Bella",
             "Abby", "Addie", "Alexis", "Alice", "Allie", "Alyssa", "Amber", "Angel", "Anna", "Annie", "Ariel", "Ashley",
             "Aspen", "Athena", "Autumn", "Ava", "Avery", "Baby", "Bailey", "Basil", "Bean", "Bella", "Belle", "Betsy",
             "Betty", "Bianca", "Birdie", "Biscuit", "Blondie", "Blossom", "Bonnie", "Brandy", "Brooklyn", "Brownie", "Buffy",
