@@ -33,13 +33,13 @@ public class DamageListener implements Listener {
             return;
         }
         EntityType type = e.getDamager().getType();
-        if(type == EntityType.PLAYER) {
+        if (type == EntityType.PLAYER) {
             Dog wolf = MyDog.getDogManager().getDog(e.getEntity().getUniqueId());
             if (wolf.getOwnerId().equals(e.getDamager().getUniqueId())) {
                 e.setCancelled(true);
             }
         }
-        if(type == EntityType.ARROW) {
+        if (type == EntityType.ARROW) {
             e.setCancelled(true);
         }
     }

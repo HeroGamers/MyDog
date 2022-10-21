@@ -681,7 +681,7 @@ public class CommandManager {
             sender.sendMessage("Не удалось найти пса с таким идентификатором!");
             return false;
         }
-        if(dogLevel < 1 || dogLevel > 100) {
+        if (dogLevel < 1 || dogLevel > 100) {
             sender.sendMessage("Уровень должен быть в пределах от 1 до 100!");
         }
         dog.setLevel(dogLevel);
