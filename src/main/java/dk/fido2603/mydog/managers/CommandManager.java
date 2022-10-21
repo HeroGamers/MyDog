@@ -295,13 +295,13 @@ public class CommandManager {
 
     private boolean commandDogList(CommandSender sender) {
         // Sort the dogs after their ID (identifier)
-        TreeMap<Integer, Dog> dogsSorted = new TreeMap();
+        TreeMap<Integer, Dog> dogsSorted = new TreeMap<>();
         for (Dog dog : MyDog.getDogManager().getDogs(((Player) sender).getUniqueId())) {
             dogsSorted.put(dog.getIdentifier(), dog);
         }
 
         sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
-        for (Map.Entry entry : dogsSorted.entrySet()) {
+        for (Map.Entry<Integer, Dog> entry : dogsSorted.entrySet()) {
             Wolf wolf = (Wolf) plugin.getServer().getEntity(((Dog) entry.getValue()).getDogId());
             String healthString = "";
             if (wolf != null) {
@@ -317,7 +317,7 @@ public class CommandManager {
 
     private boolean commandDogRip(CommandSender sender) {
         // Sort the dogs after their ID (identifier)
-        TreeMap<Integer, Dog> dogsSorted = new TreeMap();
+        TreeMap<Integer, Dog> dogsSorted = new TreeMap<>();
 
         int id = 0;
         sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
@@ -563,13 +563,13 @@ public class CommandManager {
 
     private boolean commandRipDogs(CommandSender sender, int dogIdentifier) {
         // Sort the dogs after their ID (identifier)
-        TreeMap<Integer, Dog> dogsSorted = new TreeMap();
+        TreeMap<Integer, Dog> dogsSorted = new TreeMap<>();
         for (Dog dog : MyDog.getDogManager().getDogs(((Player) sender).getUniqueId())) {
             dogsSorted.put(dog.getIdentifier(), dog);
         }
 
         sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
-        for (Map.Entry entry : dogsSorted.entrySet()) {
+        for (Map.Entry<Integer, Dog> entry : dogsSorted.entrySet()) {
             Wolf wolf = (Wolf) plugin.getServer().getEntity(((Dog) entry.getValue()).getDogId());
             String healthString = "";
             if (wolf != null) {
