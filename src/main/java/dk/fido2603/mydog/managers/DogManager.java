@@ -244,7 +244,7 @@ public class DogManager {
         UUID ownerId = dog.getOwnerId();
         Player owner = plugin.getServer().getPlayer(ownerId);
         if (owner.isOnline()) {
-            String levelupString = plugin.levelUpString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName()).replace("{level}", Integer.toString(dog.getLevel()));
+            String levelupString = LanguageManager.getInstance().getString("levelUp").replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName()).replace("{level}", Integer.toString(dog.getLevel()));
 			/*owner.sendMessage(ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.DARK_PURPLE + "Your dog, "
 					+ dog.getDogColor() + dog.getDogName() + ChatColor.DARK_PURPLE + ", just leveled up to " + ChatColor.LIGHT_PURPLE + "Level " + dog.level + ChatColor.DARK_PURPLE + "!");*/
             owner.sendMessage(ChatColor.translateAlternateColorCodes('&', levelupString));

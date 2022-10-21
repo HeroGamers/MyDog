@@ -349,7 +349,7 @@ public class CommandManager {
 
         Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
         if (dog == null) {
-            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
+            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + LanguageManager.getInstance().getString("errorNoDogWithID"));
             return false;
         }
 
@@ -380,7 +380,7 @@ public class CommandManager {
 
         Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
         if (dog == null) {
-            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
+            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + LanguageManager.getInstance().getString("errorNoDogWithID"));
             return false;
         }
 
@@ -411,7 +411,7 @@ public class CommandManager {
     private boolean commandDogPutdown(CommandSender sender, int dogIdentifier) {
         Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
         if (dog == null) {
-            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
+            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + LanguageManager.getInstance().getString("errorNoDogWithID"));
             return false;
         }
 
@@ -431,7 +431,7 @@ public class CommandManager {
     private boolean commandDogFree(CommandSender sender, int dogIdentifier) {
         Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
         if (dog == null) {
-            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
+            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + LanguageManager.getInstance().getString("errorNoDogWithID"));
             return false;
         }
 
@@ -456,7 +456,7 @@ public class CommandManager {
     private boolean commandDogStats(CommandSender sender, int dogIdentifier) {
         Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
         if (dog == null) {
-            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
+            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + LanguageManager.getInstance().getString("errorNoDogWithID"));
             return false;
         }
 
@@ -575,7 +575,7 @@ public class CommandManager {
             }
         }
         if (deadDog == null) {
-            sender.sendMessage(ChatColor.RED + "You don't have a dead dog with that ID.");
+            sender.sendMessage(ChatColor.RED + LanguageManager.getInstance().getString("errorNoDogWithID"));
             return false;
         }
 
@@ -602,7 +602,7 @@ public class CommandManager {
         Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
         if (dog == null) {
             sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " +
-                    ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
+                    ChatColor.RESET + ChatColor.RED + LanguageManager.getInstance().getString("errorNoDogWithID"));
             return false;
         }
 
@@ -624,7 +624,7 @@ public class CommandManager {
                 plugin.logDebug("Loaded the chunk sucessfully, generated!");
             } else {
                 sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET +
-                        ChatColor.RED + "Aww bonkers! Seems like your Dog is at a location that cannot be loaded right now!");
+                        ChatColor.RED + LanguageManager.getInstance().getString("errorCannotLoadLocation"));
                 return false;
             }
             useLocation = true;
@@ -634,7 +634,7 @@ public class CommandManager {
 
         if (wolf == null) {
             sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET +
-                    ChatColor.RED + "Aww bonkers! Seems like your Dog cannot be found...");
+                    ChatColor.RED + LanguageManager.getInstance().getString("errorCannotFindDog"));
             plugin.logDebug("Could not find Dog, even though chunks should be loaded...");
             return false;
         }
@@ -643,7 +643,7 @@ public class CommandManager {
         wolf.teleport(playerLoc);
         wolf.setSitting(false);
 
-        String comehereString = plugin.commandComehereString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
+        String comehereString = LanguageManager.getInstance().getString("commandComehere").replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', comehereString));
 		/*sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + 
 				ChatColor.GOLD + "Come here! Good doggo, " + dog.getDogName() + "!");*/

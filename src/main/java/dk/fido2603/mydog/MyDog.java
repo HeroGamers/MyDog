@@ -1,15 +1,12 @@
 package dk.fido2603.mydog;
 
 import dk.fido2603.mydog.listeners.WolfMainListener_1_18;
+import dk.fido2603.mydog.managers.*;
 import dk.fido2603.mydog.objects.Dog;
 import dk.fido2603.mydog.objects.LevelFactory;
 import dk.fido2603.mydog.objects.LevelFactory.Level;
 import dk.fido2603.mydog.listeners.DamageListener;
 import dk.fido2603.mydog.listeners.WolfMainListener;
-import dk.fido2603.mydog.managers.CommandManager;
-import dk.fido2603.mydog.managers.DogManager;
-import dk.fido2603.mydog.managers.PermissionsManager;
-import dk.fido2603.mydog.managers.TeleportationManager;
 import dk.fido2603.mydog.utils.ParticleUtils;
 import dk.fido2603.mydog.utils.versioning.Version;
 import dk.fido2603.mydog.utils.versioning.VersionFactory;
@@ -59,13 +56,6 @@ public class MyDog extends JavaPlugin {
     public boolean allowArrowDamage = false;
 
     public String levelUpSound = "ENTITY_WOLF_HOWL";
-    public String levelUpString = "&5&l[{chatPrefix}] &r&5Your dog, {dogNameColor}{dogName}&5, just leveled up to &dLevel {level}&5!";
-    public String cannotTeleportTameableString = "&c&l[{chatPrefix}] &r&cHello! Looks like you just teleported away from your Pet(s)! " +
-            "They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...";
-    public String newDogString = "&6&l[{chatPrefix}] &r&6Congratulations with your new dog, {dogNameColor}{dogName}&6!";
-    public String deadDogString = "&c&l[{chatPrefix}] &r&cYour dog, {dogNameColor}{dogName}&c, just passed away... {dogNameColor}{dogName}&c lived for {time}{deadDogLevelString}.";
-    public String deadDogLevelString = ", and got to &4Level {level}&c";
-    public String commandComehereString = "&6&l[{chatPrefix}] &r&6Come here! Good doggo, {dogNameColor}{dogName}&6!";
 
     private static MyDog plugin;
     private static FileConfiguration config = null;
@@ -398,13 +388,6 @@ public class MyDog extends JavaPlugin {
 
         // Messages and sounds
         this.levelUpSound = config.getString("PlayerInteraction.LevelUpSound", "ENTITY_WOLF_HOWL");
-        this.levelUpString = config.getString("PlayerInteraction.LevelUpString", "&5&l[{chatPrefix}] &r&5Your dog, {dogNameColor}{dogName}&5, just leveled up to &dLevel {level}&5!");
-        this.cannotTeleportTameableString = config.getString("PlayerInteraction.CannotTeleportTameableString", "&c&l[{chatPrefix}] &r&cHello! Looks like you just teleported away from your Pet(s)! " +
-                "They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...");
-        this.newDogString = config.getString("PlayerInteraction.NewDogString", "&6&l[{chatPrefix}] &r&6Congratulations with your new dog, {dogNameColor}{dogName}&6!");
-        this.deadDogString = config.getString("PlayerInteraction.DeadDogString", "&c&l[{chatPrefix}] &r&cYour dog, {dogNameColor}{dogName}&c, just passed away... {dogNameColor}{dogName}&c lived for {time}{deadDogLevelString}.");
-        this.deadDogLevelString = config.getString("PlayerInteraction.DeadDogLevelString", ", and got to &4Level {level}&c");
-        this.commandComehereString = config.getString("PlayerInteraction.CommandComehereString", "&6&l[{chatPrefix}] &r&6Come here! Good doggo, {dogNameColor}{dogName}&6!");
 
         dogManager.load();
     }
@@ -441,12 +424,6 @@ public class MyDog extends JavaPlugin {
 
         // Messages and sounds
         config.set("PlayerInteraction.LevelUpSound", this.levelUpSound);
-        config.set("PlayerInteraction.LevelUpString", this.levelUpString);
-        config.set("PlayerInteraction.CannotTeleportTameableString", this.cannotTeleportTameableString);
-        config.set("PlayerInteraction.NewDogString", this.newDogString);
-        config.set("PlayerInteraction.DeadDogString", this.deadDogString);
-        config.set("PlayerInteraction.DeadDogLevelString", this.deadDogLevelString);
-        config.set("PlayerInteraction.CommandComehereString", this.commandComehereString);
 
         saveConfig();
         dogManager.save();

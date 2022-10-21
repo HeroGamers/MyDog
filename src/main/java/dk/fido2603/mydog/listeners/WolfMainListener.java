@@ -1,5 +1,6 @@
 package dk.fido2603.mydog.listeners;
 
+import dk.fido2603.mydog.managers.LanguageManager;
 import dk.fido2603.mydog.objects.Dog;
 import dk.fido2603.mydog.objects.LevelFactory.Level;
 import net.md_5.bungee.api.ChatColor;
@@ -61,7 +62,7 @@ public class WolfMainListener implements Listener {
 
 				/*owner.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.GOLD + "Congratulations with your new dog, "
 		+ dog.getDogColor() + dog.getDogName() + ChatColor.GOLD + "!");*/
-                String newDogString = plugin.newDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
+                String newDogString = LanguageManager.getInstance().getString("newDog").replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
                 owner.sendMessage(ChatColor.translateAlternateColorCodes('&', newDogString));
             }
         };
@@ -88,12 +89,12 @@ public class WolfMainListener implements Listener {
             String levelText = "";
             if (plugin.useLevels) {
                 //levelText = ", and got to " + ChatColor.DARK_RED + "Level " + dog.getLevel() + ChatColor.RED + ".";
-                levelText = plugin.deadDogLevelString.replace("{level}", Integer.toString(dog.getLevel()));
+                levelText = LanguageManager.getInstance().getString("deadDogLevel").replace("{level}", Integer.toString(dog.getLevel()));
             }
 
 			/*owner.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Your dog, " + dog.getDogColor() + dog.getDogName() + ChatColor.RED + 
 					", just passed away... " + dog.getDogColor() + dog.getDogName() + ChatColor.RED + " lived for " + time + levelText);*/
-            String deadDogString = plugin.deadDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName()).replace("{time}", time).replace("{deadDogLevelString}", levelText);
+            String deadDogString = LanguageManager.getInstance().getString("deadDog").replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName()).replace("{time}", time).replace("{deadDogLevelString}", levelText);
             owner.sendMessage(ChatColor.translateAlternateColorCodes('&', deadDogString));
         }
 
@@ -152,7 +153,7 @@ public class WolfMainListener implements Listener {
                     return;
                 }
 
-                String newDogString = plugin.newDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
+                String newDogString = LanguageManager.getInstance().getString("newDog").replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
                 owner.sendMessage(ChatColor.translateAlternateColorCodes('&', newDogString));
             }
         }
@@ -381,7 +382,7 @@ public class WolfMainListener implements Listener {
 
 				/*owner.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.GOLD + "Congratulations with your new dog, "
 						+ dog.getDogColor() + dog.getDogName() + ChatColor.GOLD + "!");*/
-                String newDogString = plugin.newDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
+                String newDogString = LanguageManager.getInstance().getString("newDog").replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
                 owner.sendMessage(ChatColor.translateAlternateColorCodes('&', newDogString));
             }
         };

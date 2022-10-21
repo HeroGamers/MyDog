@@ -140,7 +140,7 @@ public class TeleportationManager {
                                 searchLocation = searchSafeLocation(searchLocation);
                                 if (searchLocation == null) {
                                     plugin.logDebug("Did not find a safe place to teleport the tameable! Keeping tameable at unloaded chunks!");
-                                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.cannotTeleportTameableString.replace("{chatPrefix}", plugin.getChatPrefix())));
+                                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', LanguageManager.getInstance().getString("cannotTeleportTameable").replace("{chatPrefix}", plugin.getChatPrefix())));
                                     teleportResult.put(true, null);
                                     return teleportResult;
                                 }
@@ -263,7 +263,7 @@ public class TeleportationManager {
                                 searchLocation = searchSafeLocation(searchLocation);
                                 if (searchLocation == null) {
                                     plugin.logDebug("Did not find a safe place to teleport the tameable! Keeping tameable at unloaded chunks!");
-                                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.cannotTeleportTameableString.replace("{chatPrefix}", plugin.getChatPrefix())));
+                                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', LanguageManager.getInstance().getString("cannotTeleportTameable").replace("{chatPrefix}", plugin.getChatPrefix())));
                                     teleportResult.put(true, null);
                                     return teleportResult;
                                 }
