@@ -34,7 +34,7 @@
     </properties>
 
     <scm>
-        <url>ssh://git@github.com:${github.repo}.git</url>
+        <url>git@github.com:${github.repo}.git</url>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
       <tag>HEAD</tag>
