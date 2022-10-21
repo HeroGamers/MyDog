@@ -19,16 +19,7 @@ public class DamageListener implements Listener {
     }
 
     @EventHandler
-    public void onWolfEntityDamage(EntityDamageEvent event) {
-        if (event.getEntity().getType() != EntityType.WOLF || !(MyDog.getDogManager().isDog(event.getEntity().getUniqueId()))) {
-            return;
-        }
-
-        // TODO something with a Dog's equipped armor to lower damage caused
-    }
-
-    @EventHandler
-    public void onEntityDamage(EntityDamageByEntityEvent e) {
+    public void onWolfEntityDamage(EntityDamageByEntityEvent e) {
         if (e.getEntity().getType() != EntityType.WOLF || !(MyDog.getDogManager().isDog(e.getEntity().getUniqueId()))) {
             return;
         }
@@ -42,6 +33,8 @@ public class DamageListener implements Listener {
         if (type == EntityType.ARROW && !plugin.allowArrowDamage) {
             e.setCancelled(true);
         }
+
+        // TODO something with a Dog's equipped armor to lower damage caused
     }
 
     @EventHandler
@@ -53,7 +46,7 @@ public class DamageListener implements Listener {
                     return;
                 }
 
-                plugin.logDebug("Dog has killed " + event.getEntityType());
+                plugin.logDebug("Dog has killed " + event.getEntityType() + " with a final blow dealing " + event.getFinalDamage() + " HP!");
                 if (plugin.useLevels) {
                     int gainedExp;
                     switch (event.getEntityType()) {

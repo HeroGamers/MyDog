@@ -474,8 +474,8 @@ public class Dog {
         }
 
         double health = level.health;
-        if (health < 5) {
-            health = 5;
+        if (health < 5D) {
+            health = 5D;
         }
 
         AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
@@ -531,8 +531,8 @@ public class Dog {
     public boolean setDamage() {
         Wolf wolf = (Wolf) MyDog.instance().getServer().getEntity(dogId);
 
-        if (wolf == null) {
-            MyDog.instance().logDebug("Failed to set Dog damage, Wolf entity is null!");
+        if (wolf == null || !wolf.isValid()) {
+            MyDog.instance().logDebug("Failed to set Dog damage, Wolf entity is null or invalid!");
             return false;
         }
 
@@ -549,13 +549,12 @@ public class Dog {
         }
 
         double damage = level.damage;
-        if (damage < 1.0) {
-            damage = 1.0;
+        if (damage < 1.0D) {
+            damage = 1.0D;
         }
 
         AttributeInstance wolfDamage = wolf.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
         MyDog.instance().logDebug("Dog Damage Before: " + wolfDamage.getValue());
-        // wolfDamage.setBaseValue((wolfDamage.getValue()/(0.5*(getLevel()-1)))*(0.5*getLevel()));
         wolfDamage.setBaseValue(damage);
         MyDog.instance().logDebug("Dog Damage After: " + wolfDamage.getValue());
         return true;
