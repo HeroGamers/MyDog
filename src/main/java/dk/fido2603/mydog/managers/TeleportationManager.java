@@ -273,6 +273,7 @@ public class TeleportationManager {
 
                         plugin.logDebug("It's a safe location, teleporting!");
                         tameableEntity.teleport(safeLocation);
+
                         Dog wolf = MyDog.getDogManager().getDog(tameableEntity.getUniqueId());
                         if (wolf != null) {
                             wolf.updateWolf();
