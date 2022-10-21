@@ -39,7 +39,7 @@ public class DamageListener implements Listener {
                 e.setCancelled(true);
             }
         }
-        if (type == EntityType.ARROW) {
+        if (type == EntityType.ARROW && !plugin.allowArrowDamage) {
             e.setCancelled(true);
         }
     }

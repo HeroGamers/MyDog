@@ -87,12 +87,12 @@ public class CommandManager {
 
                     return true;
                 }
-                if (args[0].equalsIgnoreCase("rip") && (player != null)) {
-                    if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.dogs"))) {
+                if (args[0].equalsIgnoreCase("dead") && (player != null)) {
+                    if (!plugin.allowRevival || ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.dead")))) {
                         return false;
                     }
 
-                    commandDogRip(sender);
+                    commandDogDead(sender);
                     return true;
                 }
             } else if ((args.length == 2) && (player != null)) {
@@ -145,7 +145,7 @@ public class CommandManager {
                     return true;
                 }
                 if ((args[0].equalsIgnoreCase("comehere"))) {
-                    if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.stats"))) {
+                    if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere"))) {
                         return false;
                     }
                     int dogIdentifier;
@@ -161,7 +161,7 @@ public class CommandManager {
                     return true;
                 }
                 if ((args[0].equalsIgnoreCase("revive"))) {
-                    if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.revive"))) {
+                    if (!plugin.allowRevival || ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.revive")))) {
                         return false;
                     }
 
@@ -282,10 +282,13 @@ public class CommandManager {
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.setid"))) {
                 sender.sendMessage(ChatColor.AQUA + "/mydog setid <id> <newid>" + ChatColor.WHITE + " - Assigns a custom ID to a Dog you own");
             }
-            if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.rip"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog rip" + ChatColor.WHITE + " - List of Dogs that have gone to another world");
+            if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.editlevel"))) {
+                sender.sendMessage(ChatColor.AQUA + "/mydog setlevel <ID> <level>" + ChatColor.WHITE + " - Sets a dog's level");
             }
-            if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.revive"))) {
+            if (plugin.allowRevival && ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.dead")))) {
+                sender.sendMessage(ChatColor.AQUA + "/mydog dead" + ChatColor.WHITE + " - List of Dogs that have gone to another world");
+            }
+            if (plugin.allowRevival && ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.revive")))) {
                 sender.sendMessage(ChatColor.AQUA + "/mydog revive <ID>" + ChatColor.WHITE + " - Resurrects a Dog for a fee");
             }
         }
@@ -296,7 +299,7 @@ public class CommandManager {
     private boolean commandDogList(CommandSender sender) {
         // Sort the dogs after their ID (identifier)
         TreeMap<Integer, Dog> dogsSorted = new TreeMap<>();
-        for (Dog dog : MyDog.getDogManager().getDogs(((Player) sender).getUniqueId())) {
+        for (Dog dog : MyDog.getDogManager().getAliveDogs(((Player) sender).getUniqueId())) {
             dogsSorted.put(dog.getIdentifier(), dog);
         }
 
@@ -315,11 +318,16 @@ public class CommandManager {
         return true;
     }
 
-    private boolean commandDogRip(CommandSender sender) {
-        int id = 0;
+    private boolean commandDogDead(CommandSender sender) {
+        // Sort the dogs after their ID (identifier)
+        TreeMap<Integer, Dog> dogsSorted = new TreeMap<>();
+        for (Dog dog : MyDog.getDogManager().getDeadDogs(((Player) sender).getUniqueId())) {
+            dogsSorted.put(dog.getIdentifier(), dog);
+        }
+
         sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
-        for (Dog dog : MyDog.getDogManager().getRipDogs(((Player) sender).getUniqueId())) {
-            sender.sendMessage(ChatColor.AQUA + "#" + id + ChatColor.WHITE + " - " + ChatColor.AQUA + dog.getDogName() + ChatColor.WHITE + " LVL " + dog.getLevel() + " " + ChatColor.GREEN + " $" + dog.getPrice());
+        for (Map.Entry<Integer, Dog> entry : dogsSorted.entrySet()) {
+            sender.sendMessage(ChatColor.AQUA + "#" + ((Dog) entry.getValue()).getIdentifier() + ChatColor.WHITE + " - " + ChatColor.AQUA + ((Dog) entry.getValue()).getDogName() + ChatColor.WHITE + " LVL " + ((Dog) entry.getValue()).getLevel() + " " + ChatColor.GREEN + " $" + ((Dog) entry.getValue()).getRevivalPrice());
         }
         return true;
     }
@@ -415,7 +423,7 @@ public class CommandManager {
         }
 
         sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + "I'm sorry my friend...");
-        wolf.damage(wolf.getHealth(), (Player) sender);
+        wolf.setHealth(0);
 
         return true;
     }
@@ -558,33 +566,34 @@ public class CommandManager {
     }
 
     private boolean commandReviveDog(Player player, CommandSender sender, int dogIdentifier) {
-        List<Dog> dogs = MyDog.getDogManager().getRipDogs(player.getUniqueId());
-        dogIdentifier--;
-        if (dogs.size() <= dogIdentifier) {
-            sender.sendMessage(ChatColor.RED + "You don't have a dog with that ID.");
+        List<Dog> dogs = MyDog.getDogManager().getDeadDogs(player.getUniqueId());
+        Dog deadDog = null;
+        for (Dog dog : dogs) {
+            if (dog.getIdentifier() == dogIdentifier) {
+                deadDog = dog;
+                break;
+            }
+        }
+        if (deadDog == null) {
+            sender.sendMessage(ChatColor.RED + "You don't have a dead dog with that ID.");
             return false;
         }
-        Dog ripDog = dogs.get(dogIdentifier);
 
-        if (!MyDog.getEconomy().has(player, ripDog.getPrice())) {
+        if (!MyDog.getEconomy().has(player, deadDog.getRevivalPrice())) {
             sender.sendMessage(ChatColor.RED + "You don't have enough funds to resurrect the dog.");
             return false;
         }
-        MyDog.getEconomy().withdrawPlayer(player, ripDog.getPrice());
+        MyDog.getEconomy().withdrawPlayer(player, deadDog.getRevivalPrice());
 
         Wolf wolf = player.getWorld().spawn(player.getLocation(), Wolf.class);
         wolf.setOwner(player);
         wolf.setSitting(true);
         wolf.setTamed(true);
-        Dog dog = MyDog.getDogManager().newDog(wolf, player);
-        dog.setLevel(ripDog.getLevel());
-        dog.setExperience(ripDog.getExperience());
-        dog.setBirthday(ripDog.getBirthday());
-        dog.setIsAngry(ripDog.isAngry());
-        dog.setDogName(ripDog.getDogName());
-        dog.updateWolf();
 
-        MyDog.getDogManager().removeRipDog(ripDog.getDogId());
+        deadDog.setUUID(wolf.getUniqueId());
+        deadDog.setDead(false);
+        deadDog.updateWolf();
+
         sender.sendMessage(ChatColor.GREEN + "Your dog is resurrected.");
         return true;
     }
@@ -687,6 +696,9 @@ public class CommandManager {
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.save"))) {
                 arg1.add("save");
             }
+            if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.list"))) {
+                arg1.add("list");
+            }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.dogs"))) {
                 arg1.add("dogs");
             }
@@ -708,22 +720,36 @@ public class CommandManager {
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.setid"))) {
                 arg1.add("setid");
             }
-            if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.rip"))) {
-                arg1.add("rip");
+            if (plugin.allowRevival && (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.dead")))) {
+                arg1.add("dead");
             }
-            if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.revive"))) {
+            if (plugin.allowRevival && (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.revive")))) {
                 arg1.add("revive");
             }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.editlevel"))) {
-                arg1.add("editlevel");
+                arg1.add("setlevel");
             }
             Iterable<String> FIRST_ARGUMENTS = arg1;
             StringUtil.copyPartialMatches(args[0], FIRST_ARGUMENTS, result);
         } else if (args.length == 2) {
-            List<String> arg2 = new ArrayList<String>();
+            List<String> arg2 = new ArrayList<>();
+
+            if (player != null && (args[0].equalsIgnoreCase("setlevel"))) {
+                List<Dog> dogs = MyDog.getDogManager().getDogs(player.getUniqueId());
+                for (Dog dog : dogs) {
+                    arg2.add(Integer.toString(dog.getIdentifier()));
+                }
+            }
 
             if (player != null && (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("comehere") || args[0].equalsIgnoreCase("free") || args[0].equalsIgnoreCase("setfree") || args[0].equalsIgnoreCase("rename") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("setid") || args[0].equalsIgnoreCase("stats"))) {
-                List<Dog> dogs = MyDog.getDogManager().getDogs(player.getUniqueId());
+                List<Dog> dogs = MyDog.getDogManager().getAliveDogs(player.getUniqueId());
+                for (Dog dog : dogs) {
+                    arg2.add(Integer.toString(dog.getIdentifier()));
+                }
+            }
+
+            if (player != null && ((plugin.allowRevival && args[0].equalsIgnoreCase("revive")))) {
+                List<Dog> dogs = MyDog.getDogManager().getDeadDogs(player.getUniqueId());
                 for (Dog dog : dogs) {
                     arg2.add(Integer.toString(dog.getIdentifier()));
                 }
@@ -738,6 +764,8 @@ public class CommandManager {
                 arg3.add("<name>");
             } else if (args[0].equalsIgnoreCase("setid")) {
                 arg3.add("<custom_id>");
+            } else if (args[0].equalsIgnoreCase("setlevel")) {
+                arg3.add("<level>");
             }
 
             Iterable<String> SECOND_ARGUMENTS = arg3;

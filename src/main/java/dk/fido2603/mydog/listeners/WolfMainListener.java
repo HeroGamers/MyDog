@@ -86,7 +86,6 @@ public class WolfMainListener implements Listener {
         }
 
         MyDog.getDogManager().dogDied(event.getEntity().getUniqueId());
-        MyDog.getDogManager().removeDog(event.getEntity().getUniqueId());
     }
 
     @EventHandler
@@ -426,7 +425,7 @@ public class WolfMainListener implements Listener {
         List<Entity> entities = new ArrayList<>();
 
         // Check whether the player has any dogs
-        for (Dog dog : MyDog.getDogManager().getDogs(player.getUniqueId())) {
+        for (Dog dog : MyDog.getDogManager().getAliveDogs(player.getUniqueId())) {
             Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
             if (wolf != null && !wolf.isSilent()) {
                 entities.add(wolf);

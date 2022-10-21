@@ -7,7 +7,6 @@ import dk.fido2603.mydog.MyDog;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 import org.bukkit.Sound;
-import org.bukkit.configuration.MemorySection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -17,8 +16,6 @@ import dk.fido2603.mydog.objects.Dog;
 
 public class DogManager {
     private MyDog plugin = null;
-    private FileConfiguration ripDogsConfig = null;
-    private File ripDogsConfigFile = null;
     private FileConfiguration dogsConfig = null;
     private File dogsConfigFile = null;
     private Random random = new Random();
@@ -32,28 +29,19 @@ public class DogManager {
         if (this.dogsConfigFile == null) {
             this.dogsConfigFile = new File(this.plugin.getDataFolder(), "dogs.yml");
         }
-        if (this.ripDogsConfigFile == null) {
-            this.ripDogsConfigFile = new File(this.plugin.getDataFolder(), "rip_dogs.yml");
-        }
         this.dogsConfig = YamlConfiguration.loadConfiguration(this.dogsConfigFile);
-        this.ripDogsConfig = YamlConfiguration.loadConfiguration(this.ripDogsConfigFile);
         this.plugin.log("Loaded " + this.dogsConfig.getKeys(false).size() + " dogs.");
     }
 
     public void save() {
         this.lastSaveTime = System.currentTimeMillis();
-        if ((this.dogsConfig == null) || (this.dogsConfigFile == null) || (this.ripDogsConfig == null) || (this.ripDogsConfigFile == null)) {
+        if ((this.dogsConfig == null) || (this.dogsConfigFile == null)) {
             return;
         }
         try {
             this.dogsConfig.save(this.dogsConfigFile);
         } catch (Exception ex) {
             this.plugin.log("Could not save config to " + this.dogsConfigFile + ": " + ex.getMessage());
-        }
-        try {
-            this.ripDogsConfig.save(this.ripDogsConfigFile);
-        } catch (Exception ex) {
-            this.plugin.log("Could not save config to " + this.ripDogsConfigFile + ": " + ex.getMessage());
         }
     }
 
@@ -68,10 +56,6 @@ public class DogManager {
         }
 
         save();
-    }
-
-    public FileConfiguration getRipDogsConfig() {
-        return ripDogsConfig;
     }
 
     public FileConfiguration getDogsConfig() {
@@ -89,36 +73,19 @@ public class DogManager {
         }
     }
 
-    public boolean isUUIDInRipDogs(UUID uuid) {
-        return ripDogsConfig.contains(uuid.toString());
-    }
-
-    public void removeRipDog(UUID uuid) {
-        String sUuid = uuid.toString();
-        if (ripDogsConfig.contains(sUuid)) {
-            ripDogsConfig.set(sUuid, null);
-            saveTimed();
-        }
+    public boolean isUUIDDeadDog(UUID uuid) {
+        return dogsConfig.contains(uuid.toString()) && dogsConfig.getBoolean(uuid.toString() + ".isDead");
     }
 
     public void dogDied(UUID dogId) {
-        if (dogsConfig.contains(dogId.toString())) {
-            Object data = dogsConfig.get(dogId.toString());
-            if (data != null) {
-                UUID dogUniqId = UUID.randomUUID();
-                while (isUUIDInRipDogs(dogUniqId)) {
-                    dogUniqId = UUID.randomUUID();
-                }
-                ripDogsConfig.set(dogUniqId.toString(), data);
-
-                List<Dog> ripDogs = MyDog.getDogManager()
-                        .getRipDogs(UUID.fromString(Objects.requireNonNull(((MemorySection) data).getString("Owner"))));
-                if (ripDogs != null && ripDogs.size() > 5) {
-                    Dog ripDog = ripDogs.get(0);
-                    removeRipDog(ripDog.getDogId());
-                }
+        if (plugin.allowRevival) {
+            Dog dog = getDog(dogId);
+            if (dog != null) {
+                dog.setDead(true);
             }
-            saveTimed();
+        }
+        else {
+            removeDog(dogId);
         }
     }
 
@@ -138,6 +105,14 @@ public class DogManager {
         return dogs;
     }
 
+    public void changeDogUUID(UUID oldDogID, UUID newDogID) {
+        Dog oldDog = getDog(oldDogID);
+        Dog newDog = null;
+        if (oldDog != null) {
+
+        }
+    }
+
     public Dog newDog(Wolf dog, Player dogOwner) {
         int dogID = generateNewId(dogOwner.getUniqueId());
         return new Dog(dog, dogOwner, dogID, 1);
@@ -145,7 +120,7 @@ public class DogManager {
 
     public Dog newDog(Wolf dog, Player dogOwner, String customName, DyeColor collarColor) {
         int dogID = generateNewId(dogOwner.getUniqueId());
-        return new Dog(dog, dogOwner, customName, collarColor, dogID);
+        return new Dog(dog, dogOwner, customName, collarColor, dogID, null);
     }
 
     public Dog getDog(UUID dogId) {
@@ -178,7 +153,7 @@ public class DogManager {
     }
 
     public List<Dog> getDogs(UUID ownerId) {
-        List<Dog> dogs = new ArrayList<Dog>();
+        List<Dog> dogs = new ArrayList<>();
 
         for (String dogIdString : dogsConfig.getKeys(false)) {
             if (dogsConfig.getString(dogIdString + ".Owner").contains(ownerId.toString())) {
@@ -190,11 +165,21 @@ public class DogManager {
         return dogs;
     }
 
-    public List<Dog> getRipDogs(UUID ownerId) {
-        List<Dog> dogs = new ArrayList<Dog>();
-        for (String dogIdString : ripDogsConfig.getKeys(false)) {
-            if (ripDogsConfig.getString(dogIdString + ".Owner").contains(ownerId.toString())) {
-                dogs.add(new Dog(dogIdString, ownerId));
+    public List<Dog> getAliveDogs(UUID ownerId) {
+        List<Dog> dogs = new ArrayList<>();
+        for (Dog dog : getDogs(ownerId)) {
+            if (!dog.isDead()) {
+                dogs.add(dog);
+            }
+        }
+        return dogs;
+    }
+
+    public List<Dog> getDeadDogs(UUID ownerId) {
+        List<Dog> dogs = new ArrayList<>();
+        for (Dog dog : getDogs(ownerId)) {
+            if (dog.isDead()) {
+                dogs.add(dog);
             }
         }
         return dogs;
@@ -221,40 +206,6 @@ public class DogManager {
     }
 
     private int generateNewId(UUID dogOwnerId) {
-        int id = 1;
-        List<Dog> dogs = MyDog.getDogManager().getDogs(dogOwnerId);
-
-        if (!dogs.isEmpty()) {
-            plugin.logDebug("Running new generator for ID");
-
-            while (true) {
-                plugin.logDebug("Running loop - Dogs size: " + dogs.size());
-                boolean isUsed = false;
-                for (Dog dog : dogs) {
-                    plugin.logDebug("Current dog: " + dog.getDogName() + " - " + dog.getIdentifier() + " ID to search: " + id);
-                    if (dog.getIdentifier() == id) {
-                        plugin.logDebug("ID already used - ID: " + id);
-                        isUsed = true;
-                        break;
-                    }
-                }
-                if (!isUsed) {
-                    plugin.logDebug("Found a free ID: " + id);
-                    break;
-                }
-                id++;
-            }
-            plugin.logDebug("ok");
-        } else {
-            plugin.logDebug("Dogs list is empty!");
-            id = 1;
-        }
-
-        plugin.logDebug("Returning ID: " + id);
-        return id;
-    }
-
-    private int generateNewIdForRipDog(UUID dogOwnerId) {
         int id = 1;
         List<Dog> dogs = MyDog.getDogManager().getDogs(dogOwnerId);
 
