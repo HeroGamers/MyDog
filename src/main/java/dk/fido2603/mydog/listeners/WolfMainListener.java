@@ -42,20 +42,32 @@ public class WolfMainListener implements Listener {
         Wolf wolf = (Wolf) event.getEntity();
         Player owner = (Player) event.getOwner();
 
-        Dog dog = MyDog.getDogManager().newDog(wolf, owner);
-        plugin.logDebug("New dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + plugin.getServer().getPlayer(dog.getOwnerId()).getName() + " - OwnerId: " + dog.getOwnerId());
-        Location dogLocation = dog.getDogLocation();
-        plugin.logDebug("Dog Location = X: " + dogLocation.getX() + " Y: " + dogLocation.getY() + " Z: " + dogLocation.getZ());
+        // Make the task for getting the doggo, we want it to load in first...
+        BukkitRunnable newTamedDog = new BukkitRunnable() {
+            @Override
+            public void run() {
+                plugin.logDebug("Running newTamedDog BukkitRunnable...");
+                Dog dog = MyDog.getDogManager().newDog(wolf, owner);
+                plugin.logDebug("New dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + plugin.getServer().getPlayer(dog.getOwnerId()).getName() + " - OwnerId: " + dog.getOwnerId());
+                Location dogLocation = dog.getDogLocation();
+                plugin.logDebug("Dog Location = X: " + dogLocation.getX() + " Y: " + dogLocation.getY() + " Z: " + dogLocation.getZ());
 
-        if (!dog.setDogCustomName()) {
-            event.setCancelled(true);
-            return;
-        }
+                if (!dog.updateWolf()) {
+                    plugin.logDebug("Could not set custom dog name, health and attack, cancelling event!");
+                    event.setCancelled(true);
+                    return;
+                }
+                plugin.logDebug("Finished setting custom dog name! Tame successful!");
 
-		/*owner.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.GOLD + "Congratulations with your new dog, "
+				/*owner.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.GOLD + "Congratulations with your new dog, "
 		+ dog.getDogColor() + dog.getDogName() + ChatColor.GOLD + "!");*/
-        String newDogString = plugin.newDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
-        owner.sendMessage(ChatColor.translateAlternateColorCodes('&', newDogString));
+                String newDogString = plugin.newDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
+                owner.sendMessage(ChatColor.translateAlternateColorCodes('&', newDogString));
+            }
+        };
+
+        // Run the DoggoMaker task
+        newTamedDog.runTaskLater(plugin, 2);
     }
 
     @EventHandler
@@ -86,7 +98,6 @@ public class WolfMainListener implements Listener {
         }
 
         MyDog.getDogManager().dogDied(event.getEntity().getUniqueId());
-        MyDog.getDogManager().removeDog(event.getEntity().getUniqueId());
     }
 
     @EventHandler
@@ -136,7 +147,7 @@ public class WolfMainListener implements Listener {
                 Location dogLocation = dog.getDogLocation();
                 plugin.logDebug("Dog Location = X: " + dogLocation.getX() + " Y: " + dogLocation.getY() + " Z: " + dogLocation.getZ());
 
-                if (!dog.setDogCustomName()) {
+                if (!dog.updateWolf()) {
                     event.setCancelled(true);
                     return;
                 }
@@ -361,8 +372,8 @@ public class WolfMainListener implements Listener {
                 Location dogLocation = dog.getDogLocation();
                 plugin.logDebug("Dog Location = X: " + dogLocation.getX() + " Y: " + dogLocation.getY() + " Z: " + dogLocation.getZ());
 
-                if (!dog.setDogCustomName()) {
-                    plugin.logDebug("Could not set custom dog name, cancelling event!");
+                if (!dog.updateWolf()) {
+                    plugin.logDebug("Could not set custom dog name, health and attack, cancelling event!");
                     event.setCancelled(true);
                     return;
                 }
@@ -426,7 +437,7 @@ public class WolfMainListener implements Listener {
         List<Entity> entities = new ArrayList<>();
 
         // Check whether the player has any dogs
-        for (Dog dog : MyDog.getDogManager().getDogs(player.getUniqueId())) {
+        for (Dog dog : MyDog.getDogManager().getAliveDogs(player.getUniqueId())) {
             Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
             if (wolf != null && !wolf.isSilent()) {
                 entities.add(wolf);
