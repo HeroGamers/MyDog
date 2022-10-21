@@ -54,6 +54,9 @@ public class MyDog extends JavaPlugin {
 
     public boolean allowPlayerKillExp = true;
     public boolean allowNametagRename = true;
+    public boolean allowRevival = true;
+    public int revivalPrice = 200;
+    public boolean allowArrowDamage = false;
 
     public String levelUpSound = "ENTITY_WOLF_HOWL";
     public String levelUpString = "&5&l[{chatPrefix}] &r&5Your dog, {dogNameColor}{dogName}&5, just leveled up to &dLevel {level}&5!";
@@ -74,7 +77,8 @@ public class MyDog extends JavaPlugin {
 
     public boolean randomCollarColor = true;
     public boolean useLevels = true;
-    public List<String> dogNames = Arrays.asList("Fido", "Queen", "King", "Doggy", "Charlie", "Max", "Milo", "Ollie", "Toby", "Teddy", "Molly", "Rosie", "Bella",
+    public List<String> dogNames = Arrays.asList(
+            "Fido", "Queen", "King", "Doggy", "Charlie", "Max", "Milo", "Ollie", "Toby", "Teddy", "Molly", "Rosie", "Bella",
             "Abby", "Addie", "Alexis", "Alice", "Allie", "Alyssa", "Amber", "Angel", "Anna", "Annie", "Ariel", "Ashley",
             "Aspen", "Athena", "Autumn", "Ava", "Avery", "Baby", "Bailey", "Basil", "Bean", "Bella", "Belle", "Betsy",
             "Betty", "Bianca", "Birdie", "Biscuit", "Blondie", "Blossom", "Bonnie", "Brandy", "Brooklyn", "Brownie", "Buffy",
@@ -247,7 +251,7 @@ public class MyDog extends JavaPlugin {
                     List<Entity> entities = new ArrayList<>();
 
                     for (Player player : getServer().getOnlinePlayers()) {
-                        for (Dog dog : MyDog.getDogManager().getDogs((player.getUniqueId()))) {
+                        for (Dog dog : MyDog.getDogManager().getAliveDogs((player.getUniqueId()))) {
                             Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
                             if (wolf != null && !wolf.isSitting()) {
                                 double distance = 0.0;
@@ -276,25 +280,32 @@ public class MyDog extends JavaPlugin {
                 }
             }, 20L * 60L, 20L * 10L);
         }
+
+        // Attack mode / angry checker
+        // keeps the dog on a target
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
             @Override
             public void run() {
-                plugin.logDebug("Angry checker!");
+                plugin.logDebug("Running the angry dog target checker!");
                 for (Player player : getServer().getOnlinePlayers()) {
-                    for (Dog dog : MyDog.getDogManager().getDogs((player.getUniqueId()))) {
+                    for (Dog dog : MyDog.getDogManager().getAliveDogs((player.getUniqueId()))) {
                         if (dog.isAngry()) {
                             Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+                            // If the dog has no target
                             if (wolf != null && !wolf.isSitting() && wolf.getTarget() == null) {
-                                double distance = 0.0;
-                                // if they are in two seperate worlds, it's safe to say that the distance is above 30 lol
+                                double distance;
+
+                                // if they are in two seperate worlds, it's safe to say that the distance is above 20 lol
                                 if (!player.getWorld().getUID().equals(wolf.getWorld().getUID())) {
                                     distance = 1000;
                                 } else {
                                     distance = player.getLocation().distance(wolf.getLocation());
                                 }
-                                // A quick dirty check for ground below player
+
+                                // If distance is below or equal to 20, find a new target near the player
                                 if (distance <= 20.0) {
                                     List<Entity> entities = player.getNearbyEntities(13, 13, 13);
+                                    // Get the closest target
                                     double lastDistance = Double.MAX_VALUE;
                                     Entity closest = null;
                                     for (Entity entity : entities) {
@@ -350,6 +361,9 @@ public class MyDog extends JavaPlugin {
         this.showLevelsInNametag = config.getBoolean("DogSettings.ShowLevelsInNametag", true);
         this.allowPlayerKillExp = config.getBoolean("DogSettings.AllowPlayerKillExp", true);
         this.allowNametagRename = config.getBoolean("DogSettings.AllowNametagRename", true);
+        this.allowRevival = config.getBoolean("DogSettings.AllowRevival", true);
+        this.revivalPrice = config.getInt("DogSettings.RevivalPricePerLevel", 200);
+        this.allowArrowDamage = config.getBoolean("DogSettings.AllowArrowDamage", false);
         if (config.contains("DogSettings.DogNames") && !config.getStringList("DogSettings.DogNames").isEmpty()) {
             this.dogNames = config.getStringList("DogSettings.DogNames");
         }
@@ -413,6 +427,9 @@ public class MyDog extends JavaPlugin {
         config.set("DogSettings.AllowPlayerKillExp", this.allowPlayerKillExp);
         config.set("DogSettings.AllowNametagRename", this.allowNametagRename);
         config.set("DogSettings.DogNames", this.dogNames);
+        config.set("DogSettings.AllowRevival", this.allowRevival);
+        config.set("DogSettings.RevivalPricePerLevel", this.revivalPrice);
+        config.set("DogSettings.AllowArrowDamage", this.allowArrowDamage);
 
         // Levels
         for (Integer level : this.dogLevels.keySet()) {

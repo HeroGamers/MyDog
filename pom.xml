@@ -16,7 +16,7 @@
 
     <properties>
         <github.repo>DoggyCraft/MyDog</github.repo>
-        <bukkitAPIVersion>1.18.1-R0.1-SNAPSHOT</bukkitAPIVersion>
+        <bukkitAPIVersion>1.19.2-R0.1-SNAPSHOT</bukkitAPIVersion>
         <jdk.version>8</jdk.version>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
         <maven.compiler.release>${jdk.version}</maven.compiler.release>
@@ -73,6 +73,12 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <version>5.8.2</version>
             <scope>test</scope>
+        </dependency>
+        <!-- apache commons lang -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
         </dependency>
     </dependencies>
 

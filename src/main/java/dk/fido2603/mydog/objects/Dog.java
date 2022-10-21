@@ -1,7 +1,6 @@
 package dk.fido2603.mydog.objects;
 
 import dk.fido2603.mydog.MyDog;
-import dk.fido2603.mydog.managers.DogManager;
 import dk.fido2603.mydog.utils.ColorUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
@@ -11,8 +10,6 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -34,76 +31,27 @@ public class Dog {
     private Location location;
     private DyeColor collarColor;
     private ChatColor nameColor;
-    private Boolean isDead = false;
+    private Boolean isDead;
     private Boolean isAngry;
 
     private String pattern = "dd-MM-yyyy HH:mm";
     private DateFormat formatter = new SimpleDateFormat(pattern);
 
     // For new dogs
-    public Dog(Wolf dog, Player dogOwner, int dogUID, int Level) {
-        // The UUID of the Dog
-        this.dogId = dog.getUniqueId();
-
-        // The UUID of the Dog's owner (Player)
-        this.dogOwnerId = dogOwner.getUniqueId();
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Owner", dogOwnerId.toString());
-
-        // Generate an ID for the Dog
-        this.dogIdentifier = dogUID;
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".ID", dogIdentifier);
-
-        // Generate a new name for the Dog
-        this.dogName = MyDog.getDogManager().newDogName();
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Name", dogName);
-
-        // Generate a random Collar Color and set the Dog's Color
-        if (MyDog.instance().randomCollarColor) {
-            dog.setCollarColor(ColorUtils.randomDyeColor());
-        }
-        this.collarColor = dog.getCollarColor();
-        this.nameColor = ColorUtils.getChatColorFromDyeColor(collarColor);
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".NameChatColor", nameColor.name());
-
-        // Save the Dog's last seen location
-        this.location = dog.getLocation();
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
-
-        // Give the Dog a level
-        if (MyDog.instance().useLevels) {
-            if (Level == 0) {
-                this.level = 1;
-            } else {
-                this.level = Level;
-            }
-            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Level.Level", level);
-            this.experience = 0;
-            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Level.Experience", experience);
-        }
-
-        // Set the current time as the Dog's birthday
-        this.birthday = new Date();
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Birthday", formatter.format(birthday));
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Angry", (isAngry != null) ? isAngry.toString() : "false");
-
-        MyDog.getDogManager().saveTimed();
+    public Dog(Wolf dog, Player dogOwner, int dogUID, int level) {
+        this(dog, dogOwner, null, null, dogUID, level);
     }
 
     // For new, already-tamed dogs with old data
-    public Dog(Wolf dog, Player dogOwner, String customName, DyeColor collarColorImport, int dogUID) {
+    public Dog(Wolf dog, Player dogOwner, String customName, DyeColor collarColorImport, int dogUID, Integer level) {
         // The UUID of the Dog
         this.dogId = dog.getUniqueId();
 
         // The UUID of the Dog's owner (Player)
         this.dogOwnerId = dogOwner.getUniqueId();
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Owner", dogOwnerId.toString());
 
         // Generate an ID for the Dog
         this.dogIdentifier = dogUID;
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".ID", dogIdentifier);
 
         // Generate a new name for the Dog
         if (customName == null || customName.isEmpty()) {
@@ -111,7 +59,6 @@ public class Dog {
         } else {
             this.dogName = customName;
         }
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Name", dogName);
 
         // Generate a random Collar Color and set the Dog's Color
         if (collarColorImport == null) {
@@ -122,57 +69,30 @@ public class Dog {
 
         this.collarColor = dog.getCollarColor();
         this.nameColor = ColorUtils.getChatColorFromDyeColor(collarColor);
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".NameChatColor", nameColor.name());
 
         // Save the Dog's last seen location
         this.location = dog.getLocation();
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
 
         // Give the Dog a level
         if (MyDog.instance().useLevels) {
-            this.level = 1;
-            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Level.Level", level);
+            if (level == 0) {
+                this.level = 1;
+            } else {
+                this.level = level;
+            }
             this.experience = 0;
-            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Level.Experience", experience);
         }
 
         // Set the current time as the Dog's birthday
         this.birthday = new Date();
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Birthday", formatter.format(birthday));
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Angry", (isAngry != null) ? isAngry.toString() : "false");
 
-        MyDog.getDogManager().saveTimed();
+        // Sync the data to the database
+        syncDog();
     }
 
     // For old, already created, dogs
     public Dog(Wolf dog) {
-        if (MyDog.getDogManager().getDogsConfig().contains(dog.getUniqueId().toString())) {
-            this.dogId = dog.getUniqueId();
-            this.dogOwnerId = dog.getOwner().getUniqueId();
-            this.dogIdentifier = getIdentifier();
-            this.birthday = getBirthday();
-            this.level = getLevel();
-            this.experience = getExperience();
-            this.dogName = getDogName();
-            this.nameColor = getDogColor();
-        }
-    }
-
-    public Dog(String key, UUID playerUUID) {
-        if (MyDog.getDogManager().getRipDogsConfig().contains(key)) {
-            this.isDead = true;
-            this.dogId = UUID.fromString(key);
-            this.dogOwnerId = playerUUID;
-            this.dogIdentifier = getIdentifier();
-            this.birthday = getBirthday();
-            this.level = getLevel();
-            this.experience = getExperience();
-            this.dogName = getDogName();
-            this.nameColor = getDogColor();
-        }
+        this(dog.getUniqueId(), dog.getOwner().getUniqueId());
     }
 
     // For old, already created, dogs
@@ -186,6 +106,11 @@ public class Dog {
             this.experience = getExperience();
             this.dogName = getDogName();
             this.nameColor = getDogColor();
+            this.isDead = isDead();
+            this.isAngry = isAngry();
+            this.location = getDogLocation();
+
+            syncDog();
         }
     }
 
@@ -194,27 +119,43 @@ public class Dog {
             return dogName;
         }
 
-        if (isDead) {
-            return MyDog.getDogManager().getRipDogsConfig().getString(dogId.toString() + ".Name", "UNKNOWN DOGNAME");
-        }
         return MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".Name", "UNKNOWN DOGNAME");
     }
 
     public Wolf getWolf() {
-        if (!MyDog.instance().getServer().getEntity(dogId).isValid() || !(MyDog.instance().getServer().getEntity(dogId) instanceof Wolf)) {
+        if (MyDog.instance().getServer().getEntity(dogId) == null || !MyDog.instance().getServer().getEntity(dogId).isValid() || !(MyDog.instance().getServer().getEntity(dogId) instanceof Wolf)) {
             return null;
         }
 
         return (Wolf) MyDog.instance().getServer().getEntity(dogId);
     }
 
+    /**
+     * Reassigns the dog to another UUID.
+     * NOTE: Deletes the old dog from the data!
+     * @param dogID the new UUID
+     */
+    public void setUUID(UUID dogID) {
+        UUID oldID = this.dogId;
+        this.dogId = dogID;
+
+        syncDog();
+
+        MyDog.getDogManager().removeDog(oldID);
+    }
+
     public void setIsAngry(boolean isAngry) {
         this.isAngry = isAngry;
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Angry", this.isAngry.toString());
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Angry", this.isAngry);
+
+        MyDog.getDogManager().saveTimed();
     }
 
     public void setBirthday(Date birthday) {
         this.birthday = birthday;
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Birthday", formatter.format(this.birthday));
+
+        MyDog.getDogManager().saveTimed();
     }
 
     public Date getBirthday() {
@@ -223,9 +164,6 @@ public class Dog {
         }
 
         try {
-            if (this.isDead) {
-                return formatter.parse(MyDog.getDogManager().getRipDogsConfig().getString(dogId.toString() + ".Birthday"));
-            }
             return formatter.parse(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".Birthday"));
         } catch (ParseException e) {
             e.printStackTrace();
@@ -239,14 +177,8 @@ public class Dog {
         }
 
         if (MyDog.instance().getServer().getEntity(dogId) == null || !MyDog.instance().getServer().getEntity(dogId).isValid()) {
-            if (isDead) {
-                if (MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".NameChatColor") != null) {
-                    return ChatColor.valueOf(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".NameChatColor"));
-                }
-            } else {
-                if (MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".NameChatColor") != null) {
-                    return ChatColor.valueOf(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".NameChatColor"));
-                }
+            if (MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".NameChatColor") != null) {
+                return ChatColor.valueOf(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".NameChatColor"));
             }
             return ChatColor.WHITE;
         }
@@ -306,15 +238,26 @@ public class Dog {
         MyDog.getDogManager().saveTimed();
     }
 
+    public boolean isDead() {
+        if (isDead != null) {
+            return isDead;
+        }
+        return MyDog.getDogManager().getDogsConfig().getBoolean(dogId.toString() + ".Dead", false);
+    }
+
+    public void setDead(boolean dead) {
+        isDead = dead;
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Dead", isDead);
+
+        MyDog.getDogManager().saveTimed();
+    }
+
     public boolean isAngry() {
         if (isAngry != null) {
             return isAngry;
         }
 
-        if (this.isDead) {
-            return Boolean.parseBoolean(MyDog.getDogManager().getRipDogsConfig().getString(dogId.toString() + ".Angry"));
-        }
-        return Boolean.parseBoolean(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".Angry"));
+        return MyDog.getDogManager().getDogsConfig().getBoolean(dogId.toString() + ".Angry", false);
     }
 
     public boolean setDogName(String name) {
@@ -398,16 +341,13 @@ public class Dog {
         return dogOwnerId;
     }
 
-    public int getPrice() {
-        return (int) (level * 1000 / 5);
+    public int getRevivalPrice() {
+        return (int) (level * MyDog.instance().revivalPrice);
     }
 
     public int getLevel() {
         if (level != 0) {
             return level;
-        }
-        if (isDead) {
-            return MyDog.getDogManager().getRipDogsConfig().getInt(dogId.toString() + ".Level.Level", 1);
         }
         return MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".Level.Level", 1);
     }
@@ -423,9 +363,6 @@ public class Dog {
     public int getExperience() {
         if (experience != 0) {
             return experience;
-        }
-        if (isDead) {
-            return MyDog.getDogManager().getRipDogsConfig().getInt(dogId.toString() + ".Level.Experience", 0);
         }
         return MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".Level.Experience", 0);
     }
@@ -499,9 +436,6 @@ public class Dog {
     public int getIdentifier() {
         if (dogIdentifier > 0) {
             return dogIdentifier;
-        }
-        if (this.isDead) {
-            return MyDog.getDogManager().getRipDogsConfig().getInt(dogId.toString() + ".ID", -1);
         }
         return MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".ID", -1);
     }
@@ -627,12 +561,75 @@ public class Dog {
         return true;
     }
 
-    public boolean updateWolf() {
-        if (!MyDog.instance().useLevels) {
-            MyDog.instance().logDebug("Not updating wolf, levels are disabled!");
-            return true;
+    public void syncDog() {
+        Wolf wolf = getWolf();
+
+        // The UUID of the Dog's owner (Player)
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Owner", dogOwnerId.toString());
+        // ID for the Dog
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".ID", dogIdentifier);
+        // Name for the Dog
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Name", dogName);
+
+        // Generate a random Collar Color and set the Dog's Color
+        if (collarColor == null) {
+            if (wolf != null) {
+                this.collarColor = wolf.getCollarColor();
+            }
+            else {
+                if (MyDog.instance().randomCollarColor) {
+                    this.collarColor = ColorUtils.randomDyeColor();
+                }
+            }
+
+            if (collarColor != null) {
+                this.nameColor = ColorUtils.getChatColorFromDyeColor(collarColor);
+                MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".NameChatColor", nameColor.name());
+            }
+        }
+        else {
+            if (nameColor == null) {
+                this.nameColor = ColorUtils.getChatColorFromDyeColor(collarColor);
+            }
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".NameChatColor", nameColor.name());
         }
 
-        return (setHealth() && setDamage());
+        // Save the Dog's last seen location
+        if (this.location == null) {
+            this.location = getDogLocation();
+        }
+        else {
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
+        }
+
+        // Give the Dog a level
+        if (MyDog.instance().useLevels) {
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Level.Level", level);
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Level.Experience", experience);
+        }
+
+        // Set the Dog's birthday
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Birthday", formatter.format(birthday));
+
+        // Set angry
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Angry", (isAngry != null) ? isAngry : false);
+        // Set dead to false (I hope LOL)
+        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Dead", (isDead != null) ? isDead : false);
+
+        MyDog.getDogManager().saveTimed();
+    }
+
+    public boolean updateWolf() {
+        boolean customNameSet = setDogCustomName();
+
+        if (!MyDog.instance().useLevels) {
+            MyDog.instance().logDebug("Not updating health and damage for dog, levels are disabled!");
+            return customNameSet;
+        }
+
+        return customNameSet && (setHealth() && setDamage());
     }
 }
