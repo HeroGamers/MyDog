@@ -10,12 +10,12 @@
     <licenses>
         <license>
             <name>MIT License</name>
-            <url>https://raw.githubusercontent.com/DoggyCraftDK/MyDog/master/LICENSE</url>
+            <url>https://raw.githubusercontent.com/HeroGamers/MyDog/master/LICENSE</url>
         </license>
     </licenses>
 
     <properties>
-        <github.repo>DoggyCraft/MyDog</github.repo>
+        <github.repo>HeroGamers/MyDog</github.repo>
         <bukkitAPIVersion>1.19.2-R0.1-SNAPSHOT</bukkitAPIVersion>
         <jdk.version>8</jdk.version>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
@@ -79,6 +79,7 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.12.0</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
