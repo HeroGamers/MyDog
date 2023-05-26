@@ -109,7 +109,7 @@ public class TeleportationManager {
 
         Tameable tameableEntity = (Tameable) e;
 
-        if (tameableEntity.getOwner() instanceof Player) {
+        if (tameableEntity != null && !tameableEntity.isDead() && tameableEntity.getOwner() instanceof Player) {
             Sittable sittingEntity = (Sittable) e;
             Player player = (Player) tameableEntity.getOwner();
 
@@ -157,24 +157,30 @@ public class TeleportationManager {
 
                                 plugin.logDebug("Teleporting...");
 
-                                if (!tameableEntity.teleport(finalSafeLocation)) {
-                                    Chunk chunk = tameableEntity.getLocation().getChunk();
-                                    if (!entityChunks.contains(chunk)) {
-                                        if (chunk.load(false)) {
-                                            plugin.logDebug("Loaded the chunk sucessfully, no generate!");
-                                            entityChunks.add(chunk);
-                                        } else if (chunk.load(true)) {
-                                            plugin.logDebug("Loaded the chunk sucessfully, generated!");
-                                            entityChunks.add(chunk);
-                                        }
-
-                                        // Try teleporting again
-                                        if (!tameableEntity.teleport(finalSafeLocation)) {
-                                            teleported = false;
-                                        }
-                                    } else {
-                                        teleported = false;
+                                // Load the teleportation location and tameable entity location
+                                Chunk teleportChunk = finalSafeLocation.getChunk();
+                                if (!teleportChunk.isLoaded()) {
+                                    if (teleportChunk.load(false)) {
+                                        plugin.logDebug("Loaded the teleportation chunk sucessfully, no generate!");
+                                    } else if (teleportChunk.load(true)) {
+                                        plugin.logDebug("Loaded the teleportation chunk sucessfully, generated!");
                                     }
+                                }
+                                Chunk entityChunk = tameableEntity.getLocation().getChunk();
+                                if (!entityChunk.isLoaded()) {
+                                    if (!entityChunks.contains(entityChunk)) {
+                                        if (entityChunk.load(false)) {
+                                            plugin.logDebug("Loaded the entity chunk sucessfully, no generate!");
+                                            entityChunks.add(entityChunk);
+                                        } else if (entityChunk.load(true)) {
+                                            plugin.logDebug("Loaded the entity chunk sucessfully, generated!");
+                                            entityChunks.add(entityChunk);
+                                        }
+                                    }
+                                }
+
+                                if (!tameableEntity.teleport(finalSafeLocation)) {
+                                    teleported = false;
                                 }
 
                                 // If the entity got teleported
@@ -182,16 +188,7 @@ public class TeleportationManager {
                                     if (sittingEntity.isSitting()) {
                                         sittingEntity.setSitting(false);
                                     }
-
-                                    // Sleep
-                                    try {
-                                        Thread.sleep(1000);
-                                        plugin.logDebug("Sleep over!");
-                                    } catch (InterruptedException ex) {
-                                        plugin.logDebug("Error in thread!");
-                                    }
                                 }
-
                             }
                         };
 
@@ -235,13 +232,13 @@ public class TeleportationManager {
 
         Tameable tameableEntity = (Tameable) e;
 
-        if (tameableEntity.getOwner() instanceof Player) {
+        if (tameableEntity != null && !tameableEntity.isDead() && tameableEntity.getOwner() instanceof Player) {
             Sittable sittingEntity = (Sittable) e;
             Player player = (Player) tameableEntity.getOwner();
 
             if (player != null && player.isOnline() && MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport")) {
                 // If it's a dog, or if the config allows all tameables to teleport
-                Boolean isDog = (e.getType().equals(EntityType.WOLF) && MyDog.getDogManager().isDog(tameableEntity.getUniqueId()));
+                boolean isDog = (e.getType().equals(EntityType.WOLF) && MyDog.getDogManager().isDog(tameableEntity.getUniqueId()));
                 if (isDog || plugin.teleportAllTameables) {
                     // If the tameable is sitting, or is in another world
                     if (!sittingEntity.isSitting() || (!tameableEntity.getWorld().equals(player.getWorld()) && plugin.teleportOnWorldChange)) {
@@ -270,6 +267,29 @@ public class TeleportationManager {
                         }
 
                         plugin.logDebug("It's a safe location, teleporting!");
+
+                        // Load the teleportation location and tameable entity location
+                        Chunk teleportChunk = safeLocation.getChunk();
+                        if (!teleportChunk.isLoaded()) {
+                            if (teleportChunk.load(false)) {
+                                plugin.logDebug("Loaded the teleportation chunk sucessfully, no generate!");
+                            } else if (teleportChunk.load(true)) {
+                                plugin.logDebug("Loaded the teleportation chunk sucessfully, generated!");
+                            }
+                        }
+                        Chunk entityChunk = tameableEntity.getLocation().getChunk();
+                        if (!entityChunk.isLoaded()) {
+                            if (!entityChunks.contains(entityChunk)) {
+                                if (entityChunk.load(false)) {
+                                    plugin.logDebug("Loaded the entity chunk sucessfully, no generate!");
+                                    entityChunks.add(entityChunk);
+                                } else if (entityChunk.load(true)) {
+                                    plugin.logDebug("Loaded the entity chunk sucessfully, generated!");
+                                    entityChunks.add(entityChunk);
+                                }
+                            }
+                        }
+
                         tameableEntity.teleport(safeLocation);
 
                         Dog wolf = MyDog.getDogManager().getDog(tameableEntity.getUniqueId());
