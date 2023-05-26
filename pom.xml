@@ -26,11 +26,8 @@
         <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
 
         <!-- Sonar -->
-        <sonar.host.url>http://localhost:9000/</sonar.host.url>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.dependencyCheck.reportPath>${dependency.check.report.dir}/dependency-check-report.xml</sonar.dependencyCheck.reportPath>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.dependencyCheck.htmlReportPath>${dependency.check.report.dir}/dependency-check-report.html</sonar.dependencyCheck.htmlReportPath>
+        <sonar.organization>herogamers</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <scm>
