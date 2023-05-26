@@ -75,7 +75,7 @@ public class Dog {
 
         // Give the Dog a level
         if (MyDog.instance().useLevels) {
-            if (level == 0) {
+            if (level == null || level == 0) {
                 this.level = 1;
             } else {
                 this.level = level;
