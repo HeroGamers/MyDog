@@ -678,12 +678,22 @@ public class CommandManager {
             return false;
         }
 
-        if (MyDog.getEconomy() != null) {
-            if (!MyDog.getEconomy().has(player, deadDog.getRevivalPrice())) {
-                sender.sendMessage(ChatColor.RED + "You don't have enough funds to resurrect the dog.");
+        int revivalPrice = deadDog.getRevivalPrice();
+        if (!plugin.revivalUsingPlayerExp) {
+            if (MyDog.getEconomy() != null) {
+                if (!MyDog.getEconomy().has(player, revivalPrice)) {
+                    sender.sendMessage(ChatColor.RED + "You don't have enough funds to resurrect the dog.");
+                    return false;
+                }
+                MyDog.getEconomy().withdrawPlayer(player, revivalPrice);
+            }
+        }
+        else {
+            if (player.getLevel() < revivalPrice) {
+                sender.sendMessage(ChatColor.RED + "You don't have enough power to resurrect the dog. You need " + ChatColor.GOLD + (revivalPrice - player.getLevel()) + ChatColor.RED + " more levels!");
                 return false;
             }
-            MyDog.getEconomy().withdrawPlayer(player, deadDog.getRevivalPrice());
+            player.setLevel(player.getLevel() - revivalPrice);
         }
 
         Wolf wolf = player.getWorld().spawn(player.getLocation(), Wolf.class);
@@ -695,7 +705,7 @@ public class CommandManager {
         deadDog.setDead(false);
         deadDog.updateWolf();
 
-        sender.sendMessage(ChatColor.GREEN + "Your dog is resurrected.");
+        sender.sendMessage(ChatColor.GREEN + "Your dog has been resurrected.");
         return true;
     }
 
