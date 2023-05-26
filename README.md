@@ -26,10 +26,10 @@ ___
 *	The ability to add currently existing Tamed Wolves to the MyDog system, and register them as new Dogs (interact with them).
 *	Configurable all the way from the sound on LevelUp to the messages displayed (excluding error messages for now...)
 
-### TODO Feature-list
-*	Add inventory to Dogs, so they can wear armor and take less damage.
-*	Config with customizable experience values for entities.
-*	For the full list, visit the [TODO list](https://github.com/DoggyCraftDK/MyDog/projects/1).
+### ToDo Feature-list
+To view the list of features, please visit the [project page](https://github.com/users/HeroGamers/projects/1).
+
+For new feature requests, please open a GitHub Issue.
 
 ## Resources
 *	Resource page on [Spigot](https://www.spigotmc.org/resources/mydog.70260/).
