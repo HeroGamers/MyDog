@@ -112,10 +112,11 @@ public class CommandManager {
 
                     return true;
                 }
-                if ((args[0].equalsIgnoreCase("free")) || (args[0].equalsIgnoreCase("setfree"))) {
+                if ((args[0].equalsIgnoreCase("free")) || (args[0].equalsIgnoreCase("setfree")) || (args[0].equalsIgnoreCase("release"))) {
                     if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.free"))) {
                         return false;
                     }
+
                     int dogIdentifier;
                     try {
                         dogIdentifier = Integer.parseInt(args[1]);
@@ -265,10 +266,10 @@ public class CommandManager {
                 sender.sendMessage(ChatColor.AQUA + "/mydog list" + ChatColor.WHITE + " - View a list with your current Dogs");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog putdown <id>" + ChatColor.WHITE + " - Get rid of a Dog you own");
+                sender.sendMessage(ChatColor.AQUA + "/mydog putdown <id>" + ChatColor.WHITE + " - Kills a dog you own");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.free"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog free <id>" + ChatColor.WHITE + " - Set one of your Dogs free!");
+                sender.sendMessage(ChatColor.AQUA + "/mydog release <id>" + ChatColor.WHITE + " - Set one of your Dogs free!");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere"))) {
                 sender.sendMessage(ChatColor.AQUA + "/mydog comehere <id>" + ChatColor.WHITE + " - Forces your Dog to teleport to your location");
@@ -430,6 +431,7 @@ public class CommandManager {
 
     private boolean commandDogFree(CommandSender sender, int dogIdentifier) {
         Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
+
         if (dog == null) {
             sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
             return false;
@@ -706,15 +708,18 @@ public class CommandManager {
             }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown"))) {
                 arg1.add("putdown");
+                arg1.add("kill");
             }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere"))) {
                 arg1.add("comehere");
             }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.stats"))) {
                 arg1.add("info");
+                arg1.add("stats");
             }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.free"))) {
                 arg1.add("free");
+                arg1.add("release");
             }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.rename"))) {
                 arg1.add("rename");
@@ -743,8 +748,15 @@ public class CommandManager {
                 }
             }
 
-            if (player != null && (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("comehere") || args[0].equalsIgnoreCase("free") || args[0].equalsIgnoreCase("setfree") || args[0].equalsIgnoreCase("rename") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("setid") || args[0].equalsIgnoreCase("stats"))) {
+            if (player != null && (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("comehere") || args[0].equalsIgnoreCase("rename") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("stats"))) {
                 List<Dog> dogs = MyDog.getDogManager().getAliveDogs(player.getUniqueId());
+                for (Dog dog : dogs) {
+                    arg2.add(Integer.toString(dog.getIdentifier()));
+                }
+            }
+
+            if (player != null && (args[0].equalsIgnoreCase("release") || args[0].equalsIgnoreCase("free") || args[0].equalsIgnoreCase("setfree") || args[0].equalsIgnoreCase("setid"))) {
+                List<Dog> dogs = MyDog.getDogManager().getDogs(player.getUniqueId());
                 for (Dog dog : dogs) {
                     arg2.add(Integer.toString(dog.getIdentifier()));
                 }
