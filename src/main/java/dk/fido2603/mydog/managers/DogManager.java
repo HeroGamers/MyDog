@@ -83,8 +83,7 @@ public class DogManager {
             if (dog != null) {
                 dog.setDead(true);
             }
-        }
-        else {
+        } else {
             removeDog(dogId);
         }
     }

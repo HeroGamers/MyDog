@@ -133,6 +133,7 @@ public class Dog {
     /**
      * Reassigns the dog to another UUID.
      * NOTE: Deletes the old dog from the data!
+     *
      * @param dogID the new UUID
      */
     public void setUUID(UUID dogID) {
@@ -574,8 +575,7 @@ public class Dog {
         if (collarColor == null) {
             if (wolf != null) {
                 this.collarColor = wolf.getCollarColor();
-            }
-            else {
+            } else {
                 if (MyDog.instance().randomCollarColor) {
                     this.collarColor = ColorUtils.randomDyeColor();
                 }
@@ -585,8 +585,7 @@ public class Dog {
                 this.nameColor = ColorUtils.getChatColorFromDyeColor(collarColor);
                 MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".NameChatColor", nameColor.name());
             }
-        }
-        else {
+        } else {
             if (nameColor == null) {
                 this.nameColor = ColorUtils.getChatColorFromDyeColor(collarColor);
             }
@@ -596,8 +595,7 @@ public class Dog {
         // Save the Dog's last seen location
         if (this.location == null) {
             this.location = getDogLocation();
-        }
-        else {
+        } else {
             MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
             MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
             MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
