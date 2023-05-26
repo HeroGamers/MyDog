@@ -1,7 +1,6 @@
 package dk.fido2603.mydog;
 
 import dk.fido2603.mydog.listeners.WolfMainListener_1_18;
-import dk.fido2603.mydog.objects.Dog;
 import dk.fido2603.mydog.objects.LevelFactory;
 import dk.fido2603.mydog.objects.LevelFactory.Level;
 import dk.fido2603.mydog.listeners.DamageListener;
@@ -10,6 +9,8 @@ import dk.fido2603.mydog.managers.CommandManager;
 import dk.fido2603.mydog.managers.DogManager;
 import dk.fido2603.mydog.managers.PermissionsManager;
 import dk.fido2603.mydog.managers.TeleportationManager;
+import dk.fido2603.mydog.tasks.AttackModeTask;
+import dk.fido2603.mydog.tasks.DistanceTask;
 import dk.fido2603.mydog.utils.ParticleUtils;
 import dk.fido2603.mydog.utils.versioning.Version;
 import dk.fido2603.mydog.utils.versioning.VersionFactory;
@@ -21,7 +22,6 @@ import java.util.*;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -244,87 +244,12 @@ public class MyDog extends JavaPlugin {
 
         // The dog distance checker, might take some extra powerrr. Checks every ~30 seconds. Starts after 1,5 minutes.
         if (playerDistanceCheck && automaticTeleportation) {
-            Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-                @Override
-                public void run() {
-                    plugin.logDebug("Running the distance checker!");
-                    List<Entity> entities = new ArrayList<>();
-
-                    for (Player player : getServer().getOnlinePlayers()) {
-                        for (Dog dog : MyDog.getDogManager().getAliveDogs((player.getUniqueId()))) {
-                            Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
-                            if (wolf != null && !wolf.isSitting()) {
-                                double distance = 0.0;
-                                // if they are in two seperate worlds, it's safe to say that the distance is above 30 lol
-                                if (!player.getWorld().getUID().equals(wolf.getWorld().getUID())) {
-                                    distance = 1000;
-                                } else {
-                                    distance = player.getLocation().distance(wolf.getLocation());
-                                }
-
-                                // A quick dirty check for ground below player
-                                if (distance >= 30.0 && player.getLocation().getBlock().getRelative(BlockFace.DOWN).getType().isSolid()) {
-                                    if (!experimentalTeleport) {
-                                        wolf.teleport(player);
-                                    } else {
-                                        entities.add(wolf);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (experimentalTeleport) {
-                        MyDog.getTeleportationManager().teleportEntities(entities, null, "DistanceChecker");
-                    }
-                }
-            }, 20L * 60L, 20L * 10L);
+            Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new DistanceTask(this), 20L * 60L, 20L * 10L);
         }
 
         // Attack mode / angry checker
         // keeps the dog on a target
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-            @Override
-            public void run() {
-                plugin.logDebug("Running the angry dog target checker!");
-                for (Player player : getServer().getOnlinePlayers()) {
-                    for (Dog dog : MyDog.getDogManager().getAliveDogs((player.getUniqueId()))) {
-                        if (dog.isAngry()) {
-                            Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
-                            // If the dog has no target
-                            if (wolf != null && !wolf.isSitting() && wolf.getTarget() == null) {
-                                double distance;
-
-                                // if they are in two seperate worlds, it's safe to say that the distance is above 20 lol
-                                if (!player.getWorld().getUID().equals(wolf.getWorld().getUID())) {
-                                    distance = 1000;
-                                } else {
-                                    distance = player.getLocation().distance(wolf.getLocation());
-                                }
-
-                                // If distance is below or equal to 20, find a new target near the player
-                                if (distance <= 20.0) {
-                                    List<Entity> entities = player.getNearbyEntities(13, 13, 13);
-                                    // Get the closest target
-                                    double lastDistance = Double.MAX_VALUE;
-                                    Entity closest = null;
-                                    for (Entity entity : entities) {
-                                        double distanceToTarget = player.getLocation().distance(entity.getLocation());
-                                        if (entity instanceof Monster && distanceToTarget < lastDistance) {
-                                            lastDistance = distanceToTarget;
-                                            closest = entity;
-                                        }
-                                    }
-                                    if (closest != null) {
-                                        wolf.setTarget((LivingEntity) closest);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }, 20L * 30L, 20L * 2L);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new AttackModeTask(this), 20L * 30L, 20L * 2L);
     }
 
     public void log(String message) {
