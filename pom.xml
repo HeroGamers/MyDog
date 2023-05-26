@@ -16,7 +16,7 @@
 
     <properties>
         <github.repo>HeroGamers/MyDog</github.repo>
-        <bukkitAPIVersion>1.19.3-R0.1-SNAPSHOT</bukkitAPIVersion>
+        <bukkitAPIVersion>1.19.4-R0.1-SNAPSHOT</bukkitAPIVersion>
         <jdk.version>8</jdk.version>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
         <maven.compiler.release>${jdk.version}</maven.compiler.release>
@@ -71,7 +71,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.8.2</version>
+            <version>5.9.2</version>
             <scope>test</scope>
         </dependency>
         <!-- apache commons lang -->
