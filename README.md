@@ -76,4 +76,4 @@ mydog.save:
 ```
 
 ## Bug reports and issues
-Visit the [Issues Tab](https://github.com/DoggyCraftDK/MyDog/issues).
+Visit the [Issues Tab](https://github.com/HeroGamers/MyDog/issues).
