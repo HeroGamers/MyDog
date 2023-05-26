@@ -56,6 +56,7 @@ public class MyDog extends JavaPlugin {
     public boolean allowNametagRename = true;
     public boolean allowRevival = true;
     public int revivalPrice = 200;
+    public boolean revivalUsingPlayerExp = true;
     public boolean allowArrowDamage = false;
 
     public String levelUpSound = "ENTITY_WOLF_HOWL";
@@ -288,6 +289,7 @@ public class MyDog extends JavaPlugin {
         this.allowNametagRename = config.getBoolean("DogSettings.AllowNametagRename", true);
         this.allowRevival = config.getBoolean("DogSettings.AllowRevival", true);
         this.revivalPrice = config.getInt("DogSettings.RevivalPricePerLevel", 200);
+        this.revivalUsingPlayerExp = config.getBoolean("DogSettings.RevivalUsingPlayerExp", false);
         this.allowArrowDamage = config.getBoolean("DogSettings.AllowArrowDamage", false);
         if (config.contains("DogSettings.DogNames") && !config.getStringList("DogSettings.DogNames").isEmpty()) {
             this.dogNames = config.getStringList("DogSettings.DogNames");
@@ -354,6 +356,7 @@ public class MyDog extends JavaPlugin {
         config.set("DogSettings.DogNames", this.dogNames);
         config.set("DogSettings.AllowRevival", this.allowRevival);
         config.set("DogSettings.RevivalPricePerLevel", this.revivalPrice);
+        config.set("DogSettings.RevivalUsingPlayerExp", this.revivalUsingPlayerExp);
         config.set("DogSettings.AllowArrowDamage", this.allowArrowDamage);
 
         // Levels
