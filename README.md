@@ -1,12 +1,12 @@
 <h1 align="center">MyDog</h1>
 <div align="center">
 
-[![Build Status](https://travis-ci.com/DoggyCraftDK/MyDog.svg?branch=master)](https://travis-ci.com/DoggyCraftDK/MyDog)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=alert_status)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=ncloc)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=bugs)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
+[![Maven Test](https://github.com/HeroGamers/MyDog/actions/workflows/maven-test.yml/badge.svg)](https://github.com/HeroGamers/MyDog/actions/workflows/maven-test.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=alert_status)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=ncloc)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=bugs)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
 </div>
 
 Tamed wolves but at least 10x better.

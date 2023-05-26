@@ -5,28 +5,20 @@ before_install:
   - echo "Setting project environment variable."
   - export TRAVIS_REPO_OWNER=${TRAVIS_REPO_SLUG%/*}
   - export TRAVIS_REPO_NAME=${TRAVIS_REPO_SLUG#*/}
-deploy:
-  provider: releases
-  api-key:
-    secure: ORbcFGH2yOAsutJzOzh62hAeC12kV935ctL1Gg6MvsoSOaRBasoQkDdGRfm6NVi2rYIsEBDR3vAYplF3AOiU6/7W4vqSFDm5xp2G4Mf2xg0wSRvWQR57SJ4CJopa6ZTYQGUQJ4MklDSUnZcOLA/SGrmoOG7ioRITs0LFvn9lS3vAO35RH030DfPSW4Luy5+FKlDubulUJPlYn0cr5N+00wYOifOwee5BAdM6ajm/LgZItaGWfZuNUI0iQwCutcLPWQrI0RXO+wpDv8XqEQoaIhyAPCEcuZSrzt0ltVVFkW5YtNcWKgEAJdh4LYZSyWQCqZlzSLTqbMqvQ9RrxVeY3mNAPcuxrf3yt5nRqshRZdcTA1OX2uMKNPFfrB6CkEhAm+Cy9yD62EPM24t24Q+8mLMm+x0jJ1ZJtTOcC+gq3yC86b57OS2BaytbEWHE/u915XnMpl5HjdauTc8QbuzDMxqRWnumDX2eEg35ZDldZ7OsOg4by9eE221BQlhHM8t820Oj0byCPDvIpITNaBjeOihq9xVO7BIaR+kt/0txB1kjHgCMLtA45GaRRIDG2VfMY9kVVcVlrT/7xf3xgL7ktYQNi9roQaxzJ5gInWcpecpqG54Ncf4dQtMXW+Gwl4pCJYJEJNz5ciptdqqfDJ9Je4nApaMnAIJJ7tGc6/HLV0E=
-  file_glob: true
-  file: target/MyDog-*.jar
-  skip_cleanup: true
-  on:
-    repo: DoggyCraftDK/MyDog
-    tags: true
+#deploy:
+#  provider: releases
+#  api-key:
+#    secure:
+#  file_glob: true
+#  file: target/MyDog-*.jar
+#  skip_cleanup: true
+#  on:
+#    repo: HeroGamers/MyDog
+#    tags: true
 sudo: false
-after_success:
-  - wget https://www.doggycraft.dk/travis/send.sh
-  - chmod +x send.sh
-  - ./send.sh success $WEBHOOK_URL
-after_failure:
-  - wget https://www.doggycraft.dk/travis/send.sh
-  - chmod +x send.sh
-  - ./send.sh failure $WEBHOOK_URL
 addons:
   sonarcloud:
-    organization: "doggycraftdk"
+    organization: "herogamers"
 
 script:
-  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=DoggyCraftDK_MyDog
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=HeroGamers_MyDog
