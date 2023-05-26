@@ -15,10 +15,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityBreedEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityTameEvent;
-import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.*;
@@ -470,6 +467,26 @@ public class WolfMainListener implements Listener {
             MyDog.getTeleportationManager().teleportEntities(entities, null, "ChunkUnload");
         } else {
             MyDog.getTeleportationManager().doTeleportEntities(entities, null);
+        }
+    }
+
+    // When a dog enters a portal, deny the teleport, since it's annoying
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPortalTeleport(EntityPortalEvent event) {
+        if (!plugin.automaticTeleportation) {
+            return;
+        }
+
+        Entity entity = event.getEntity();
+
+        if (MyDog.getDogManager().isDog(entity.getUniqueId())) {
+            // Make sure that the portal isn't the end portal... pretty sure there's lava under that lol
+            if (event.getTo() != null && event.getTo().getWorld() != null) {
+                if (event.getTo().getWorld().getEnvironment() != World.Environment.THE_END) {
+                    MyDog.instance().logDebug("Stopped a dog from teleporting through a portal.");
+                    event.setCancelled(true);
+                }
+            }
         }
     }
 }
