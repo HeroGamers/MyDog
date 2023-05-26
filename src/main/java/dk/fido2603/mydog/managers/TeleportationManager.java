@@ -16,8 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 public class TeleportationManager {
     private MyDog plugin = null;
@@ -44,27 +42,27 @@ public class TeleportationManager {
         }
 
         // Create new threads to run the teleporting
-        plugin.logDebug("Creating a new threadpool! - " + reason);
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
+//        plugin.logDebug("Creating a new threadpool! - " + reason);
+//        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(1);
 
         if (reason.equals("PlayerTeleport")) {
             // Do the teleport task 3 ticks after the player has teleported
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    doTeleportEntities(entities, location, executor, reason);
+                    doTeleportEntities(entities, location, reason);
                 }
             }.runTaskLater(this.plugin, 3);
         } else {
-            doTeleportEntities(entities, location, executor, reason);
+            doTeleportEntities(entities, location, reason);
         }
 
         // Let's remove the entities we just teleported from the list of teleporting entities, once the thread pool has terminated
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (executor.isTerminated()) {
-                    plugin.logDebug("The thread pool is terminated successfully. Removing teleporting entities! - " + reason);
+//                if (executor.isTerminated()) {
+//                    plugin.logDebug("The thread pool is terminated successfully. Removing teleporting entities! - " + reason);
                     for (Entity e : entities) {
                         teleportingEntities.remove(e.getUniqueId());
                     }
@@ -74,20 +72,20 @@ public class TeleportationManager {
                     }
 
                     this.cancel();
-                }
+//                }
             }
         }.runTaskTimer(this.plugin, 20L * 10L, 20L);
     }
 
     // Experimental function
-    private void doTeleportEntities(List<Entity> entities, Location location, ThreadPoolExecutor executor, String reason) {
+    private void doTeleportEntities(List<Entity> entities, Location location, String reason) {
         Location safeLocation = null;
 
         for (Entity e : entities) {
             // All tameables
             if (e instanceof Sittable && e instanceof Tameable && !teleportingEntities.contains(e.getUniqueId()) && !((Sittable) e).isSitting()) {
                 teleportingEntities.add(e.getUniqueId());
-                HashMap<Boolean, Location> teleportResult = teleportTameable(e, safeLocation, location, executor);
+                HashMap<Boolean, Location> teleportResult = teleportTameableExperimental(e, safeLocation, location);
 
                 // If the first entity didn't find a safe location
                 Boolean triedTeleporting = (Boolean) teleportResult.keySet().toArray()[0];
@@ -99,13 +97,13 @@ public class TeleportationManager {
             }
         }
 
-        // Remember to shut down the executor!
-        executor.shutdown();
-        plugin.logDebug("Shutdown of thread pool initiated! - " + reason);
+//        // Remember to shut down the executor!
+//        executor.shutdown();
+//        plugin.logDebug("Shutdown of thread pool initiated! - " + reason);
     }
 
     // Experimental function
-    private HashMap<Boolean, Location> teleportTameable(Entity e, Location safeLocation, Location searchLocation, ThreadPoolExecutor executor) {
+    private HashMap<Boolean, Location> teleportTameableExperimental(Entity e, Location safeLocation, Location searchLocation) {
         // We use this map to store whether it even tried searching for a location, and then to return with a safe location, so we don't have to search again
         HashMap<Boolean, Location> teleportResult = new HashMap<>();
 
@@ -117,7 +115,7 @@ public class TeleportationManager {
 
             if (player != null && player.isOnline() && MyDog.getPermissionsManager().hasPermission(player, "mydog.teleport")) {
                 // If it's a dog, or if the config allows all tameables to teleport
-                Boolean isDog = (e.getType().equals(EntityType.WOLF) && MyDog.getDogManager().isDog(tameableEntity.getUniqueId()));
+                boolean isDog = (e.getType().equals(EntityType.WOLF) && MyDog.getDogManager().isDog(tameableEntity.getUniqueId()));
                 if (isDog || plugin.teleportAllTameables) {
                     // If the tameable is sitting, or is in another world
                     if (!sittingEntity.isSitting() || (!tameableEntity.getWorld().equals(player.getWorld()) && plugin.teleportOnWorldChange)) {
@@ -153,7 +151,7 @@ public class TeleportationManager {
                         plugin.logDebug("Teleporting to a safe location! - X:" + safeLocation.getX() + " Y:" + safeLocation.getY() + " Z:" + safeLocation.getZ());
 
                         Location finalSafeLocation = safeLocation;
-                        Runnable teleport = new Runnable() {
+                        BukkitRunnable teleport = new BukkitRunnable() {
                             public void run() {
                                 boolean teleported = true;
 
@@ -197,8 +195,8 @@ public class TeleportationManager {
                             }
                         };
 
-                        plugin.logDebug("Adding teleport runnable to the executor!");
-                        executor.execute(teleport);
+                        plugin.logDebug("Adding teleport runnable to the bukkitrunnable!");
+                        teleport.runTask(this.plugin);
 
                         // Return the found location
                         teleportResult.put(true, safeLocation);
