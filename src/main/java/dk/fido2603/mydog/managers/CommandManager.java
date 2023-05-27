@@ -206,7 +206,7 @@ public class CommandManager {
                     return commandReviveDog(player, sender, dogIdentifier);
                 }
             } else if ((args.length >= 3) && (player != null)) {
-                if ((args[0].equalsIgnoreCase("editlevel"))) {
+                if ((args[0].equalsIgnoreCase("editlevel") || args[0].equalsIgnoreCase("setlevel"))) {
                     if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.editlevel"))) {
                         return false;
                     }

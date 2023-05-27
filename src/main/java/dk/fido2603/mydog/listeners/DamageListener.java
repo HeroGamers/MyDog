@@ -3,10 +3,14 @@ package dk.fido2603.mydog.listeners;
 import dk.fido2603.mydog.MyDog;
 
 import dk.fido2603.mydog.objects.Dog;
+import dk.fido2603.mydog.objects.LevelFactory;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -35,6 +39,56 @@ public class DamageListener implements Listener {
         }
 
         // TODO something with a Dog's equipped armor to lower damage caused
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onWolfEntityDamage2(EntityDamageByEntityEvent e) {
+        if (e.getDamager().getType() != EntityType.WOLF || !(MyDog.getDogManager().isDog(e.getDamager().getUniqueId())) || plugin.lifesteal == 0.0D) {
+            return;
+        }
+
+        if (e.getFinalDamage() > 0) {
+            double healthPoints = e.getFinalDamage() * plugin.lifesteal;
+
+            if (healthPoints > 0) {
+                plugin.logDebug("Lifesteal event, dog stole " + healthPoints + " health!");
+
+                Wolf wolf = (Wolf) e.getDamager();
+                Dog dog = MyDog.getDogManager().getDog(wolf.getUniqueId());
+
+                int dogsLevel = dog.getLevel();
+                if (dogsLevel < 1) {
+                    plugin.logDebug("Level was under 1, setting level to 1");
+                    dogsLevel = 1;
+                }
+
+                LevelFactory.Level level = plugin.dogLevels.get(dogsLevel);
+                if (level == null) {
+                    plugin.logDebug("Level object is null, returning!");
+                    return;
+                }
+
+                double health = level.health;
+                if (health < 10.0) {
+                    health = 10.0;
+                }
+
+                AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+
+                if (wolfMaxHealth.getValue() != health) {
+                    wolfMaxHealth.setBaseValue(health);
+                }
+
+                if (wolf.getHealth() < health) {
+                    if (wolf.getHealth() + healthPoints > health) {
+                        wolf.setHealth(health);
+                    } else {
+                        wolf.setHealth(wolf.getHealth() + healthPoints);
+                    }
+                    plugin.logDebug("Gave the dog, " + dog.getDogName() + ", " + healthPoints + " in health.");
+                }
+            }
+        }
     }
 
     @EventHandler
