@@ -174,7 +174,7 @@ public class CommandManager {
                         }
                     }
 
-                    return commandDogSit(sender, dogIdentifier);
+                    return commandDogStandSit(sender, dogIdentifier, true);
                 }
                 if ((args[0].equalsIgnoreCase("stand"))) {
                     if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.sit"))) {
@@ -194,7 +194,47 @@ public class CommandManager {
                         }
                     }
 
-                    return commandDogStand(sender, dogIdentifier);
+                    return commandDogStandSit(sender, dogIdentifier, false);
+                }
+                if ((args[0].equalsIgnoreCase("attack"))) {
+                    if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.togglemode"))) {
+                        return false;
+                    }
+
+                    int dogIdentifier;
+                    if (args[1].equalsIgnoreCase("all")) {
+                        dogIdentifier = -1;
+                    }
+                    else {
+                        try {
+                            dogIdentifier = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException e) {
+                            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+                            return true;
+                        }
+                    }
+
+                    return commandDogDefendAttack(sender, dogIdentifier, true);
+                }
+                if ((args[0].equalsIgnoreCase("defend"))) {
+                    if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.togglemode"))) {
+                        return false;
+                    }
+
+                    int dogIdentifier;
+                    if (args[1].equalsIgnoreCase("all")) {
+                        dogIdentifier = -1;
+                    }
+                    else {
+                        try {
+                            dogIdentifier = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException e) {
+                            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+                            return true;
+                        }
+                    }
+
+                    return commandDogDefendAttack(sender, dogIdentifier, false);
                 }
                 if ((args[0].equalsIgnoreCase("revive"))) {
                     if (!plugin.allowRevival || ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.revive")))) {
@@ -304,6 +344,10 @@ public class CommandManager {
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.sit"))) {
                 sender.sendMessage(ChatColor.AQUA + "/mydog sit <id | all>" + ChatColor.WHITE + " - Tells your dog(s) to sit and keep their position(s)");
                 sender.sendMessage(ChatColor.AQUA + "/mydog stand <id | all>" + ChatColor.WHITE + " - Tells your dog(s) to stand up and roam free");
+            }
+            if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.togglemode"))) {
+                sender.sendMessage(ChatColor.AQUA + "/mydog attack <id | all>" + ChatColor.WHITE + " - Tells your dog(s) to attack any mobs nearby");
+                sender.sendMessage(ChatColor.AQUA + "/mydog defend <id | all>" + ChatColor.WHITE + " - Tells your dog(s) to defend you");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.stats"))) {
                 sender.sendMessage(ChatColor.AQUA + "/mydog info <id>" + ChatColor.WHITE + " - Gets stats and other info about a Dog you own");
@@ -486,17 +530,22 @@ public class CommandManager {
         return true;
     }
 
-    private boolean commandDogStand(CommandSender sender, int dogIdentifier) {
+    private boolean commandDogDefendAttack(CommandSender sender, int dogIdentifier, boolean toAttack) {
         List<Dog> dogs = new ArrayList<>();
+
+        String mode = "Defend me";
+        if (toAttack) {
+            mode = "Attack";
+        }
 
         if (dogIdentifier == -1) {
             dogs = MyDog.getDogManager().getAliveDogs(((Player) sender).getUniqueId());
-            sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + "Stand, my dogs!");
+            sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + mode + ", my dogs!");
         }
         else {
             dogs.add(MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId()));
             if (dogs.get(0) != null) {
-                sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + "Stand, " + dogs.get(0).getDogColor() + dogs.get(0).getDogName() + ChatColor.RESET + ChatColor.AQUA + "!");
+                sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + mode + ", " + dogs.get(0).getDogColor() + dogs.get(0).getDogName() + ChatColor.RESET + ChatColor.AQUA + "!");
             }
         }
 
@@ -506,23 +555,28 @@ public class CommandManager {
                 return false;
             }
 
-            dog.sit(false);
+            dog.setAngryMode(toAttack);
         }
 
         return true;
     }
 
-    private boolean commandDogSit(CommandSender sender, int dogIdentifier) {
+    private boolean commandDogStandSit(CommandSender sender, int dogIdentifier, boolean toSit) {
         List<Dog> dogs = new ArrayList<>();
+
+        String mode = "Stand";
+        if (toSit) {
+            mode = "Sit";
+        }
 
         if (dogIdentifier == -1) {
             dogs = MyDog.getDogManager().getAliveDogs(((Player) sender).getUniqueId());
-            sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + "Sit, my dogs!");
+            sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + mode + ", my dogs!");
         }
         else {
             dogs.add(MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId()));
             if (dogs.get(0) != null) {
-                sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + "Sit, " + dogs.get(0).getDogColor() + dogs.get(0).getDogName() + ChatColor.RESET + ChatColor.AQUA + "!");
+                sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + mode + ", " + dogs.get(0).getDogColor() + dogs.get(0).getDogName() + ChatColor.RESET + ChatColor.AQUA + "!");
             }
         }
 
@@ -532,7 +586,7 @@ public class CommandManager {
                 return false;
             }
 
-            dog.sit(true);
+            dog.sit(toSit);
         }
 
         return true;
@@ -834,6 +888,10 @@ public class CommandManager {
                 arg1.add("sit");
                 arg1.add("stand");
             }
+            if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.togglemode"))) {
+                arg1.add("attack");
+                arg1.add("defend");
+            }
             if (plugin.allowRevival && (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.dead")))) {
                 arg1.add("dead");
             }
@@ -869,7 +927,7 @@ public class CommandManager {
                 }
             }
 
-            if (player != null && (args[0].equalsIgnoreCase("sit") || args[0].equalsIgnoreCase("stand") || args[0].equalsIgnoreCase("comehere"))) {
+            if (player != null && (args[0].equalsIgnoreCase("sit") || args[0].equalsIgnoreCase("stand") || args[0].equalsIgnoreCase("comehere") || args[0].equalsIgnoreCase("attack") || args[0].equalsIgnoreCase("defend"))) {
                 arg2.add("all");
 
                 List<Dog> dogs = MyDog.getDogManager().getAliveDogs(player.getUniqueId());

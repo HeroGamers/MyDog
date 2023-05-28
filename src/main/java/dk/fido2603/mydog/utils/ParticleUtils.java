@@ -89,6 +89,32 @@ public class ParticleUtils {
         }.runTaskTimer(plugin, 0, 1);
     }
 
+    public void newPettingParticle(Entity entity) {
+        double r = 0.8;
+
+        new BukkitRunnable() {
+            double t = 0;
+
+            public void run() {
+                Location loc = entity.getLocation();
+                loc.setY(loc.getY() + 0.5);
+                t = t + Math.PI / 4;
+                double x = r * Math.cos(t);
+                //double y = 0.05*t;
+                double y = Math.random() * r;
+                double z = r * Math.sin(t);
+
+                loc.add(x, y, z);
+                loc.getWorld().spawnParticle(Particle.HEART, loc, 1);
+                loc.subtract(x, y, z);
+
+                if (t > Math.PI * 4) {
+                    this.cancel();
+                }
+            }
+        }.runTaskTimer(plugin, 0, 1);
+    }
+
 	/*public void newLevelUpParticle2(Location loc)
 	{
 		new BukkitRunnable()

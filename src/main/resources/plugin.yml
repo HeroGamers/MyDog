@@ -38,6 +38,9 @@ permissions:
             mydog.dead: true
             mydog.revive: true
             mydog.sit: true
+            mydog.togglemode: true
+            mydog.pet: true
+            mydog.pet.others: true
     mydog.limit.*:
         description: Give limits to the amount of dogs a player can tame.
         default: false
@@ -67,6 +70,15 @@ permissions:
       default: true
     mydog.setid:
       description: Player can set a custom ID to their Dogs
+      default: true
+    mydog.togglemode:
+      description: Player can toggle dogs between attack and defend mode
+      default: true
+    mydog.pet:
+      description: Player can pet their dogs
+      default: true
+    mydog.pet.others:
+      description: Player can pet others dogs
       default: true
     mydog.editlevel:
       description: Player can set the level of their dogs

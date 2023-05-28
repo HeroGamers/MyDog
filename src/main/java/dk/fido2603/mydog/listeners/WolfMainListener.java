@@ -141,8 +141,8 @@ public class WolfMainListener implements Listener {
             return;
         }
 
-        if (onWolfPlayerInteractToggleMode(dog, item, player) == 2) {
-            plugin.logDebug("ToggleMode event: Cancelled");
+        if (onWolfPlayerInteractPet(dog, item, player) == 2) {
+            plugin.logDebug("Petting event: Cancelled");
             event.setCancelled(true);
             return;
         }
@@ -240,8 +240,8 @@ public class WolfMainListener implements Listener {
                 healthPoints = 2.0;
                 break;
             default:
-                if (player.isSneaking() && dog.getOwnerId().equals(player.getUniqueId())) {
-                    dog.toggleMode();
+                if (player.isSneaking()) {
+                    dog.pet(player);
                     return 2; // Cancel event
                 }
                 break;
@@ -364,14 +364,14 @@ public class WolfMainListener implements Listener {
         return 0; // OK
     }
 
-    public int onWolfPlayerInteractToggleMode(Dog dog, ItemStack item, Player player) {
+    public int onWolfPlayerInteractPet(Dog dog, ItemStack item, Player player) {
         if (dog == null || item == null || player == null) {
             return 0; // OK
         }
 
         if (item.getType().equals(Material.AIR)) {
-            if (player.isSneaking() && dog.getOwnerId().equals(player.getUniqueId())) {
-                dog.toggleMode();
+            if (player.isSneaking()) {
+                dog.pet(player);
                 return 2; // Cancel event
             }
         }
