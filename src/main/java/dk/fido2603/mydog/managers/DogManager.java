@@ -112,6 +112,20 @@ public class DogManager {
         }
     }
 
+    public boolean canTameMoreDogs(Player player) {
+        if (player.isOp()) {
+            return true;
+        }
+
+        int currentlyOwned = getDogs(player.getUniqueId()).size();
+        for (int i = 0; i <= currentlyOwned; i++) {
+            if (MyDog.getPermissionsManager().hasPermission(player, "mydog.limit." + i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public Dog newDog(Wolf dog, Player dogOwner) {
         int dogID = generateNewId(dogOwner.getUniqueId());
         return new Dog(dog, dogOwner, dogID, 1);
