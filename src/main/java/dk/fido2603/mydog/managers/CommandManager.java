@@ -378,6 +378,7 @@ public class CommandManager {
         for (Dog dog : MyDog.getDogManager().getAliveDogs(((Player) sender).getUniqueId())) {
             dogsSorted.put(dog.getIdentifier(), dog);
         }
+        DecimalFormat df = new DecimalFormat("#.#");
 
         sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
         for (Map.Entry<Integer, Dog> entry : dogsSorted.entrySet()) {
@@ -386,7 +387,7 @@ public class CommandManager {
             if (wolf != null) {
                 double maxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
                 double health = wolf.getHealth();
-                healthString = " " + ChatColor.BLUE + "(HP: " + health + "/" + maxHealth + ")";
+                healthString = " " + ChatColor.BLUE + "(HP: " + df.format(health) + "/" + df.format(maxHealth) + ")";
             }
 
             sender.sendMessage(ChatColor.AQUA + "#" + ((Dog) entry.getValue()).getIdentifier() + ChatColor.WHITE + " - " + ChatColor.AQUA + ((Dog) entry.getValue()).getDogName() + healthString);
