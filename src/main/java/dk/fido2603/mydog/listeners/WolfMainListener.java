@@ -36,8 +36,15 @@ public class WolfMainListener implements Listener {
             return;
         }
 
-        Wolf wolf = (Wolf) event.getEntity();
         Player owner = (Player) event.getOwner();
+
+        if (!MyDog.getDogManager().canTameMoreDogs(owner)) {
+            owner.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.tameLimitString.replace("{chatPrefix}", plugin.getChatPrefix())));
+            event.setCancelled(true);
+            return;
+        }
+
+        Wolf wolf = (Wolf) event.getEntity();
 
         // Make the task for getting the doggo, we want it to load in first...
         BukkitRunnable newTamedDog = new BukkitRunnable() {
@@ -98,67 +105,16 @@ public class WolfMainListener implements Listener {
     }
 
     @EventHandler
-    public void onWolfSit(PlayerInteractEntityEvent event) {
-        Entity entity = event.getRightClicked();
-        if (!(entity instanceof Sittable) || !(entity instanceof Wolf)) {
-            return;
-        }
-
-        if (MyDog.getDogManager().isDog(entity.getUniqueId())) {
-            Dog dog = MyDog.getDogManager().getDog(entity.getUniqueId());
-
-            if (!((Sittable) entity).isSitting()) {
-                plugin.logDebug("Saved dog location!");
-                dog.getDogLocation();
-            }
-        }
-    }
-
-    @EventHandler
     public void onWolfPlayerInteract(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();
         if (!(entity instanceof Wolf)) {
             return;
         }
 
-        if (!MyDog.getDogManager().isDog(entity.getUniqueId())) {
-            // Make the wolf into a dog, if it's tamed
-            Wolf wolf = (Wolf) entity;
-            if (wolf.isValid() && wolf.isTamed() && wolf.getOwner() != null && wolf.getOwner() instanceof Player) {
-                Player owner = (Player) wolf.getOwner();
-                Dog dog = null;
-
-                if ((wolf.getCustomName() == null || wolf.getCustomName().isEmpty()) && wolf.getCollarColor() == DyeColor.RED) {
-                    dog = MyDog.getDogManager().newDog(wolf, owner);
-                } else if (wolf.getCustomName() == null || wolf.getCustomName().isEmpty()) {
-                    dog = MyDog.getDogManager().newDog(wolf, owner, null, wolf.getCollarColor());
-                } else if ((wolf.getCustomName() != null && !wolf.getCustomName().isEmpty()) && wolf.getCollarColor() == DyeColor.RED) {
-                    dog = MyDog.getDogManager().newDog(wolf, owner, wolf.getCustomName(), null);
-                } else if (wolf.getCustomName() != null && !wolf.getCustomName().isEmpty()) {
-                    dog = MyDog.getDogManager().newDog(wolf, owner, wolf.getCustomName(), wolf.getCollarColor());
-                } else {
-                    plugin.logDebug("New already-tamed dog creation failed!");
-                    return;
-                }
-                plugin.logDebug("New already-tamed dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + plugin.getServer().getPlayer(dog.getOwnerId()).getName() + " - OwnerId: " + dog.getOwnerId());
-                Location dogLocation = dog.getDogLocation();
-                plugin.logDebug("Dog Location = X: " + dogLocation.getX() + " Y: " + dogLocation.getY() + " Z: " + dogLocation.getZ());
-
-                if (!dog.updateWolf()) {
-                    event.setCancelled(true);
-                    return;
-                }
-
-                String newDogString = plugin.newDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
-                owner.sendMessage(ChatColor.translateAlternateColorCodes('&', newDogString));
-            }
-        }
-
         Dog dog = MyDog.getDogManager().getDog(entity.getUniqueId());
 
         if (dog == null) {
-            plugin.logDebug("Dog is null, returning!");
-            return;
+            plugin.logDebug("Dog is null!");
         }
 
         EquipmentSlot hand = event.getHand();
@@ -171,17 +127,174 @@ public class WolfMainListener implements Listener {
         } else if (hand.equals(EquipmentSlot.OFF_HAND)) {
             item = player.getEquipment().getItemInOffHand();
         } else {
-            plugin.logDebug("No item in hand, returning!");
+            plugin.logDebug("No item in hand.");
+        }
+
+        saveDogLocation(dog, wolf);
+
+        // 0 = OK
+        // 1 = Failed
+        // 2 = Cancel event
+        if (onWolfPlayerInteractAlreadyTamed(dog, wolf, player) == 2) {
+            plugin.logDebug("AlreadyTamed event: Cancelled");
+            event.setCancelled(true);
             return;
         }
 
-        if (item.getType() == Material.AIR) {
-            if (player.isSneaking() && dog.getOwnerId().equals(player.getUniqueId())) {
-                dog.toggleMode();
-                event.setCancelled(true);
-            }
-            plugin.logDebug("Item is null, retuning!");
+        if (onWolfPlayerInteractToggleMode(dog, item, player) == 2) {
+            plugin.logDebug("ToggleMode event: Cancelled");
+            event.setCancelled(true);
             return;
+        }
+
+        if (onWolfPlayerInteractChangeColor(dog, wolf, item, player) == 2) {
+            plugin.logDebug("ChangeColor event: Cancelled");
+            event.setCancelled(true);
+            return;
+        }
+
+        if (onWolfPlayerInteractFeed(dog, wolf, item, player) == 2) {
+            plugin.logDebug("Feed event: Cancelled");
+            event.setCancelled(true);
+            return;
+        }
+
+        if (onWolfPlayerInteractRename(dog, item, player) == 2) {
+            plugin.logDebug("Rename event: Cancelled");
+            event.setCancelled(true);
+        }
+    }
+
+    public void saveDogLocation(Dog dog, Wolf wolf) {
+        if (dog != null && wolf != null) {
+            plugin.logDebug("Saved dog location!");
+            dog.getDogLocation();
+        }
+    }
+
+    public int onWolfPlayerInteractAlreadyTamed(Dog dog, Wolf wolf, Player player) {
+        if (dog != null || player == null) {
+            return 0; // OK
+        }
+
+        // Make the wolf into a dog, if it's tamed
+        if (wolf.isValid() && wolf.isTamed() && wolf.getOwner() != null && wolf.getOwner() instanceof Player) {
+            Player owner = (Player) wolf.getOwner();
+
+            if (!owner.getUniqueId().equals(player.getUniqueId())) {
+                return 1; // Error
+            }
+
+            if (!MyDog.getDogManager().canTameMoreDogs(owner)) {
+                owner.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.tameLimitString.replace("{chatPrefix}", plugin.getChatPrefix())));
+                return 1; // Error
+            }
+
+            if ((wolf.getCustomName() == null || wolf.getCustomName().isEmpty()) && wolf.getCollarColor() == DyeColor.RED) {
+                dog = MyDog.getDogManager().newDog(wolf, owner);
+            } else if (wolf.getCustomName() == null || wolf.getCustomName().isEmpty()) {
+                dog = MyDog.getDogManager().newDog(wolf, owner, null, wolf.getCollarColor());
+            } else if ((wolf.getCustomName() != null && !wolf.getCustomName().isEmpty()) && wolf.getCollarColor() == DyeColor.RED) {
+                dog = MyDog.getDogManager().newDog(wolf, owner, wolf.getCustomName(), null);
+            } else if (wolf.getCustomName() != null && !wolf.getCustomName().isEmpty()) {
+                dog = MyDog.getDogManager().newDog(wolf, owner, wolf.getCustomName(), wolf.getCollarColor());
+            } else {
+                plugin.logDebug("New already-tamed dog creation failed!");
+                return 1; // Error
+            }
+            plugin.logDebug("New already-tamed dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + plugin.getServer().getPlayer(dog.getOwnerId()).getName() + " - OwnerId: " + dog.getOwnerId());
+            Location dogLocation = dog.getDogLocation();
+            plugin.logDebug("Dog Location = X: " + dogLocation.getX() + " Y: " + dogLocation.getY() + " Z: " + dogLocation.getZ());
+
+            if (!dog.updateWolf()) {
+                return 1; // Error
+            }
+
+            String newDogString = plugin.newDogString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
+            owner.sendMessage(ChatColor.translateAlternateColorCodes('&', newDogString));
+        }
+        return 0; // OK
+    }
+
+    public int onWolfPlayerInteractFeed(Dog dog, Wolf wolf, ItemStack item, Player player) {
+        if (dog == null || item == null) {
+            return 0; // OK
+        }
+
+        // Check for food
+        double healthPoints = 0.0;
+        switch (item.getType()) {
+            case CHICKEN:
+            case COOKED_CHICKEN:
+                healthPoints = 1.0;
+                break;
+            case PORKCHOP:
+            case COOKED_PORKCHOP:
+            case BEEF:
+            case COOKED_BEEF:
+            case MUTTON:
+            case COOKED_MUTTON:
+            case RABBIT:
+            case COOKED_RABBIT:
+            case ROTTEN_FLESH:
+                healthPoints = 2.0;
+                break;
+            default:
+                if (player.isSneaking() && dog.getOwnerId().equals(player.getUniqueId())) {
+                    dog.toggleMode();
+                    return 2; // Cancel event
+                }
+                break;
+        }
+
+        if (healthPoints != 0.0) {
+            plugin.logDebug("Item is food!");
+            int dogsLevel = dog.getLevel();
+            if (dogsLevel < 1) {
+                plugin.logDebug("Level was under 1, setting level to 1");
+                dogsLevel = 1;
+            }
+
+            Level level = plugin.dogLevels.get(dogsLevel);
+            if (level == null) {
+                plugin.logDebug("Level object is null, returning!");
+                return 1; // Error
+            }
+
+            double health = level.health;
+            if (health < 10.0) {
+                health = 10.0;
+            }
+
+            AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+
+            if (wolfMaxHealth.getValue() != health) {
+                wolfMaxHealth.setBaseValue(health);
+            }
+
+            if (wolf.getHealth() >= 20.0 && wolf.getHealth() < health) {
+                if (wolf.getHealth() + healthPoints > health) {
+                    wolf.setHealth(health);
+                } else {
+                    wolf.setHealth(wolf.getHealth() + healthPoints);
+                }
+                plugin.logDebug("Gave the dog, " + dog.getDogName() + ", " + healthPoints + " in health.");
+                if (player.getGameMode() != GameMode.CREATIVE) {
+                    item.setAmount(item.getAmount() - 1);
+                }
+                return 2; // Cancel event
+            }
+        }
+        return 0; // OK
+    }
+
+    public int onWolfPlayerInteractChangeColor(Dog dog, Wolf wolf, ItemStack item, Player player) {
+        if (dog == null || wolf == null || item == null || player == null) {
+            return 0; // OK
+        }
+
+        if (!dog.getOwnerId().equals(player.getUniqueId())) {
+            return 1; // Error
         }
 
         DyeColor dc = null;
@@ -238,102 +351,53 @@ public class WolfMainListener implements Listener {
                 break;
         }
 
-        if (dc == null) {
-            // Check if the player has a name_tag equipped
-            if (item.getType().equals(Material.NAME_TAG) && item.getItemMeta().hasDisplayName()) {
-                if (!plugin.allowNametagRename || !dog.getOwnerId().equals(player.getUniqueId())) {
-                    plugin.logDebug("NametagRename is disabled or not owner trying to rename dog!");
-                    event.setCancelled(true);
-                    return;
-                }
-
-                dog.setDogName(item.getItemMeta().getDisplayName());
-                plugin.logDebug("Set the Dog's name to: " + item.getItemMeta().getDisplayName());
-                if (player.getGameMode() != GameMode.CREATIVE) {
-                    item.setAmount(item.getAmount() - 1);
-                }
-                event.setCancelled(true);
-                return;
-            }
-            plugin.logDebug("Item is not a name-tag!");
-
-            // Check for food
-            double healthPoints = 0.0;
-            switch (item.getType()) {
-                case CHICKEN:
-                case COOKED_CHICKEN:
-                    healthPoints = 1.0;
-                    break;
-                case PORKCHOP:
-                case COOKED_PORKCHOP:
-                case BEEF:
-                case COOKED_BEEF:
-                case MUTTON:
-                case COOKED_MUTTON:
-                case RABBIT:
-                case COOKED_RABBIT:
-                case ROTTEN_FLESH:
-                    healthPoints = 2.0;
-                    break;
-                default:
-                    if (player.isSneaking() && dog.getOwnerId().equals(player.getUniqueId())) {
-                        dog.toggleMode();
-                        event.setCancelled(true);
-                    }
-                    break;
-            }
-
-            if (healthPoints != 0.0) {
-                plugin.logDebug("Item is food!");
-                int dogsLevel = dog.getLevel();
-                if (dogsLevel < 1) {
-                    plugin.logDebug("Level was under 1, setting level to 1");
-                    dogsLevel = 1;
-                }
-
-                Level level = plugin.dogLevels.get(dogsLevel);
-                if (level == null) {
-                    plugin.logDebug("Level object is null, returning!");
-                    return;
-                }
-
-                double health = level.health;
-                if (health < 10.0) {
-                    health = 10.0;
-                }
-
-                AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-
-                if (wolfMaxHealth.getValue() != health) {
-                    wolfMaxHealth.setBaseValue(health);
-                }
-
-                if (wolf.getHealth() >= 20.0 && wolf.getHealth() < health) {
-                    if (wolf.getHealth() + healthPoints > health) {
-                        wolf.setHealth(health);
-                    } else {
-                        wolf.setHealth(wolf.getHealth() + healthPoints);
-                    }
-                    plugin.logDebug("Gave the dog, " + dog.getDogName() + ", " + healthPoints + " in health.");
-                    if (player.getGameMode() != GameMode.CREATIVE) {
-                        item.setAmount(item.getAmount() - 1);
-                    }
-                    event.setCancelled(true);
-                }
-                return;
-            }
-            plugin.logDebug("Item is not food!");
-            return;
-        } else {
+        if (dc != null) {
             // Set collar color
 
             if (wolf.getCollarColor().equals(dc)) {
                 plugin.logDebug("Collar color is the same as dye color, returning!");
-                return;
+                return 0; // OK
             }
 
             dog.setDogColor(dc);
         }
+        return 0; // OK
+    }
+
+    public int onWolfPlayerInteractToggleMode(Dog dog, ItemStack item, Player player) {
+        if (dog == null || item == null || player == null) {
+            return 0; // OK
+        }
+
+        if (item.getType().equals(Material.AIR)) {
+            if (player.isSneaking() && dog.getOwnerId().equals(player.getUniqueId())) {
+                dog.toggleMode();
+                return 2; // Cancel event
+            }
+        }
+        return 0; // OK
+    }
+
+    public int onWolfPlayerInteractRename(Dog dog, ItemStack item, Player player) {
+        if (dog == null || item == null || player == null) {
+            return 0; // OK
+        }
+
+        // Check if the player has a name_tag equipped
+        if (item.getType().equals(Material.NAME_TAG) && item.getItemMeta().hasDisplayName()) {
+            if (!plugin.allowNametagRename || !dog.getOwnerId().equals(player.getUniqueId())) {
+                plugin.logDebug("NametagRename is disabled or not owner trying to rename dog!");
+                return 2; // Cancel event
+            }
+
+            dog.setDogName(item.getItemMeta().getDisplayName());
+            plugin.logDebug("Set the Dog's name to: " + item.getItemMeta().getDisplayName());
+            if (player.getGameMode() != GameMode.CREATIVE) {
+                item.setAmount(item.getAmount() - 1);
+            }
+            return 2; // Cancel event
+        }
+        return 0; // OK
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

@@ -68,6 +68,7 @@ public class MyDog extends JavaPlugin {
     public String deadDogString = "&c&l[{chatPrefix}] &r&cYour dog, {dogNameColor}{dogName}&c, just passed away... {dogNameColor}{dogName}&c lived for {time}{deadDogLevelString}.";
     public String deadDogLevelString = ", and got to &4Level {level}&c";
     public String commandComehereString = "&6&l[{chatPrefix}] &r&6Come here! Good doggo, {dogNameColor}{dogName}&6!";
+    public String tameLimitString = "&c&l[{chatPrefix}] &r&cTaming failed! Looks like you have reached your limit of dogs! You can maybe set some dead dogs free, or revive some?";
 
     private static MyDog plugin;
     private static FileConfiguration config = null;

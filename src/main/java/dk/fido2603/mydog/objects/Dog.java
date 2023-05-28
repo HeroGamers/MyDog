@@ -233,10 +233,21 @@ public class Dog {
         if (dog == null) {
             return;
         }
+        MyDog.instance().logDebug("Toggling dog mode.");
         this.setIsAngry(!isAngry());
         dog.setCustomName(nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]" + (isAngry() ? ANGRY_MODE : DEFENCE_MODE));
         dog.setCustomNameVisible(!MyDog.instance().onlyShowNametagOnHover);
         MyDog.getDogManager().saveTimed();
+    }
+
+    public void sit(boolean sit) {
+        Wolf dog = (Wolf) MyDog.instance().getServer().getEntity(dogId);
+        if (dog == null || !dog.isValid()) {
+            return;
+        }
+
+        dog.setSitting(sit);
+        getDogLocation();
     }
 
     public boolean isDead() {
