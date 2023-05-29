@@ -1,4 +1,4 @@
-package dk.fido2603.mydog.api;
+package dk.fido2603.mydog;
 
 import java.util.UUID;
 

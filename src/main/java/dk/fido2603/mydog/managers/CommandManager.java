@@ -25,12 +25,15 @@ public class CommandManager {
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (!plugin.isEnabled()) {
+            return false;
+        }
+
         Player player = null;
 
         if ((sender instanceof Player)) {
             player = (Player) sender;
         }
-
 
         if ((cmd.getName().equalsIgnoreCase("mydog")) || (cmd.getName().equalsIgnoreCase("md")) || (cmd.getName().equalsIgnoreCase("dog")) || (cmd.getName().equalsIgnoreCase("dogs"))) {
             if ((args.length == 0) && (player != null)) {
@@ -75,7 +78,6 @@ public class CommandManager {
                     }
 
                     commandList(sender);
-
                     return true;
                 }
                 if (((args[0].equalsIgnoreCase("dogs")) || (args[0].equalsIgnoreCase("list"))) && (player != null)) {
@@ -84,7 +86,6 @@ public class CommandManager {
                     }
 
                     commandDogList(sender);
-
                     return true;
                 }
                 if (args[0].equalsIgnoreCase("dead") && (player != null)) {
@@ -95,6 +96,23 @@ public class CommandManager {
                     commandDogDead(sender);
                     return true;
                 }
+                if (args[0].equalsIgnoreCase("tradeaccept") && (player != null)) {
+                    if (((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.trade")))) {
+                        return false;
+                    }
+
+                    commandTradeAccept(sender);
+                    return true;
+                }
+                if ((args[0].equalsIgnoreCase("tradedeny") || args[0].equalsIgnoreCase("tradedecline")) && (player != null)) {
+                    if (((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.trade")))) {
+                        return false;
+                    }
+
+                    commandTradeDeny(sender);
+                    return true;
+                }
+                sender.sendMessage(ChatColor.RED + "Not a MyDog Command! Check /mydog help");
             } else if ((args.length == 2) && (player != null)) {
                 if ((args[0].equalsIgnoreCase("putdown")) || (args[0].equalsIgnoreCase("kill"))) {
                     if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown"))) {
@@ -109,13 +127,13 @@ public class CommandManager {
                     }
 
                     commandDogPutdown(sender, dogIdentifier);
-
                     return true;
                 }
-                if ((args[0].equalsIgnoreCase("free")) || (args[0].equalsIgnoreCase("setfree"))) {
+                if ((args[0].equalsIgnoreCase("free")) || (args[0].equalsIgnoreCase("setfree")) || (args[0].equalsIgnoreCase("release"))) {
                     if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.free"))) {
                         return false;
                     }
+
                     int dogIdentifier;
                     try {
                         dogIdentifier = Integer.parseInt(args[1]);
@@ -125,7 +143,6 @@ public class CommandManager {
                     }
 
                     commandDogFree(sender, dogIdentifier);
-
                     return true;
                 }
                 if ((args[0].equalsIgnoreCase("stats")) || (args[0].equalsIgnoreCase("info"))) {
@@ -141,23 +158,106 @@ public class CommandManager {
                     }
 
                     commandDogStats(sender, dogIdentifier);
-
                     return true;
                 }
                 if ((args[0].equalsIgnoreCase("comehere"))) {
                     if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere"))) {
                         return false;
                     }
+
                     int dogIdentifier;
-                    try {
-                        dogIdentifier = Integer.parseInt(args[1]);
-                    } catch (NumberFormatException e) {
-                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
-                        return true;
+                    if (args[1].equalsIgnoreCase("all")) {
+                        dogIdentifier = -1;
+                    } else {
+                        try {
+                            dogIdentifier = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException e) {
+                            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+                            return true;
+                        }
                     }
 
                     commandDogComehere(sender, dogIdentifier);
+                    return true;
+                }
+                if ((args[0].equalsIgnoreCase("sit"))) {
+                    if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.sit"))) {
+                        return false;
+                    }
 
+                    int dogIdentifier;
+                    if (args[1].equalsIgnoreCase("all")) {
+                        dogIdentifier = -1;
+                    } else {
+                        try {
+                            dogIdentifier = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException e) {
+                            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+                            return true;
+                        }
+                    }
+
+                    commandDogStandSit(sender, dogIdentifier, true);
+                    return true;
+                }
+                if ((args[0].equalsIgnoreCase("stand"))) {
+                    if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.sit"))) {
+                        return false;
+                    }
+
+                    int dogIdentifier;
+                    if (args[1].equalsIgnoreCase("all")) {
+                        dogIdentifier = -1;
+                    } else {
+                        try {
+                            dogIdentifier = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException e) {
+                            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+                            return true;
+                        }
+                    }
+
+                    commandDogStandSit(sender, dogIdentifier, false);
+                    return true;
+                }
+                if ((args[0].equalsIgnoreCase("attack"))) {
+                    if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.togglemode"))) {
+                        return false;
+                    }
+
+                    int dogIdentifier;
+                    if (args[1].equalsIgnoreCase("all")) {
+                        dogIdentifier = -1;
+                    } else {
+                        try {
+                            dogIdentifier = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException e) {
+                            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+                            return true;
+                        }
+                    }
+
+                    commandDogDefendAttack(sender, dogIdentifier, true);
+                    return true;
+                }
+                if ((args[0].equalsIgnoreCase("defend"))) {
+                    if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.togglemode"))) {
+                        return false;
+                    }
+
+                    int dogIdentifier;
+                    if (args[1].equalsIgnoreCase("all")) {
+                        dogIdentifier = -1;
+                    } else {
+                        try {
+                            dogIdentifier = Integer.parseInt(args[1]);
+                        } catch (NumberFormatException e) {
+                            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+                            return true;
+                        }
+                    }
+
+                    commandDogDefendAttack(sender, dogIdentifier, false);
                     return true;
                 }
                 if ((args[0].equalsIgnoreCase("revive"))) {
@@ -166,8 +266,6 @@ public class CommandManager {
                     }
 
                     //check is args1 is a number
-
-
                     int dogIdentifier;
                     try {
                         dogIdentifier = Integer.parseInt(args[1]);
@@ -177,11 +275,11 @@ public class CommandManager {
                     }
 
                     commandReviveDog(player, sender, dogIdentifier);
-
                     return true;
                 }
-            } else if ((args.length >= 3) && (player != null)) {
-                if ((args[0].equalsIgnoreCase("editlevel"))) {
+                sender.sendMessage(ChatColor.RED + "Not a MyDog Command! Check /mydog help");
+            } else if ((args.length == 3) && (player != null)) {
+                if ((args[0].equalsIgnoreCase("editlevel") || args[0].equalsIgnoreCase("setlevel"))) {
                     if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.editlevel"))) {
                         return false;
                     }
@@ -198,7 +296,6 @@ public class CommandManager {
                     }
 
                     commandEditLevel(sender, dogIdentifier, dogLevel);
-
                     return true;
                 }
                 if ((args[0].equalsIgnoreCase("setid")) || (args[0].equalsIgnoreCase("changeid"))) {
@@ -207,7 +304,6 @@ public class CommandManager {
                     }
 
                     commandDogSetId(sender, args);
-
                     return true;
                 }
 
@@ -217,14 +313,82 @@ public class CommandManager {
                     }
 
                     commandDogRename(sender, args);
-
                     return true;
                 }
-                sender.sendMessage(ChatColor.RED + "Too many arguments! Check /mydog help");
-                return true;
-            } else {
+
+                if ((args[0].equalsIgnoreCase("trade"))) {
+                    if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.trade"))) {
+                        return false;
+                    }
+
+                    //check is args1 is a number
+                    int dogIdentifier;
+                    String recipientName = args[2];
+                    try {
+                        dogIdentifier = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException e) {
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+                        return true;
+                    }
+
+                    Player recipient = plugin.getServer().getPlayer(recipientName);
+                    if (recipient == null) {
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a player with that name!");
+                        return true;
+                    }
+                    if (recipient.getUniqueId().equals(((Player) sender).getUniqueId())) {
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "You cannot send a trade request to yourself!");
+                        return true;
+                    }
+
+                    commandTrade(sender, dogIdentifier, recipient, 0.0D);
+                    return true;
+                }
                 sender.sendMessage(ChatColor.RED + "Not a MyDog Command! Check /mydog help");
-                return true;
+            } else if ((args.length == 4) && (player != null)) {
+                if ((args[0].equalsIgnoreCase("trade"))) {
+                    if ((!player.isOp()) && (!MyDog.getPermissionsManager().hasPermission(player, "mydog.trade"))) {
+                        return false;
+                    }
+
+                    //check is args1 is a number
+                    int dogIdentifier;
+                    String recipientName = args[2];
+                    double price;
+                    try {
+                        dogIdentifier = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException e) {
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid ID! Check /mydog dogs");
+                        return true;
+                    }
+                    try {
+                        price = Double.parseDouble(args[3]);
+                    } catch (NumberFormatException e) {
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid price!");
+                        return true;
+                    }
+
+                    if (price < 0.0D) {
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please enter a valid price!");
+                        return true;
+                    }
+
+                    Player recipient = plugin.getServer().getPlayer(recipientName);
+                    if (recipient == null) {
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a player with that name!");
+                        return true;
+                    }
+                    if (recipient.getUniqueId().equals(((Player) sender).getUniqueId())) {
+                        sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "You cannot send a trade request to yourself!");
+                        return true;
+                    }
+
+                    commandTrade(sender, dogIdentifier, recipient, price);
+                    return true;
+                }
+                sender.sendMessage(ChatColor.RED + "Not a MyDog Command! Check /mydog help");
+            } else {
+                sender.sendMessage(ChatColor.RED + "Too many arguments! Check /mydog help");
             }
         }
         return true;
@@ -232,7 +396,7 @@ public class CommandManager {
 
     private boolean commandHelp(CommandSender sender) {
         sender.sendMessage(ChatColor.YELLOW + "---------------- " + plugin.getDescription().getFullName() + " ----------------");
-        sender.sendMessage(ChatColor.AQUA + "By Fido2603 / HeroGamers");
+        sender.sendMessage(ChatColor.AQUA + "By HeroGamers (Fido2603)");
         sender.sendMessage(ChatColor.AQUA + "");
         int dogsOwned = MyDog.getDogManager().dogsOwned((Player) sender);
         String dogs = " dogs!";
@@ -265,13 +429,26 @@ public class CommandManager {
                 sender.sendMessage(ChatColor.AQUA + "/mydog list" + ChatColor.WHITE + " - View a list with your current Dogs");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog putdown <id>" + ChatColor.WHITE + " - Get rid of a Dog you own");
+                sender.sendMessage(ChatColor.AQUA + "/mydog putdown <id>" + ChatColor.WHITE + " - Kills a dog you own");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.free"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog free <id>" + ChatColor.WHITE + " - Set one of your Dogs free!");
+                sender.sendMessage(ChatColor.AQUA + "/mydog release <id>" + ChatColor.WHITE + " - Set one of your Dogs free!");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere"))) {
                 sender.sendMessage(ChatColor.AQUA + "/mydog comehere <id>" + ChatColor.WHITE + " - Forces your Dog to teleport to your location");
+            }
+            if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.sit"))) {
+                sender.sendMessage(ChatColor.AQUA + "/mydog sit <id | all>" + ChatColor.WHITE + " - Tells your dog(s) to sit and keep their position(s)");
+                sender.sendMessage(ChatColor.AQUA + "/mydog stand <id | all>" + ChatColor.WHITE + " - Tells your dog(s) to stand up and roam free");
+            }
+            if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.togglemode"))) {
+                sender.sendMessage(ChatColor.AQUA + "/mydog attack <id | all>" + ChatColor.WHITE + " - Tells your dog(s) to attack any mobs nearby");
+                sender.sendMessage(ChatColor.AQUA + "/mydog defend <id | all>" + ChatColor.WHITE + " - Tells your dog(s) to defend you");
+            }
+            if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.trade"))) {
+                sender.sendMessage(ChatColor.AQUA + "/mydog trade <id> <player> [price]" + ChatColor.WHITE + " - Send a trade request to another player");
+                sender.sendMessage(ChatColor.AQUA + "/mydog tradeaccept" + ChatColor.WHITE + " - Accept a trade");
+                sender.sendMessage(ChatColor.AQUA + "/mydog tradedecline" + ChatColor.WHITE + " - Decline a trade");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.stats"))) {
                 sender.sendMessage(ChatColor.AQUA + "/mydog info <id>" + ChatColor.WHITE + " - Gets stats and other info about a Dog you own");
@@ -283,13 +460,13 @@ public class CommandManager {
                 sender.sendMessage(ChatColor.AQUA + "/mydog setid <id> <newid>" + ChatColor.WHITE + " - Assigns a custom ID to a Dog you own");
             }
             if ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.editlevel"))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog setlevel <ID> <level>" + ChatColor.WHITE + " - Sets a dog's level");
+                sender.sendMessage(ChatColor.AQUA + "/mydog setlevel <id> <level>" + ChatColor.WHITE + " - Sets a dog's level");
             }
             if (plugin.allowRevival && ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.dead")))) {
                 sender.sendMessage(ChatColor.AQUA + "/mydog dead" + ChatColor.WHITE + " - List of Dogs that have gone to another world");
             }
             if (plugin.allowRevival && ((sender.isOp()) || (MyDog.getPermissionsManager().hasPermission(player, "mydog.revive")))) {
-                sender.sendMessage(ChatColor.AQUA + "/mydog revive <ID>" + ChatColor.WHITE + " - Resurrects a Dog for a fee");
+                sender.sendMessage(ChatColor.AQUA + "/mydog revive <id>" + ChatColor.WHITE + " - Resurrects a Dog for a fee");
             }
         }
 
@@ -302,6 +479,7 @@ public class CommandManager {
         for (Dog dog : MyDog.getDogManager().getAliveDogs(((Player) sender).getUniqueId())) {
             dogsSorted.put(dog.getIdentifier(), dog);
         }
+        DecimalFormat df = new DecimalFormat("#.#");
 
         sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
         for (Map.Entry<Integer, Dog> entry : dogsSorted.entrySet()) {
@@ -310,7 +488,7 @@ public class CommandManager {
             if (wolf != null) {
                 double maxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
                 double health = wolf.getHealth();
-                healthString = " " + ChatColor.BLUE + "(HP: " + health + "/" + maxHealth + ")";
+                healthString = " " + ChatColor.BLUE + "(HP: " + df.format(health) + "/" + df.format(maxHealth) + ")";
             }
 
             sender.sendMessage(ChatColor.AQUA + "#" + ((Dog) entry.getValue()).getIdentifier() + ChatColor.WHITE + " - " + ChatColor.AQUA + ((Dog) entry.getValue()).getDogName() + healthString);
@@ -430,6 +608,7 @@ public class CommandManager {
 
     private boolean commandDogFree(CommandSender sender, int dogIdentifier) {
         Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
+
         if (dog == null) {
             sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
             return false;
@@ -449,6 +628,66 @@ public class CommandManager {
         }
 
         MyDog.getDogManager().removeDog(dog.getDogId());
+
+        return true;
+    }
+
+    private boolean commandDogDefendAttack(CommandSender sender, int dogIdentifier, boolean toAttack) {
+        List<Dog> dogs = new ArrayList<>();
+
+        String mode = "Defend me";
+        if (toAttack) {
+            mode = "Attack";
+        }
+
+        if (dogIdentifier == -1) {
+            dogs = MyDog.getDogManager().getAliveDogs(((Player) sender).getUniqueId());
+            sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + mode + ", my dogs!");
+        } else {
+            dogs.add(MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId()));
+            if (dogs.get(0) != null) {
+                sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + mode + ", " + dogs.get(0).getDogColor() + dogs.get(0).getDogName() + ChatColor.RESET + ChatColor.AQUA + "!");
+            }
+        }
+
+        for (Dog dog : dogs) {
+            if (dog == null) {
+                sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
+                return false;
+            }
+
+            dog.setAngryMode(toAttack);
+        }
+
+        return true;
+    }
+
+    private boolean commandDogStandSit(CommandSender sender, int dogIdentifier, boolean toSit) {
+        List<Dog> dogs = new ArrayList<>();
+
+        String mode = "Stand";
+        if (toSit) {
+            mode = "Sit";
+        }
+
+        if (dogIdentifier == -1) {
+            dogs = MyDog.getDogManager().getAliveDogs(((Player) sender).getUniqueId());
+            sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + mode + ", my dogs!");
+        } else {
+            dogs.add(MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId()));
+            if (dogs.get(0) != null) {
+                sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.AQUA + mode + ", " + dogs.get(0).getDogColor() + dogs.get(0).getDogName() + ChatColor.RESET + ChatColor.AQUA + "!");
+            }
+        }
+
+        for (Dog dog : dogs) {
+            if (dog == null) {
+                sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
+                return false;
+            }
+
+            dog.sit(toSit);
+        }
 
         return true;
     }
@@ -579,11 +818,22 @@ public class CommandManager {
             return false;
         }
 
-        if (!MyDog.getEconomy().has(player, deadDog.getRevivalPrice())) {
-            sender.sendMessage(ChatColor.RED + "You don't have enough funds to resurrect the dog.");
-            return false;
+        int revivalPrice = deadDog.getRevivalPrice();
+        if (!plugin.revivalUsingPlayerExp) {
+            if (MyDog.getEconomy() != null) {
+                if (!MyDog.getEconomy().has(player, revivalPrice)) {
+                    sender.sendMessage(ChatColor.RED + "You don't have enough funds to resurrect the dog.");
+                    return false;
+                }
+                MyDog.getEconomy().withdrawPlayer(player, revivalPrice);
+            }
+        } else {
+            if (player.getLevel() < revivalPrice) {
+                sender.sendMessage(ChatColor.RED + "You don't have enough power to resurrect the dog. You need " + ChatColor.GOLD + (revivalPrice - player.getLevel()) + ChatColor.RED + " more levels!");
+                return false;
+            }
+            player.setLevel(player.getLevel() - revivalPrice);
         }
-        MyDog.getEconomy().withdrawPlayer(player, deadDog.getRevivalPrice());
 
         Wolf wolf = player.getWorld().spawn(player.getLocation(), Wolf.class);
         wolf.setOwner(player);
@@ -594,78 +844,219 @@ public class CommandManager {
         deadDog.setDead(false);
         deadDog.updateWolf();
 
-        sender.sendMessage(ChatColor.GREEN + "Your dog is resurrected.");
+        sender.sendMessage(ChatColor.GREEN + "Your dog has been resurrected.");
         return true;
     }
 
     private boolean commandDogComehere(CommandSender sender, int dogIdentifier) {
-        Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
-        if (dog == null) {
-            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " +
-                    ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
-            return false;
+        List<Dog> dogs = new ArrayList<>();
+
+        if (dogIdentifier == -1) {
+            dogs = MyDog.getDogManager().getAliveDogs(((Player) sender).getUniqueId());
+        } else {
+            dogs.add(MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId()));
         }
 
-        Wolf wolf = null;
+        for (Dog dog : dogs) {
+            if (dog == null) {
+                sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " +
+                        ChatColor.RESET + ChatColor.RED + "Could not find a Dog with that ID! Check /mydog dogs");
+                return false;
+            }
 
-        Location dogLocation = dog.getDogLocation();
-        Boolean useLocation = false;
-        if (dogLocation == null) {
+            Wolf wolf = null;
+
+            Location dogLocation = dog.getDogLocation();
+            Boolean useLocation = false;
+            if (dogLocation == null) {
+                wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+                if (wolf == null) {
+                    sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET +
+                            ChatColor.RED + "Aww bonkers! Seems like your Dog cannot be found... Sorry about that!");
+                    return false;
+                }
+            } else {
+                if (dogLocation.getChunk().load(false)) {
+                    plugin.logDebug("Loaded the chunk sucessfully, no generate!");
+                } else if (dogLocation.getChunk().load(true)) {
+                    plugin.logDebug("Loaded the chunk sucessfully, generated!");
+                } else {
+                    sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET +
+                            ChatColor.RED + "Aww bonkers! Seems like your Dog is at a location that cannot be loaded right now!");
+                    return false;
+                }
+                useLocation = true;
+            }
+
             wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+
             if (wolf == null) {
                 sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET +
-                        ChatColor.RED + "Aww bonkers! Seems like your Dog cannot be found... Sorry about that!");
+                        ChatColor.RED + "Aww bonkers! Seems like your Dog cannot be found...");
+                plugin.logDebug("Could not find Dog, even though chunks should be loaded...");
                 return false;
             }
-        } else {
-            if (dogLocation.getChunk().load(false)) {
-                plugin.logDebug("Loaded the chunk sucessfully, no generate!");
-            } else if (dogLocation.getChunk().load(true)) {
-                plugin.logDebug("Loaded the chunk sucessfully, generated!");
-            } else {
-                sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET +
-                        ChatColor.RED + "Aww bonkers! Seems like your Dog is at a location that cannot be loaded right now!");
-                return false;
+
+            Location playerLoc = ((Player) sender).getLocation();
+            wolf.teleport(playerLoc);
+            wolf.setSitting(false);
+
+            String comehereString = plugin.commandComehereString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', comehereString));
+		/*sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET +
+				ChatColor.GOLD + "Come here! Good doggo, " + dog.getDogName() + "!");*/
+
+            dog.updateWolf();
+
+            if (useLocation) {
+                dogLocation.getChunk().unload(true);
+                plugin.logDebug("Unloaded the chunk sucessfully!");
             }
-            useLocation = true;
         }
 
-        wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+        return true;
+    }
 
-        if (wolf == null) {
-            sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET +
-                    ChatColor.RED + "Aww bonkers! Seems like your Dog cannot be found...");
-            plugin.logDebug("Could not find Dog, even though chunks should be loaded...");
+    private boolean commandTradeAccept(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            return false;
+        }
+        Player player = ((Player) sender);
+
+        DogManager dogManager = MyDog.getDogManager();
+        if (!dogManager.hasTrade(player.getUniqueId())) {
+            sender.sendMessage(ChatColor.GOLD + "You don't have any pending trades!");
             return false;
         }
 
-        Location playerLoc = ((Player) sender).getLocation();
-        wolf.teleport(playerLoc);
-        wolf.setSitting(false);
+        double tradePrice = dogManager.getTradePrice(player.getUniqueId());
+        if (tradePrice > 0.0D) {
+            if (MyDog.getEconomy() == null) {
+                sender.sendMessage(ChatColor.GOLD + "No economy provider found, you cannot trade dogs for cash!");
+                return false;
+            }
 
-        String comehereString = plugin.commandComehereString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName());
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', comehereString));
-		/*sender.sendMessage(ChatColor.GOLD + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + 
-				ChatColor.GOLD + "Come here! Good doggo, " + dog.getDogName() + "!");*/
-
-        dog.updateWolf();
-
-        if (useLocation) {
-            dogLocation.getChunk().unload(true);
-            plugin.logDebug("Unloaded the chunk sucessfully!");
+            if (!MyDog.getEconomy().has(player, tradePrice)) {
+                sender.sendMessage(ChatColor.GOLD + "You don't have enough money to trade for that dog!");
+                return false;
+            }
         }
 
+        if (!dogManager.canTameMoreDogs(player)) {
+            sender.sendMessage(ChatColor.GOLD + "You cannot own any more dogs!");
+            return false;
+        }
+
+        Dog dog = dogManager.getTradeDog(player.getUniqueId());
+        Wolf wolf = null;
+
+        if (dog != null) {
+            wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
+        }
+
+        if (wolf == null || !wolf.isValid() || wolf.isDead()) {
+            sender.sendMessage(ChatColor.GOLD + "The dog you are trying to accept cannot be found! Is it dead?");
+            return false;
+        }
+
+        dogManager.acceptTrade(player);
+        sender.sendMessage(ChatColor.GOLD + "You successfully accepted the trade request!");
+        Player tradeSender = plugin.getServer().getPlayer(dog.getOwnerId());
+        if (tradeSender != null) {
+            tradeSender.sendMessage(ChatColor.GOLD + "Dog trade request got accepted by recipient!");
+        }
+        return true;
+    }
+
+    private boolean commandTradeDeny(CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            return false;
+        }
+        Player player = ((Player) sender);
+
+        DogManager dogManager = MyDog.getDogManager();
+        if (!dogManager.hasTrade(player.getUniqueId())) {
+            sender.sendMessage(ChatColor.GOLD + "You don't have any pending trades!");
+            return false;
+        }
+
+        Dog dog = dogManager.getTradeDog(player.getUniqueId());
+
+        dogManager.denyTrade(player);
+        sender.sendMessage(ChatColor.GOLD + "You successfully denied the trade request!");
+        if (dog != null) {
+            Player tradeSender = plugin.getServer().getPlayer(dog.getOwnerId());
+            if (tradeSender != null) {
+                tradeSender.sendMessage(ChatColor.GOLD + "Dog trade request got denied by recipient!");
+            }
+        }
+        return true;
+    }
+
+    private boolean commandTrade(CommandSender sender, int dogIdentifier, Player receiver, double price) {
+        DogManager dogManager = MyDog.getDogManager();
+
+        Dog dog = dogManager.getDog(dogIdentifier, ((Player) sender).getUniqueId());
+        if (dog == null) {
+            sender.sendMessage(ChatColor.GOLD + "Could not find a dog with this ID!");
+            return false;
+        }
+        if (dog.isDead()) {
+            sender.sendMessage(ChatColor.GOLD + "You cannot trade dead dogs!");
+            return false;
+        }
+
+        if (price > 0.0D) {
+            if (MyDog.getEconomy() == null) {
+                sender.sendMessage(ChatColor.GOLD + "No economy provider found, you cannot trade dogs for cash!");
+                return false;
+            }
+
+            if (!MyDog.getEconomy().has(receiver, price)) {
+                sender.sendMessage(ChatColor.GOLD + "It doesn't look like the receiver will be able to.. afford that..");
+                return false;
+            }
+        }
+
+        if (dogManager.hasTrade(receiver.getUniqueId())) {
+            sender.sendMessage(ChatColor.GOLD + "The receiver already has a trade pending!");
+            return false;
+        }
+
+        if (!receiver.isOp() && !MyDog.getPermissionsManager().hasPermission(receiver, "mydog.trade")) {
+            sender.sendMessage(ChatColor.GOLD + "The receiver doesn't have permissions to trade!");
+            return false;
+        }
+
+        if (!dogManager.canTameMoreDogs(receiver)) {
+            sender.sendMessage(ChatColor.GOLD + "The receiver has reached their dog limit!");
+            return false;
+        }
+
+        if (dogManager.handleNewTrade(dog, receiver, price)) {
+            DecimalFormat df = new DecimalFormat("#.#");
+            receiver.sendMessage(ChatColor.GOLD + "You have received a dog trade request from " + ChatColor.AQUA +
+                    ((Player) sender).getDisplayName() + ChatColor.GOLD + "!\n" + ChatColor.AQUA +
+                    ((Player) sender).getDisplayName() + ChatColor.GOLD + " is offering " + dog.getDogColor() +
+                    dog.getDogName() + ChatColor.GOLD + (plugin.useLevels ? (" (" + ChatColor.AQUA + "Level " +
+                    dog.getLevel() + ChatColor.GOLD + ")") : "") + " for " + ChatColor.AQUA +
+                    ((price > 0.0D ? (df.format(price) + "$") : "free")) + ChatColor.GOLD + "!\n\n" +
+                    ChatColor.GOLD + "Accept the trade request with " + ChatColor.AQUA + "/md tradeaccept\n" +
+                    ChatColor.GOLD + "Decline the trade request with " + ChatColor.AQUA + "/md tradedecline\n" +
+                    ChatColor.GOLD + "Request expires in 30 seconds!");
+            sender.sendMessage(ChatColor.GOLD + "Trade request successfully sent!");
+        }
         return true;
     }
 
     private boolean commandEditLevel(CommandSender sender, int dogIdentifier, int dogLevel) {
         Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
         if (dog == null) {
-            sender.sendMessage("Could not find a dog with this ID!");
+            sender.sendMessage(ChatColor.GOLD + "Could not find a dog with this ID!");
             return false;
         }
         if (dogLevel < 1 || dogLevel > 100) {
-            sender.sendMessage("Level must be between 0 and 100!");
+            sender.sendMessage(ChatColor.GOLD + "Level must be between 0 and 100!");
         }
         dog.setLevel(dogLevel);
         dog.updateWolf();
@@ -704,21 +1095,38 @@ public class CommandManager {
             }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown"))) {
                 arg1.add("putdown");
+                arg1.add("kill");
             }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere"))) {
                 arg1.add("comehere");
             }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.stats"))) {
                 arg1.add("info");
+                arg1.add("stats");
             }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.free"))) {
                 arg1.add("free");
+                arg1.add("release");
             }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.rename"))) {
                 arg1.add("rename");
             }
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.setid"))) {
                 arg1.add("setid");
+            }
+            if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.sit"))) {
+                arg1.add("sit");
+                arg1.add("stand");
+            }
+            if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.togglemode"))) {
+                arg1.add("attack");
+                arg1.add("defend");
+            }
+            if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.trade"))) {
+                arg1.add("trade");
+                arg1.add("tradeaccept");
+                arg1.add("tradedecline");
+                arg1.add("tradedeny");
             }
             if (plugin.allowRevival && (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.dead")))) {
                 arg1.add("dead");
@@ -734,14 +1142,14 @@ public class CommandManager {
         } else if (args.length == 2) {
             List<String> arg2 = new ArrayList<>();
 
-            if (player != null && (args[0].equalsIgnoreCase("setlevel"))) {
+            if (player != null && (args[0].equalsIgnoreCase("setlevel") || args[0].equalsIgnoreCase("release") || args[0].equalsIgnoreCase("free") || args[0].equalsIgnoreCase("setfree") || args[0].equalsIgnoreCase("setid"))) {
                 List<Dog> dogs = MyDog.getDogManager().getDogs(player.getUniqueId());
                 for (Dog dog : dogs) {
                     arg2.add(Integer.toString(dog.getIdentifier()));
                 }
             }
 
-            if (player != null && (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("comehere") || args[0].equalsIgnoreCase("free") || args[0].equalsIgnoreCase("setfree") || args[0].equalsIgnoreCase("rename") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("setid") || args[0].equalsIgnoreCase("stats"))) {
+            if (player != null && (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("rename") || args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("stats") || args[0].equalsIgnoreCase("trade"))) {
                 List<Dog> dogs = MyDog.getDogManager().getAliveDogs(player.getUniqueId());
                 for (Dog dog : dogs) {
                     arg2.add(Integer.toString(dog.getIdentifier()));
@@ -750,6 +1158,15 @@ public class CommandManager {
 
             if (player != null && ((plugin.allowRevival && args[0].equalsIgnoreCase("revive")))) {
                 List<Dog> dogs = MyDog.getDogManager().getDeadDogs(player.getUniqueId());
+                for (Dog dog : dogs) {
+                    arg2.add(Integer.toString(dog.getIdentifier()));
+                }
+            }
+
+            if (player != null && (args[0].equalsIgnoreCase("sit") || args[0].equalsIgnoreCase("stand") || args[0].equalsIgnoreCase("comehere") || args[0].equalsIgnoreCase("attack") || args[0].equalsIgnoreCase("defend"))) {
+                arg2.add("all");
+
+                List<Dog> dogs = MyDog.getDogManager().getAliveDogs(player.getUniqueId());
                 for (Dog dog : dogs) {
                     arg2.add(Integer.toString(dog.getIdentifier()));
                 }
@@ -766,10 +1183,27 @@ public class CommandManager {
                 arg3.add("<custom_id>");
             } else if (args[0].equalsIgnoreCase("setlevel")) {
                 arg3.add("<level>");
+            } else if (args[0].equalsIgnoreCase("trade")) {
+                // idk how, uhm, good this might be
+                Collection<? extends Player> players = plugin.getServer().getOnlinePlayers();
+                for (Player playerObj : players) {
+                    if (playerObj != null) {
+                        arg3.add(playerObj.getName());
+                    }
+                }
             }
 
-            Iterable<String> SECOND_ARGUMENTS = arg3;
-            StringUtil.copyPartialMatches(args[2], SECOND_ARGUMENTS, result);
+            Iterable<String> THIRD_ARGUMENTS = arg3;
+            StringUtil.copyPartialMatches(args[2], THIRD_ARGUMENTS, result);
+        } else if (args.length == 4) {
+            List<String> arg4 = new ArrayList<String>();
+
+            if (args[0].equalsIgnoreCase("trade")) {
+                arg4.add("[price]");
+            }
+
+            Iterable<String> FOURTH_ARGUMENTS = arg4;
+            StringUtil.copyPartialMatches(args[3], FOURTH_ARGUMENTS, result);
         }
 
         Collections.sort(result);

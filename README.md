@@ -1,12 +1,12 @@
 <h1 align="center">MyDog</h1>
 <div align="center">
 
-[![Build Status](https://travis-ci.com/DoggyCraftDK/MyDog.svg?branch=master)](https://travis-ci.com/DoggyCraftDK/MyDog)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=alert_status)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=ncloc)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=bugs)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=DoggyCraftDK_MyDog&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=DoggyCraftDK_MyDog)
+[![Maven Test](https://github.com/HeroGamers/MyDog/actions/workflows/maven-test.yml/badge.svg)](https://github.com/HeroGamers/MyDog/actions/workflows/maven-test.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=alert_status)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=ncloc)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=bugs)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
 </div>
 
 Tamed wolves but at least 10x better.
@@ -26,10 +26,10 @@ ___
 *	The ability to add currently existing Tamed Wolves to the MyDog system, and register them as new Dogs (interact with them).
 *	Configurable all the way from the sound on LevelUp to the messages displayed (excluding error messages for now...)
 
-### TODO Feature-list
-*	Add inventory to Dogs, so they can wear armor and take less damage.
-*	Config with customizable experience values for entities.
-*	For the full list, visit the [TODO list](https://github.com/DoggyCraftDK/MyDog/projects/1).
+### ToDo Feature-list
+To view the list of features, please visit the [project page](https://github.com/users/HeroGamers/projects/1).
+
+For new feature requests, please open a GitHub Issue.
 
 ## Resources
 *	Resource page on [Spigot](https://www.spigotmc.org/resources/mydog.70260/).
@@ -76,4 +76,4 @@ mydog.save:
 ```
 
 ## Bug reports and issues
-Visit the [Issues Tab](https://github.com/DoggyCraftDK/MyDog/issues).
+Visit the [Issues Tab](https://github.com/HeroGamers/MyDog/issues).

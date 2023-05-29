@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 
 import dk.fido2603.mydog.objects.Dog;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class DogManager {
     private MyDog plugin = null;
@@ -20,6 +21,8 @@ public class DogManager {
     private File dogsConfigFile = null;
     private Random random = new Random();
     private long lastSaveTime = 0L;
+
+    private HashMap<UUID, HashMap<String, Object>> dogTrades = new HashMap<>();
 
     public DogManager(MyDog plugin) {
         this.plugin = plugin;
@@ -83,8 +86,7 @@ public class DogManager {
             if (dog != null) {
                 dog.setDead(true);
             }
-        }
-        else {
+        } else {
             removeDog(dogId);
         }
     }
@@ -111,6 +113,20 @@ public class DogManager {
         if (oldDog != null) {
 
         }
+    }
+
+    public boolean canTameMoreDogs(Player player) {
+        if (player.isOp()) {
+            return true;
+        }
+
+        int currentlyOwned = getDogs(player.getUniqueId()).size();
+        for (int i = 0; i <= currentlyOwned; i++) {
+            if (MyDog.getPermissionsManager().hasPermission(player, "mydog.limit." + i)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public Dog newDog(Wolf dog, Player dogOwner) {
@@ -185,6 +201,111 @@ public class DogManager {
         return dogs;
     }
 
+    public boolean handleNewTrade(Dog dog, Player receiver, double price) {
+        if (dogTrades.containsKey(receiver.getUniqueId())) {
+            return false;
+        }
+
+        if (!canTameMoreDogs(receiver)) {
+            return false;
+        }
+
+        HashMap<String, Object> dogTrade = new HashMap<>();
+        dogTrade.put("time", System.currentTimeMillis());
+        dogTrade.put("dog", dog.getDogId());
+        dogTrade.put("price", price);
+
+        dogTrades.put(receiver.getUniqueId(), dogTrade);
+
+        // Delete the trade after 30 seconds if it still exists
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (hasTrade(receiver.getUniqueId())) {
+                    dogTrades.remove(receiver.getUniqueId());
+                    receiver.sendMessage(ChatColor.GOLD + "Dog trade expired!");
+
+                    Player sender = plugin.getServer().getPlayer(dog.getOwnerId());
+                    if (sender != null) {
+                        sender.sendMessage(ChatColor.GOLD + "Recipient didn't answer to dog trade!");
+                    }
+                }
+            }
+        }.runTaskLaterAsynchronously(plugin, 20L * 30L);
+
+        return true;
+    }
+
+    public boolean hasTrade(UUID recipient) {
+        return dogTrades.containsKey(recipient);
+    }
+
+    public HashMap<String, Object> getTrade(UUID recipient) {
+        if (!hasTrade(recipient)) {
+            return null;
+        }
+
+        return dogTrades.get(recipient);
+    }
+
+    public Dog getTradeDog(UUID recipient) {
+        HashMap<String, Object> trade = getTrade(recipient);
+        if (trade == null) {
+            return null;
+        }
+
+        return getDog((UUID) trade.get("dog"));
+    }
+
+    public Double getTradePrice(UUID recipient) {
+        if (!hasTrade(recipient)) {
+            return null;
+        }
+
+        return (double) dogTrades.get(recipient).get("price");
+    }
+
+    public boolean acceptTrade(Player accepter) {
+        HashMap<String, Object> dogTrade = getTrade(accepter.getUniqueId());
+
+        if (dogTrade == null) {
+            return false;
+        }
+
+        Dog dog = getDog((UUID) dogTrade.get("dog"));
+
+        if (dog == null) {
+            return false;
+        }
+
+        double price = (double) dogTrade.get("price");
+        if (price > 0.0D) {
+            if (MyDog.getEconomy() == null) {
+                plugin.log("No economy provider, failed to trade dogs!");
+                return false;
+            }
+
+            if (!MyDog.getEconomy().has(accepter, price)) {
+                return false;
+            }
+            MyDog.getEconomy().withdrawPlayer(accepter, price);
+        }
+
+        dog.setOwner(accepter);
+
+        dogTrades.remove(accepter.getUniqueId());
+        return true;
+    }
+
+    public boolean denyTrade(Player denier) {
+        if (!hasTrade(denier.getUniqueId())) {
+            return false;
+        }
+
+        dogTrades.remove(denier.getUniqueId());
+        return true;
+    }
+
     public String newDogName() {
         int dogNameNumber = random.nextInt(plugin.dogNames.size());
         return plugin.dogNames.get(dogNameNumber);
@@ -205,7 +326,7 @@ public class DogManager {
         return false;
     }
 
-    private int generateNewId(UUID dogOwnerId) {
+    public int generateNewId(UUID dogOwnerId) {
         int id = 1;
         List<Dog> dogs = MyDog.getDogManager().getDogs(dogOwnerId);
 

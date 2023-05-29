@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dk.fido2603</groupId>
     <artifactId>mydog</artifactId>
-    <version>0.1.5-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
     <name>MyDog</name>
     <description>Tamed wolves but at least 10x better!</description>
     <url>https://github.com/${github.repo}</url>
@@ -10,13 +10,13 @@
     <licenses>
         <license>
             <name>MIT License</name>
-            <url>https://raw.githubusercontent.com/DoggyCraftDK/MyDog/master/LICENSE</url>
+            <url>https://raw.githubusercontent.com/HeroGamers/MyDog/master/LICENSE</url>
         </license>
     </licenses>
 
     <properties>
-        <github.repo>DoggyCraft/MyDog</github.repo>
-        <bukkitAPIVersion>1.19.2-R0.1-SNAPSHOT</bukkitAPIVersion>
+        <github.repo>HeroGamers/MyDog</github.repo>
+        <bukkitAPIVersion>1.19.4-R0.1-SNAPSHOT</bukkitAPIVersion>
         <jdk.version>8</jdk.version>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
         <maven.compiler.release>${jdk.version}</maven.compiler.release>
@@ -26,11 +26,8 @@
         <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
 
         <!-- Sonar -->
-        <sonar.host.url>http://localhost:9000/</sonar.host.url>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.dependencyCheck.reportPath>${dependency.check.report.dir}/dependency-check-report.xml</sonar.dependencyCheck.reportPath>
-        <!--suppress UnresolvedMavenProperty -->
-        <sonar.dependencyCheck.htmlReportPath>${dependency.check.report.dir}/dependency-check-report.html</sonar.dependencyCheck.htmlReportPath>
+        <sonar.organization>herogamers</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <scm>
@@ -71,7 +68,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.8.2</version>
+            <version>5.9.2</version>
             <scope>test</scope>
         </dependency>
         <!-- apache commons lang -->
@@ -79,6 +76,7 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.12.0</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

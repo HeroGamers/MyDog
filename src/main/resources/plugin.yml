@@ -34,6 +34,17 @@ permissions:
             mydog.rename: true
             mydog.free: true
             mydog.setid: true
+            mydog.editlevel: true
+            mydog.dead: true
+            mydog.revive: true
+            mydog.sit: true
+            mydog.togglemode: true
+            mydog.pet: true
+            mydog.pet.others: true
+            mydog.trade: true
+    mydog.limit.*:
+        description: Give limits to the amount of dogs a player can tame.
+        default: false
     mydog.teleport:
         description: Player's tamed wolves will teleport to the player
         default: true
@@ -55,11 +66,35 @@ permissions:
     mydog.rename:
       description: Player can rename their Dogs
       default: true
+    mydog.sit:
+      description: Player can have dogs sit and stand up
+      default: true
     mydog.setid:
       description: Player can set a custom ID to their Dogs
       default: true
+    mydog.togglemode:
+      description: Player can toggle dogs between attack and defend mode
+      default: true
+    mydog.pet:
+      description: Player can pet their dogs
+      default: true
+    mydog.pet.others:
+      description: Player can pet others dogs
+      default: true
+    mydog.editlevel:
+      description: Player can set the level of their dogs
+      default: false
+    mydog.dead:
+      description: Player can see the list of dead dogs
+      default: true
+    mydog.revive:
+      description: Player can revive dead dogs
+      default: true
     mydog.free:
         description: Player can set their Dogs free
+        default: true
+    mydog.trade:
+        description: Players can trade their dogs
         default: true
     mydog.reload:
         description: Player can reload the configuration(s)
