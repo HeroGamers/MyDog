@@ -347,6 +347,34 @@ public class Dog {
         return dogOwnerId;
     }
 
+    public boolean setOwner(Player player) {
+        if (player == null) {
+            return false;
+        }
+
+        Wolf dog = (Wolf) MyDog.instance().getServer().getEntity(dogId);
+
+        if (dog == null || !dog.isValid()) {
+            return false;
+        }
+
+        if (dogOwnerId.equals(player.getUniqueId())) {
+            // Same owner
+            return false;
+        }
+
+        if (MyDog.getDogManager().getDogsConfig().contains(dogId.toString())) {
+            this.dogOwnerId = player.getUniqueId();
+            this.dogIdentifier = MyDog.getDogManager().generateNewId(player.getUniqueId());
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Owner", dogOwnerId);
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".ID", dogIdentifier);
+            dog.setOwner(player);
+        }
+
+        MyDog.getDogManager().saveTimed();
+        return true;
+    }
+
     public int getRevivalPrice() {
         return (int) (level * MyDog.instance().revivalPrice);
     }
