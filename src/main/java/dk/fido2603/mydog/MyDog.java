@@ -20,6 +20,7 @@ import net.milkbowl.vault.economy.Economy;
 import java.util.*;
 
 import net.milkbowl.vault.permission.Permission;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
@@ -37,6 +38,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class MyDog extends JavaPlugin {
     public static MyDog instance;
     public static boolean pluginEnabled = false;
+    private static final int pluginId = 18606;
 
     public boolean vaultEnabled = false;
 
@@ -255,6 +257,9 @@ public class MyDog extends JavaPlugin {
         // Attack mode / angry checker
         // keeps the dog on a target
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new AttackModeTask(this), 20L * 30L, 20L * 2L);
+
+        // Enable metrics
+        Metrics metrics = new Metrics(this, pluginId);
     }
 
     public void log(String message) {
