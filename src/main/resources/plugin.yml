@@ -41,6 +41,7 @@ permissions:
             mydog.togglemode: true
             mydog.pet: true
             mydog.pet.others: true
+            mydog.trade: true
     mydog.limit.*:
         description: Give limits to the amount of dogs a player can tame.
         default: false
@@ -91,6 +92,9 @@ permissions:
       default: true
     mydog.free:
         description: Player can set their Dogs free
+        default: true
+    mydog.trade:
+        description: Players can trade their dogs
         default: true
     mydog.reload:
         description: Player can reload the configuration(s)
