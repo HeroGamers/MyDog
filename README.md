@@ -13,6 +13,11 @@ Tamed wolves but at least 10x better.
 
 ___
 
+<div align="center">
+
+[![Gods Banner](https://raw.githubusercontent.com/HeroGamers/MyDog/master/images/MyDog_Image.png)](https://github.com/HeroGamers/MyDog/releases)
+</div>
+
 ## Main Plugin Features
 *	Dogs teleport upon chunk-unloading, on player-teleport as well as if the player is more than 200 blocks away from their dog, so that the Dogs can always follow their owner. Requires the Dog to not sit (all other Tameables can also be set to teleport on chunk-unload and player-teleportation (not distance) in the config).
 *	500+ unique randomly generated dog names.
@@ -40,39 +45,66 @@ For new feature requests, please open a GitHub Issue.
 mydog.*:
     description: Gives access to all MyDog commands
     default: false
+mydog.limit.*:
+  description: Give limits to the amount of dogs a player can tame.
+  default: false
 mydog.teleport:
-    description: Player's tamed wolves will teleport to the player
-    default: true
+  description: Player's tamed wolves will teleport to the player
+  default: true
 mydog.help:
-    description: Player can view the MyDog command list
-    default: true
+  description: Player can view the MyDog command list
+  default: true
 mydog.putdown:
-    description: Player can kill their Dog with a command
-    default: true
-mydog.free:
-    description: Player can free their Dog with a command
-    default: true
+  description: Player can kill their Dog with a command
+  default: true
 mydog.comehere:
-    description: Player can force their Dogs to load and teleport to the position of the player
-    default: true
+  description: Player can force their Dogs to load and teleport to the position of the player
+  default: true
 mydog.dogs:
-    description: Player can get an overview about their Dogs
-    default: true
+  description: Player can get an overview about their Dogs
+  default: true
 mydog.stats:
-    description: Player can view stats about their Dogs
-    default: true
+  description: Player can view stats about their Dogs
+  default: true
 mydog.rename:
-    description: Player can rename their Dogs using the command
-    default: true
+  description: Player can rename their Dogs
+  default: true
+mydog.sit:
+  description: Player can have dogs sit and stand up
+  default: true
 mydog.setid:
-    description: Player can set a custom ID to their Dogs
-    default: true
+  description: Player can set a custom ID to their Dogs
+  default: true
+mydog.togglemode:
+  description: Player can toggle dogs between attack and defend mode
+  default: true
+mydog.pet:
+  description: Player can pet their dogs
+  default: true
+mydog.pet.others:
+  description: Player can pet others dogs
+  default: true
+mydog.editlevel:
+  description: Player can set the level of their dogs
+  default: false
+mydog.dead:
+  description: Player can see the list of dead dogs
+  default: true
+mydog.revive:
+  description: Player can revive dead dogs
+  default: true
+mydog.free:
+  description: Player can set their Dogs free
+  default: true
+mydog.trade:
+  description: Players can trade their dogs
+  default: true
 mydog.reload:
-    description: Player can reload the configuration(s)
-    default: false
+  description: Player can reload the configuration(s)
+  default: false
 mydog.save:
-    description: Player can save the configuration(s)
-    default: false
+  description: Player can save the configuration(s)
+  default: false
 ```
 
 ## Bug reports and issues
