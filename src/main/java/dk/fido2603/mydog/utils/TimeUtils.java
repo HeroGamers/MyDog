@@ -3,6 +3,10 @@ package dk.fido2603.mydog.utils;
 import java.util.concurrent.TimeUnit;
 
 public class TimeUtils {
+    private TimeUtils() {
+        throw new IllegalStateException("Utility class");
+    }
+
     // From my other plugin, Semi-Hardcore
     public static String parseMillisToUFString(long millis) {
         long days = TimeUnit.MILLISECONDS.toDays(millis);

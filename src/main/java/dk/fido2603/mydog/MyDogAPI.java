@@ -2,25 +2,25 @@ package dk.fido2603.mydog;
 
 import java.util.UUID;
 
+import dk.fido2603.mydog.objects.Dog;
 import org.bukkit.entity.Wolf;
 
-import dk.fido2603.mydog.MyDog;
-
 public class MyDogAPI {
-    private MyDog plugin = null;
+    private final MyDog plugin;
 
     public MyDogAPI(MyDog p) {
         this.plugin = p;
     }
 
     public boolean isDog(UUID dogUUID) {
-        if (plugin.getServer().getEntity(dogUUID) instanceof Wolf) {
-            return MyDog.getDogManager().isDog(dogUUID);
-        }
-        return false;
+        return MyDog.getDogManager().isDog(dogUUID);
     }
 
     public boolean isDog(Wolf dog) {
         return MyDog.getDogManager().isDog(dog.getUniqueId());
+    }
+
+    public Dog getDog(UUID dogUUID) {
+        return MyDog.getDogManager().getDog(dogUUID);
     }
 }

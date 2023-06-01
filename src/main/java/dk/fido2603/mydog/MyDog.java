@@ -20,12 +20,15 @@ import net.milkbowl.vault.economy.Economy;
 import java.util.*;
 
 import net.milkbowl.vault.permission.Permission;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.*;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -35,8 +38,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 /*														  */
 /*          https://github.com/DogOnFire/MyHorse          */
 public class MyDog extends JavaPlugin {
-    public static MyDog instance;
+    private static MyDog instance;
     public static boolean pluginEnabled = false;
+    private static final int pluginId = 18606;
 
     public boolean vaultEnabled = false;
 
@@ -127,7 +131,7 @@ public class MyDog extends JavaPlugin {
             "Wally", "Walter", "Watson", "Willy", "Winston", "Woody", "Wrigley", "Wyatt", "Yogi", "Yoshi", "Yukon",
             "Zane", "Zeus", "Ziggy");
 
-    public Map<Integer, Level> dogLevels = new HashMap<Integer, Level>();
+    public final Map<Integer, Level> dogLevels = new HashMap<>();
 
     private static Economy economy = null;
     private CommandManager commands = null;
@@ -183,9 +187,10 @@ public class MyDog extends JavaPlugin {
             return false;
         }
         economy = rsp.getProvider();
-        return economy != null;
+        return true;
     }
 
+    @Override
     public void onDisable() {
         saveSettings();
         reloadSettings();
@@ -195,9 +200,9 @@ public class MyDog extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        WolfMainListener tameListener = null;
-        WolfMainListener_1_18 tameListener_1_18 = null;
-        DamageListener damageListener = null;
+        WolfMainListener tameListener;
+        WolfMainListener_1_18 tameListener_1_18;
+        DamageListener damageListener;
 
         plugin = this;
         instance = this;
@@ -218,7 +223,8 @@ public class MyDog extends JavaPlugin {
         PluginManager pm = getServer().getPluginManager();
 
         // Check for Vault
-        if (pm.getPlugin("Vault") != null && pm.getPlugin("Vault").isEnabled()) {
+        Plugin vaultPlugin = pm.getPlugin("Vault");
+        if (vaultPlugin != null && vaultPlugin.isEnabled()) {
             log("Vault detected.");
             setupEconomy();
             RegisteredServiceProvider<Permission> permissionProvider = plugin.getServer().getServicesManager().getRegistration(Permission.class);
@@ -255,6 +261,9 @@ public class MyDog extends JavaPlugin {
         // Attack mode / angry checker
         // keeps the dog on a target
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new AttackModeTask(this), 20L * 30L, 20L * 2L);
+
+        // Enable metrics
+        Metrics metrics = new Metrics(this, pluginId);
     }
 
     public void log(String message) {
@@ -303,13 +312,16 @@ public class MyDog extends JavaPlugin {
         // Levels
         if (config.getConfigurationSection("DogSettings.Levels") != null) {
             this.dogLevels.clear();
-            for (String level : config.getConfigurationSection("DogSettings.Levels").getKeys(false)) {
-                if (config.getConfigurationSection("DogSettings.Levels." + level) != null) {
-                    int exp = config.getInt("DogSettings.Levels." + level + ".Experience");
-                    double health = config.getInt("DogSettings.Levels." + level + ".Health");
-                    double damage = config.getInt("DogSettings.Levels." + level + ".Damage");
+            ConfigurationSection levelsSection = config.getConfigurationSection("DogSettings.Levels");
+            if (levelsSection != null) {
+                for (String level : levelsSection.getKeys(false)) {
+                    if (config.getConfigurationSection("DogSettings.Levels." + level) != null) {
+                        int exp = config.getInt("DogSettings.Levels." + level + ".Experience");
+                        double health = config.getInt("DogSettings.Levels." + level + ".Health");
+                        double damage = config.getInt("DogSettings.Levels." + level + ".Damage");
 
-                    this.dogLevels.put(Integer.parseInt(level), getLevelFactory().newLevel(Integer.parseInt(level), exp, health, damage));
+                        this.dogLevels.put(Integer.parseInt(level), getLevelFactory().newLevel(Integer.parseInt(level), exp, health, damage));
+                    }
                 }
             }
         } else {
@@ -343,13 +355,13 @@ public class MyDog extends JavaPlugin {
 
     public void saveSettings() {
         config.set("Settings.ServerName", this.serverName);
-        config.set("Settings.Debug", Boolean.valueOf(this.debug));
+        config.set("Settings.Debug", this.debug);
         config.set("Settings.ChatPrefix", this.chatPrefix);
-        config.set("Settings.InstantSaveConfig", Boolean.valueOf(this.instantSave));
-        config.set("Settings.AutomaticTeleportation", Boolean.valueOf(this.automaticTeleportation));
-        config.set("Settings.ExpandedSearch", Boolean.valueOf(this.expandedSearch));
-        config.set("Settings.EnableExperimentalTeleport", Boolean.valueOf(this.experimentalTeleport));
-        config.set("Settings.PlayerDistanceCheck", Boolean.valueOf(this.playerDistanceCheck));
+        config.set("Settings.InstantSaveConfig", this.instantSave);
+        config.set("Settings.AutomaticTeleportation", this.automaticTeleportation);
+        config.set("Settings.ExpandedSearch", this.expandedSearch);
+        config.set("Settings.EnableExperimentalTeleport", this.experimentalTeleport);
+        config.set("Settings.PlayerDistanceCheck", this.playerDistanceCheck);
         config.set("DogSettings.RandomCollarColor", this.randomCollarColor);
         config.set("DogSettings.UseLevels", this.useLevels);
         config.set("DogSettings.TeleportOnWorldChange", this.teleportOnWorldChange);

@@ -9,7 +9,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import dk.fido2603.mydog.MyDog;
 
 public class ParticleUtils {
-    private MyDog plugin = null;
+    private final MyDog plugin;
 
     public ParticleUtils(MyDog p) {
         this.plugin = p;
@@ -18,7 +18,7 @@ public class ParticleUtils {
     public void newLevelUpParticle(Entity entity) {
         double r = 0.8;
         new BukkitRunnable() {
-            Particle.DustOptions dustOptions = new Particle.DustOptions(Color.AQUA, 1);
+            final Particle.DustOptions dustOptions = new Particle.DustOptions(Color.AQUA, 1);
             double t = 0;
 
             public void run() {
@@ -31,6 +31,9 @@ public class ParticleUtils {
                 double z = r * Math.sin(t);
 
                 loc.add(x, y, z);
+                if (loc.getWorld() == null) {
+                    this.cancel();
+                }
                 loc.getWorld().spawnParticle(Particle.REDSTONE, loc, 1, dustOptions);
                 loc.subtract(x, y, z);
 
@@ -41,7 +44,7 @@ public class ParticleUtils {
         }.runTaskTimer(plugin, 0, 1);
 
         new BukkitRunnable() {
-            Particle.DustOptions dustOptions = new Particle.DustOptions(Color.BLACK, 1);
+            final Particle.DustOptions dustOptions = new Particle.DustOptions(Color.BLACK, 1);
             double t = 0;
 
             public void run() {
@@ -54,6 +57,9 @@ public class ParticleUtils {
                 double z = r * Math.sin(-t);
 
                 loc.add(x, y, z);
+                if (loc.getWorld() == null) {
+                    this.cancel();
+                }
                 loc.getWorld().spawnParticle(Particle.REDSTONE, loc, 1, dustOptions);
                 loc.subtract(x, y, z);
 
@@ -78,6 +84,9 @@ public class ParticleUtils {
 
                 loc.add(x, y, z);
 
+                if (loc.getWorld() == null) {
+                    this.cancel();
+                }
                 loc.getWorld().spawnParticle(Particle.FLAME, loc, 1);
 
                 loc.subtract(x, y, z);
@@ -105,6 +114,9 @@ public class ParticleUtils {
                 double z = r * Math.sin(t);
 
                 loc.add(x, y, z);
+                if (loc.getWorld() == null) {
+                    this.cancel();
+                }
                 loc.getWorld().spawnParticle(Particle.HEART, loc, 1);
                 loc.subtract(x, y, z);
 

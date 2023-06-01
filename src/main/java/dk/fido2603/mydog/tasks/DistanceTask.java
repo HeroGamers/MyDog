@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DistanceTask implements Runnable {
-    private MyDog plugin;
+    private final MyDog plugin;
 
     public DistanceTask(MyDog instance) {
         this.plugin = instance;
@@ -26,7 +26,7 @@ public class DistanceTask implements Runnable {
             for (Dog dog : MyDog.getDogManager().getAliveDogs((player.getUniqueId()))) {
                 Wolf wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
                 if (wolf != null && !wolf.isSitting()) {
-                    double distance = 0.0;
+                    double distance;
                     // if they are in two seperate worlds, it's safe to say that the distance is above 30 lol
                     if (!player.getWorld().getUID().equals(wolf.getWorld().getUID())) {
                         distance = 1000;

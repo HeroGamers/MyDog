@@ -35,7 +35,7 @@
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
       <tag>HEAD</tag>
-  </scm>
+    </scm>
 
     <repositories>
         <!-- Spigot Repo for Spigot and Bukkit -->
@@ -64,6 +64,13 @@
             <version>1.7</version>
             <scope>provided</scope>
         </dependency>
+        <!-- bStats Bukkit for Plugin Statistics -->
+        <dependency>
+            <groupId>org.bstats</groupId>
+            <artifactId>bstats-bukkit</artifactId>
+            <version>3.0.2</version>
+            <scope>compile</scope>
+        </dependency>
         <!-- junit 5, unit tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -72,12 +79,12 @@
             <scope>test</scope>
         </dependency>
         <!-- apache commons lang -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
-            <scope>provided</scope>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.commons</groupId>-->
+<!--            <artifactId>commons-lang3</artifactId>-->
+<!--            <version>3.12.0</version>-->
+<!--            <scope>provided</scope>-->
+<!--        </dependency>-->
     </dependencies>
 
     <packaging>jar</packaging>
@@ -97,7 +104,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.4.3</version>
+                <version>3.2.4</version>
+                <configuration>
+                    <relocations>
+                        <!-- Relocate bStats to our own package -->
+                        <relocation>
+                            <pattern>org.bstats</pattern>
+                            <shadedPattern>${project.groupId}.${project.artifactId}.utils</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>
