@@ -483,7 +483,7 @@ public class CommandManager {
 
         sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
         for (Map.Entry<Integer, Dog> entry : dogsSorted.entrySet()) {
-            Wolf wolf = (Wolf) plugin.getServer().getEntity(((Dog) entry.getValue()).getDogId());
+            Wolf wolf = (Wolf) plugin.getServer().getEntity(entry.getValue().getDogId());
             String healthString = "";
             if (wolf != null) {
                 double health = wolf.getHealth();
@@ -498,7 +498,7 @@ public class CommandManager {
                 healthString = " " + ChatColor.BLUE + "(HP: " + df.format(health) + "/" + df.format(maxHealth) + ")";
             }
 
-            sender.sendMessage(ChatColor.AQUA + "#" + ((Dog) entry.getValue()).getIdentifier() + ChatColor.WHITE + " - " + ChatColor.AQUA + ((Dog) entry.getValue()).getDogName() + healthString);
+            sender.sendMessage(ChatColor.AQUA + "#" + entry.getValue().getIdentifier() + ChatColor.WHITE + " - " + ChatColor.AQUA + entry.getValue().getDogName() + healthString);
         }
         return true;
     }
@@ -512,7 +512,7 @@ public class CommandManager {
 
         sender.sendMessage(ChatColor.YELLOW + "---------------- " + this.plugin.getDescription().getFullName() + " ----------------");
         for (Map.Entry<Integer, Dog> entry : dogsSorted.entrySet()) {
-            sender.sendMessage(ChatColor.AQUA + "#" + ((Dog) entry.getValue()).getIdentifier() + ChatColor.WHITE + " - " + ChatColor.AQUA + ((Dog) entry.getValue()).getDogName() + ChatColor.WHITE + " LVL " + ((Dog) entry.getValue()).getLevel() + " " + ChatColor.GREEN + " $" + ((Dog) entry.getValue()).getRevivalPrice());
+            sender.sendMessage(ChatColor.AQUA + "#" + entry.getValue().getIdentifier() + ChatColor.WHITE + " - " + ChatColor.AQUA + entry.getValue().getDogName() + ChatColor.WHITE + " LVL " + entry.getValue().getLevel() + " " + ChatColor.GREEN + " $" + entry.getValue().getRevivalPrice());
         }
         return true;
     }
@@ -526,10 +526,10 @@ public class CommandManager {
             return false;
         }
 
-        String name = args[2];
+        StringBuilder name = new StringBuilder(args[2]);
 
         for (int i = 3; i < args.length; i++) {
-            name += " " + args[i];
+            name.append(" ").append(args[i]);
         }
 
         Dog dog = MyDog.getDogManager().getDog(dogIdentifier, ((Player) sender).getUniqueId());
@@ -538,12 +538,12 @@ public class CommandManager {
             return false;
         }
 
-        if (name.isEmpty() || name.length() > 16) {
+        if ((name.length() == 0) || name.length() > 16) {
             sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "Please choose a name between 1 and 16 characters for your Dog!");
             return false;
         }
 
-        if (!dog.setDogName(name)) {
+        if (!dog.setDogName(name.toString())) {
             sender.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.RED + "An error occured! Could not set Dog name!");
             return false;
         }
@@ -723,8 +723,9 @@ public class CommandManager {
 
             Map<Integer, Level> levels = plugin.dogLevels;
 
-            for (Integer levelInt : levels.keySet()) {
-                int levelExp = levels.get(levelInt).exp;
+            for (Map.Entry<Integer, Level> levelSet : levels.entrySet()) {
+                int levelInt = levelSet.getKey();
+                int levelExp = levelSet.getValue().exp;
 
                 // If experience is under the experience needed to level up
                 if (exp < levelExp) {
@@ -1055,7 +1056,7 @@ public class CommandManager {
                     ((Player) sender).getDisplayName() + ChatColor.GOLD + " is offering " + dog.getDogColor() +
                     dog.getDogName() + ChatColor.GOLD + (plugin.useLevels ? (" (" + ChatColor.AQUA + "Level " +
                     dog.getLevel() + ChatColor.GOLD + ")") : "") + " for " + ChatColor.AQUA +
-                    ((price > 0.0D ? (df.format(price) + "$") : "free")) + ChatColor.GOLD + "!\n\n" +
+                    (price > 0.0D ? (df.format(price) + "$") : "free") + ChatColor.GOLD + "!\n\n" +
                     ChatColor.GOLD + "Accept the trade request with " + ChatColor.AQUA + "/md tradeaccept\n" +
                     ChatColor.GOLD + "Decline the trade request with " + ChatColor.AQUA + "/md tradedecline\n" +
                     ChatColor.GOLD + "Request expires in 30 seconds!");
@@ -1084,7 +1085,7 @@ public class CommandManager {
             return Collections.emptyList();
         }
 
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
 
         Player player = null;
         if (sender instanceof Player) {
@@ -1092,7 +1093,7 @@ public class CommandManager {
         }
 
         if (args.length == 1 && (cmd.getName().equalsIgnoreCase("mydog") || cmd.getName().equalsIgnoreCase("dog") || cmd.getName().equalsIgnoreCase("dogs") || cmd.getName().equalsIgnoreCase("md"))) {
-            List<String> arg1 = new ArrayList<String>();
+            List<String> arg1 = new ArrayList<>();
             if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.help"))) {
                 arg1.add("help");
             }
@@ -1171,7 +1172,7 @@ public class CommandManager {
                 }
             }
 
-            if (player != null && ((plugin.allowRevival && args[0].equalsIgnoreCase("revive")))) {
+            if (player != null && (plugin.allowRevival && args[0].equalsIgnoreCase("revive"))) {
                 List<Dog> dogs = MyDog.getDogManager().getDeadDogs(player.getUniqueId());
                 for (Dog dog : dogs) {
                     arg2.add(Integer.toString(dog.getIdentifier()));
@@ -1190,7 +1191,7 @@ public class CommandManager {
             Iterable<String> SECOND_ARGUMENTS = arg2;
             StringUtil.copyPartialMatches(args[1], SECOND_ARGUMENTS, result);
         } else if (args.length == 3) {
-            List<String> arg3 = new ArrayList<String>();
+            List<String> arg3 = new ArrayList<>();
 
             if (args[0].equalsIgnoreCase("rename")) {
                 arg3.add("<name>");
@@ -1211,7 +1212,7 @@ public class CommandManager {
             Iterable<String> THIRD_ARGUMENTS = arg3;
             StringUtil.copyPartialMatches(args[2], THIRD_ARGUMENTS, result);
         } else if (args.length == 4) {
-            List<String> arg4 = new ArrayList<String>();
+            List<String> arg4 = new ArrayList<>();
 
             if (args[0].equalsIgnoreCase("trade")) {
                 arg4.add("[price]");

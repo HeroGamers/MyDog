@@ -38,7 +38,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 /*														  */
 /*          https://github.com/DogOnFire/MyHorse          */
 public class MyDog extends JavaPlugin {
-    public static MyDog instance;
+    private static MyDog instance;
     public static boolean pluginEnabled = false;
     private static final int pluginId = 18606;
 
@@ -131,7 +131,7 @@ public class MyDog extends JavaPlugin {
             "Wally", "Walter", "Watson", "Willy", "Winston", "Woody", "Wrigley", "Wyatt", "Yogi", "Yoshi", "Yukon",
             "Zane", "Zeus", "Ziggy");
 
-    public Map<Integer, Level> dogLevels = new HashMap<>();
+    public final Map<Integer, Level> dogLevels = new HashMap<>();
 
     private static Economy economy = null;
     private CommandManager commands = null;
@@ -190,6 +190,7 @@ public class MyDog extends JavaPlugin {
         return true;
     }
 
+    @Override
     public void onDisable() {
         saveSettings();
         reloadSettings();

@@ -5,8 +5,6 @@ import java.util.UUID;
 import dk.fido2603.mydog.objects.Dog;
 import org.bukkit.entity.Wolf;
 
-import dk.fido2603.mydog.MyDog;
-
 public class MyDogAPI {
     private final MyDog plugin;
 
