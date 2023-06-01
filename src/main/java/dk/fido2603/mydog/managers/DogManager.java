@@ -259,7 +259,7 @@ public class DogManager {
 
     public HashMap<String, Object> getTrade(UUID recipient) {
         if (!hasTrade(recipient)) {
-            return null;
+            return new HashMap<>();
         }
 
         return dogTrades.get(recipient);
@@ -267,7 +267,7 @@ public class DogManager {
 
     public Dog getTradeDog(UUID recipient) {
         HashMap<String, Object> trade = getTrade(recipient);
-        if (trade == null) {
+        if (trade == null || trade.isEmpty()) {
             return null;
         }
 
@@ -285,7 +285,7 @@ public class DogManager {
     public boolean acceptTrade(Player accepter) {
         HashMap<String, Object> dogTrade = getTrade(accepter.getUniqueId());
 
-        if (dogTrade == null) {
+        if (dogTrade == null || dogTrade.isEmpty()) {
             return false;
         }
 

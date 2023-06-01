@@ -6,6 +6,10 @@ import org.bukkit.plugin.Plugin;
 // From DogOnFire's Versioning in Werewolf
 // https://github.com/DogOnFire/Werewolf
 public class VersionFactory {
+    private VersionFactory() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * Factory method used when you want to construct a Version object via a
      * Plugin object. <br/>

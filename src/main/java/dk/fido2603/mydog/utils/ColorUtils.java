@@ -8,6 +8,10 @@ import org.bukkit.DyeColor;
 public class ColorUtils {
     private static final Random random = new Random();
 
+    private ColorUtils() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static ChatColor getChatColorFromDyeColor(DyeColor dyeColor) {
         switch (dyeColor) {
             case BLACK:

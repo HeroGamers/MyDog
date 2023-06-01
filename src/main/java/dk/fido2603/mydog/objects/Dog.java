@@ -34,6 +34,7 @@ public class Dog {
 
     private final String pattern = "dd-MM-yyyy HH:mm";
     private final DateFormat formatter = new SimpleDateFormat(pattern);
+    private final static Random random = new Random();
 
     // For new dogs
     public Dog(Wolf dog, Player dogOwner, int dogUID, int level) {
@@ -59,10 +60,8 @@ public class Dog {
         }
 
         // Generate a random Collar Color and set the Dog's Color
-        if (collarColorImport == null) {
-            if (MyDog.instance().randomCollarColor) {
-                dog.setCollarColor(ColorUtils.randomDyeColor());
-            }
+        if (collarColorImport == null && MyDog.instance().randomCollarColor) {
+            dog.setCollarColor(ColorUtils.randomDyeColor());
         }
 
         this.collarColor = dog.getCollarColor();
@@ -166,7 +165,7 @@ public class Dog {
         try {
             return formatter.parse(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".Birthday"));
         } catch (ParseException e) {
-            e.printStackTrace();
+            MyDog.instance().log("Failed to parse dog birthday.");
             return null;
         }
     }
@@ -220,18 +219,16 @@ public class Dog {
         }
 
         MyDog.instance().logDebug("Petting dog.");
-
-        Random rand = new Random();
         String pettingString = MyDog.instance().pettingString.replace("{dogNameColor}", "&" + getDogColor().getChar()).replace("{dogName}", getDogName());
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', pettingString));
 
-        if (rand.nextInt(10) == 1) {
+        if (random.nextInt(10) == 1) {
             wolf.playEffect(EntityEffect.WOLF_SHAKE);
             pettingString = MyDog.instance().pettingSplashString.replace("{dogNameColor}", "&" + getDogColor().getChar()).replace("{dogName}", getDogName());
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', pettingString));
         }
         MyDog.getParticleUtils().newPettingParticle(wolf);
-        Sound sound = PETTING_SOUNDS.get(rand.nextInt(PETTING_SOUNDS.size()));
+        Sound sound = PETTING_SOUNDS.get(random.nextInt(PETTING_SOUNDS.size()));
         player.playSound(player.getLocation(), sound, 3.0F, 1.0F);
     }
 
@@ -368,7 +365,7 @@ public class Dog {
     }
 
     public int getRevivalPrice() {
-        return (int) (level * MyDog.instance().revivalPrice);
+        return level * MyDog.instance().revivalPrice;
     }
 
     public int getLevel() {
@@ -406,8 +403,9 @@ public class Dog {
         int newLevel = 1;
         Map<Integer, LevelFactory.Level> levels = MyDog.instance().dogLevels;
 
-        for (Integer levelInt : levels.keySet()) {
-            int levelExp = levels.get(levelInt).exp;
+        for (Map.Entry<Integer, LevelFactory.Level> levelSet : levels.entrySet()) {
+            int levelInt = levelSet.getKey();
+            int levelExp = levelSet.getValue().exp;
             // Amount of exp must be higher or equals to exp to level
             // The level must be higher than the level the Dog had before
             // The new level variable must be smaller than the level checking against

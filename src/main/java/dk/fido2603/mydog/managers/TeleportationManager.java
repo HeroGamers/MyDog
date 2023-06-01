@@ -108,6 +108,13 @@ public class TeleportationManager {
 
         Tameable tameableEntity = (Tameable) e;
 
+        teleportResult.put(false, safeLocation);
+        return teleportResult;
+
+        if (tameableEntity == null || tameableEntity.isDead() || !(tameableEntity.getOwner() instanceof Player)) {
+
+        }
+
         if (tameableEntity != null && !tameableEntity.isDead() && tameableEntity.getOwner() instanceof Player) {
             Sittable sittingEntity = (Sittable) e;
             Player player = (Player) tameableEntity.getOwner();
