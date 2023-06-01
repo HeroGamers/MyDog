@@ -16,13 +16,13 @@ import dk.fido2603.mydog.objects.Dog;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class DogManager {
-    private MyDog plugin = null;
+    private final MyDog plugin;
     private FileConfiguration dogsConfig = null;
     private File dogsConfigFile = null;
-    private Random random = new Random();
+    private final Random random = new Random();
     private long lastSaveTime = 0L;
 
-    private HashMap<UUID, HashMap<String, Object>> dogTrades = new HashMap<>();
+    private final HashMap<UUID, HashMap<String, Object>> dogTrades = new HashMap<>();
 
     public DogManager(MyDog plugin) {
         this.plugin = plugin;
@@ -66,6 +66,9 @@ public class DogManager {
     }
 
     public boolean isDog(UUID dogId) {
+        if (!(plugin.getServer().getEntity(dogId) instanceof Wolf)) {
+            return false;
+        }
         return dogsConfig.contains(dogId.toString());
     }
 
@@ -77,7 +80,7 @@ public class DogManager {
     }
 
     public boolean isUUIDDeadDog(UUID uuid) {
-        return dogsConfig.contains(uuid.toString()) && dogsConfig.getBoolean(uuid.toString() + ".isDead");
+        return dogsConfig.contains(uuid.toString()) && dogsConfig.getBoolean(uuid + ".isDead");
     }
 
     public void dogDied(UUID dogId) {
@@ -99,21 +102,24 @@ public class DogManager {
         int dogs = 0;
         for (String dogUUID : dogsConfig.getKeys(false)) {
             plugin.logDebug(dogUUID);
-            UUID ownerId = UUID.fromString(dogsConfig.getString(dogUUID + ".Owner"));
-            if (ownerId.equals(playerId)) {
-                dogs++;
+            String ownerIdString = dogsConfig.getString(dogUUID + ".Owner");
+            if (ownerIdString != null) {
+                UUID ownerId = UUID.fromString(ownerIdString);
+                if (ownerId.equals(playerId)) {
+                    dogs++;
+                }
             }
         }
         return dogs;
     }
 
-    public void changeDogUUID(UUID oldDogID, UUID newDogID) {
-        Dog oldDog = getDog(oldDogID);
-        Dog newDog = null;
-        if (oldDog != null) {
-
-        }
-    }
+//    public void changeDogUUID(UUID oldDogID, UUID newDogID) {
+//        Dog oldDog = getDog(oldDogID);
+//        Dog newDog = null;
+//        if (oldDog != null) {
+//
+//        }
+//    }
 
     public boolean canTameMoreDogs(Player player) {
         if (player.isOp()) {
@@ -139,18 +145,29 @@ public class DogManager {
         return new Dog(dog, dogOwner, customName, collarColor, dogID, null);
     }
 
+    public UUID getDogOwnerId(UUID dogId) {
+        if (!dogsConfig.contains(dogId.toString())) {
+            return null;
+        }
+        String ownerIdString = dogsConfig.getString(dogId + ".Owner");
+        if (ownerIdString == null) {
+            return null;
+        }
+        return UUID.fromString(ownerIdString);
+    }
+
     public Dog getDog(UUID dogId) {
-        if (dogsConfig.contains(dogId.toString())) {
-            return new Dog(dogId, UUID.fromString(dogsConfig.getString(dogId.toString() + ".Owner")));
+        if (isDog(dogId)) {
+            return new Dog(dogId, getDogOwnerId(dogId));
         }
         return null;
     }
 
     public Dog getDog(int dogIdentifier, UUID ownerId) {
         for (String dogIdString : dogsConfig.getKeys(false)) {
-            if (dogsConfig.getString(dogIdString + ".ID").equals(Integer.toString(dogIdentifier)) && dogsConfig.getString(dogIdString + ".Owner").contains(ownerId.toString())) {
+            if (Objects.equals(dogsConfig.getString(dogIdString + ".ID"), Integer.toString(dogIdentifier)) && ownerId.equals(getDogOwnerId(UUID.fromString(dogIdString)))) {
                 UUID dogId = UUID.fromString(dogIdString);
-                return new Dog(dogId, UUID.fromString(dogsConfig.getString(dogId.toString() + ".Owner")));
+                return new Dog(dogId, ownerId);
             }
         }
 
@@ -158,7 +175,7 @@ public class DogManager {
     }
 
     public List<Dog> getDogs() {
-        List<Dog> dogs = new ArrayList<Dog>();
+        List<Dog> dogs = new ArrayList<>();
 
         for (String dogIdString : dogsConfig.getKeys(false)) {
             UUID dogId = UUID.fromString(dogIdString);
@@ -172,7 +189,7 @@ public class DogManager {
         List<Dog> dogs = new ArrayList<>();
 
         for (String dogIdString : dogsConfig.getKeys(false)) {
-            if (dogsConfig.getString(dogIdString + ".Owner").contains(ownerId.toString())) {
+            if (ownerId.equals(getDogOwnerId(UUID.fromString(dogIdString)))) {
                 UUID dogId = UUID.fromString(dogIdString);
                 dogs.add(new Dog(dogId, ownerId));
             }
@@ -316,9 +333,7 @@ public class DogManager {
         if (!dog.setIdentifier(id)) {
             Dog dog2 = getDog(id, dog.getOwnerId());
             if (dog2.setIdentifier(generateNewId(dog.getOwnerId()))) {
-                if (dog.setIdentifier(id)) {
-                    return true;
-                }
+                return dog.setIdentifier(id);
             }
         } else {
             return true;
@@ -353,7 +368,6 @@ public class DogManager {
             plugin.logDebug("ok");
         } else {
             plugin.logDebug("Dogs list is empty!");
-            id = 1;
         }
 
         plugin.logDebug("Returning ID: " + id);
@@ -364,14 +378,14 @@ public class DogManager {
         plugin.logDebug("Dog levelup! Level before: " + (dog.getLevel() - 1) + " - Level now: " + dog.getLevel());
         UUID ownerId = dog.getOwnerId();
         Player owner = plugin.getServer().getPlayer(ownerId);
-        if (owner.isOnline()) {
+        if (owner != null && owner.isOnline()) {
             String levelupString = plugin.levelUpString.replace("{chatPrefix}", plugin.getChatPrefix()).replace("{dogNameColor}", "&" + dog.getDogColor().getChar()).replace("{dogName}", dog.getDogName()).replace("{level}", Integer.toString(dog.getLevel()));
 			/*owner.sendMessage(ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + "[" + plugin.getChatPrefix() + "] " + ChatColor.RESET + ChatColor.DARK_PURPLE + "Your dog, "
 					+ dog.getDogColor() + dog.getDogName() + ChatColor.DARK_PURPLE + ", just leveled up to " + ChatColor.LIGHT_PURPLE + "Level " + dog.level + ChatColor.DARK_PURPLE + "!");*/
             owner.sendMessage(ChatColor.translateAlternateColorCodes('&', levelupString));
 
             MyDog.getParticleUtils().newLevelUpParticle(plugin.getServer().getEntity(dog.getDogId()));
-            Sound sound = null;
+            Sound sound;
             if (plugin.levelUpSound == null) {
                 plugin.logDebug("Couldn't load the levelup sound, took Howl!");
                 sound = Sound.ENTITY_WOLF_HOWL;

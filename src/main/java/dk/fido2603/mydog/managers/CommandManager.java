@@ -7,6 +7,7 @@ import dk.fido2603.mydog.MyDog;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -17,7 +18,7 @@ import dk.fido2603.mydog.objects.Dog;
 import dk.fido2603.mydog.objects.LevelFactory.Level;
 
 public class CommandManager {
-    private MyDog plugin = null;
+    private final MyDog plugin;
 
     public CommandManager(MyDog p) {
         this.plugin = p;
@@ -485,8 +486,15 @@ public class CommandManager {
             Wolf wolf = (Wolf) plugin.getServer().getEntity(((Dog) entry.getValue()).getDogId());
             String healthString = "";
             if (wolf != null) {
-                double maxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
                 double health = wolf.getHealth();
+                AttributeInstance maxHealthInstance = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+                double maxHealth;
+                if (maxHealthInstance != null) {
+                    maxHealth = maxHealthInstance.getValue();
+                }
+                else {
+                    maxHealth = health;
+                }
                 healthString = " " + ChatColor.BLUE + "(HP: " + df.format(health) + "/" + df.format(maxHealth) + ")";
             }
 
@@ -709,7 +717,7 @@ public class CommandManager {
             sender.sendMessage(ChatColor.AQUA + "Level: " + ChatColor.WHITE + dog.getLevel());
 
             // Calculate and make experience string
-            String experienceString = "";
+            String experienceString;
             double exp = dog.getExperience();
             double maxExp = 0;
 
@@ -752,8 +760,15 @@ public class CommandManager {
 
         if (wolf != null) {
             // Health graphics
-            double maxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
             double health = wolf.getHealth();
+            AttributeInstance maxHealthInstance = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+            double maxHealth;
+            if (maxHealthInstance != null) {
+                maxHealth = maxHealthInstance.getValue();
+            }
+            else {
+                maxHealth = health;
+            }
 
             double percent = (health / maxHealth) * 100;
 
@@ -762,12 +777,13 @@ public class CommandManager {
             sender.sendMessage(ChatColor.AQUA + "Health: " + healthString + ChatColor.AQUA + "" + ChatColor.BOLD + " [" + ChatColor.DARK_AQUA + df.format(health) +
                     ChatColor.AQUA + "" + ChatColor.BOLD + "/" + ChatColor.RESET + ChatColor.AQUA + df.format(maxHealth) + ChatColor.AQUA + "" + ChatColor.BOLD + "]");
 
-            sender.sendMessage(ChatColor.AQUA + "Damage: " + ChatColor.WHITE + wolf.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).getValue() + " HP");
+            AttributeInstance attackDamage = wolf.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+            sender.sendMessage(ChatColor.AQUA + "Damage: " + ChatColor.WHITE + (attackDamage != null ? attackDamage.getValue() : 0) + " HP");
         }
 
         Location dogLoc = dog.getDogLocation();
         if (dogLoc != null) {
-            sender.sendMessage(ChatColor.AQUA + "Last Seen at: " + ChatColor.DARK_AQUA + "World: " + ChatColor.WHITE + dogLoc.getWorld().getName() +
+            sender.sendMessage(ChatColor.AQUA + "Last Seen at: " + ChatColor.DARK_AQUA + "World: " + ChatColor.WHITE + (dogLoc.getWorld() != null ? dogLoc.getWorld().getName() : "Unknown World") +
                     ChatColor.DARK_AQUA + " X: " + ChatColor.WHITE + df.format(dogLoc.getX()) + ChatColor.DARK_AQUA + " Y: " + ChatColor.WHITE + df.format(dogLoc.getY()) +
                     ChatColor.DARK_AQUA + " Z: " + ChatColor.WHITE + df.format(dogLoc.getZ()));
         }
@@ -866,7 +882,7 @@ public class CommandManager {
             Wolf wolf = null;
 
             Location dogLocation = dog.getDogLocation();
-            Boolean useLocation = false;
+            boolean useLocation = false;
             if (dogLocation == null) {
                 wolf = (Wolf) plugin.getServer().getEntity(dog.getDogId());
                 if (wolf == null) {

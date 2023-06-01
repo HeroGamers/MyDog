@@ -3,7 +3,6 @@ package dk.fido2603.mydog.managers;
 import dk.fido2603.mydog.MyDog;
 import dk.fido2603.mydog.objects.Dog;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,9 +17,9 @@ import java.util.List;
 import java.util.UUID;
 
 public class TeleportationManager {
-    private MyDog plugin = null;
-    private List<UUID> teleportingEntities = new ArrayList<>();
-    private List<Chunk> entityChunks = new ArrayList<>();
+    private final MyDog plugin;
+    private final List<UUID> teleportingEntities = new ArrayList<>();
+    private final List<Chunk> entityChunks = new ArrayList<>();
 
     public TeleportationManager(MyDog p) {
         this.plugin = p;

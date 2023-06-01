@@ -16,8 +16,8 @@ public class Version implements Comparable<Version> {
      * fail.
      */
     @SuppressWarnings("rawtypes")
-    private Tester tester;
-    private Object object;
+    private final Tester tester;
+    private final Object object;
     final String version;
     private String separator = "[_.-]";
 
@@ -66,10 +66,7 @@ public class Version implements Comparable<Version> {
         if (!this.isEnabled())
             return false;
         int x = compareTo(new Version(minVersion));
-        if (x >= 0) {
-            return true;
-        }
-        return false;
+        return x >= 0;
     }
 
     /**
@@ -89,18 +86,14 @@ public class Version implements Comparable<Version> {
     public int compareTo(Version whichVersion) {
         int[] currentVersion = parseVersion(this.version);
         int[] otherVersion = parseVersion(whichVersion.toString());
-        int length = (currentVersion.length >= otherVersion.length) ? currentVersion.length : otherVersion.length;
+        int length = Math.max(currentVersion.length, otherVersion.length);
         for (int index = 0; index <= (length - 1); index = index + 1) {
             try {
                 if (currentVersion[index] != otherVersion[index]) {
                     return currentVersion[index] - otherVersion[index];
                 }
             } catch (IndexOutOfBoundsException ex) {
-                if (currentVersion.length > otherVersion.length) {
-                    return currentVersion[index] - 0;
-                } else if (currentVersion.length < otherVersion.length) {
-                    return 0 - otherVersion[index];
-                }
+                return currentVersion[index];
             }
         }
         return 0;
@@ -118,7 +111,7 @@ public class Version implements Comparable<Version> {
         for (int index = 0; index <= (stringArray.length - 1); index = index + 1) {
             String t = stringArray[index].replaceAll("\\D", "");
             try {
-                temp[index] = Integer.valueOf(t);
+                temp[index] = Integer.parseInt(t);
             } catch (NumberFormatException ex) {
                 temp[index] = 0;
             }
@@ -146,7 +139,7 @@ public class Version implements Comparable<Version> {
      * Used to get a Sub-Version (or Development build). <br/>
      * <br/>
      *
-     * @param regex
+     * @param regex the regex
      * @return A completely new Version object.
      */
     public Version getSubVersion(String regex) {
@@ -163,7 +156,6 @@ public class Version implements Comparable<Version> {
 
     @Override
     public String toString() {
-        String v = (this.version == null) ? "" : this.version;
-        return v;
+        return (this.version == null) ? "" : this.version;
     }
 }

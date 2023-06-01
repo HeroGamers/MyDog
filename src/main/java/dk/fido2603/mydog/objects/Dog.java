@@ -32,8 +32,8 @@ public class Dog {
     private Boolean isDead;
     private Boolean isAngry;
 
-    private String pattern = "dd-MM-yyyy HH:mm";
-    private DateFormat formatter = new SimpleDateFormat(pattern);
+    private final String pattern = "dd-MM-yyyy HH:mm";
+    private final DateFormat formatter = new SimpleDateFormat(pattern);
 
     // For new dogs
     public Dog(Wolf dog, Player dogOwner, int dogUID, int level) {
@@ -90,7 +90,7 @@ public class Dog {
 
     // For old, already created, dogs
     public Dog(Wolf dog) {
-        this(dog.getUniqueId(), dog.getOwner().getUniqueId());
+        this(dog.getUniqueId(), Objects.requireNonNull(dog.getOwner()).getUniqueId());
     }
 
     // For old, already created, dogs
@@ -121,11 +121,12 @@ public class Dog {
     }
 
     public Wolf getWolf() {
-        if (MyDog.instance().getServer().getEntity(dogId) == null || !MyDog.instance().getServer().getEntity(dogId).isValid() || !(MyDog.instance().getServer().getEntity(dogId) instanceof Wolf)) {
+        Entity wolfEntity = MyDog.instance().getServer().getEntity(dogId);
+        if (wolfEntity == null || !wolfEntity.isValid() || !(wolfEntity instanceof Wolf)) {
             return null;
         }
 
-        return (Wolf) MyDog.instance().getServer().getEntity(dogId);
+        return (Wolf) wolfEntity;
     }
 
     /**
@@ -175,14 +176,15 @@ public class Dog {
             return nameColor;
         }
 
-        if (MyDog.instance().getServer().getEntity(dogId) == null || !MyDog.instance().getServer().getEntity(dogId).isValid()) {
+        Wolf wolf = getWolf();
+        if (wolf == null) {
             if (MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".NameChatColor") != null) {
                 return ChatColor.valueOf(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".NameChatColor"));
             }
             return ChatColor.WHITE;
         }
 
-        return ColorUtils.getChatColorFromDyeColor(((Wolf) MyDog.instance().getServer().getEntity(dogId)).getCollarColor());
+        return ColorUtils.getChatColorFromDyeColor(wolf.getCollarColor());
     }
 
     public boolean setDogColor(DyeColor color) {
@@ -190,23 +192,14 @@ public class Dog {
             return false;
         }
         if (MyDog.getDogManager().getDogsConfig().contains(dogId.toString())) {
-            ChatColor chatColor = ColorUtils.getChatColorFromDyeColor(color);
-
-            this.nameColor = chatColor;
+            this.nameColor = ColorUtils.getChatColorFromDyeColor(color);
             MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".NameChatColor", nameColor.name());
-
-            Wolf dog = (Wolf) MyDog.instance().getServer().getEntity(dogId);
-
-            if (dog == null) {
-                MyDog.instance().logDebug("Dog is null");
-                return false;
-            }
 
             if (dogName == null) {
                 this.dogName = getDogName();
             }
 
-            setDogCustomName();
+            return setDogCustomName();
         }
         MyDog.getDogManager().saveTimed();
         return true;
@@ -221,8 +214,8 @@ public class Dog {
             return;
         }
 
-        Wolf dog = (Wolf) MyDog.instance().getServer().getEntity(dogId);
-        if (dog == null) {
+        Wolf wolf = getWolf();
+        if (wolf == null) {
             return;
         }
 
@@ -233,11 +226,11 @@ public class Dog {
         player.sendMessage(ChatColor.translateAlternateColorCodes('&', pettingString));
 
         if (rand.nextInt(10) == 1) {
-            dog.playEffect(EntityEffect.WOLF_SHAKE);
+            wolf.playEffect(EntityEffect.WOLF_SHAKE);
             pettingString = MyDog.instance().pettingSplashString.replace("{dogNameColor}", "&" + getDogColor().getChar()).replace("{dogName}", getDogName());
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', pettingString));
         }
-        MyDog.getParticleUtils().newPettingParticle(dog);
+        MyDog.getParticleUtils().newPettingParticle(wolf);
         Sound sound = PETTING_SOUNDS.get(rand.nextInt(PETTING_SOUNDS.size()));
         player.playSound(player.getLocation(), sound, 3.0F, 1.0F);
     }
@@ -247,10 +240,6 @@ public class Dog {
     }
 
     public void setAngryMode(boolean angry) {
-        Wolf dog = (Wolf) MyDog.instance().getServer().getEntity(dogId);
-        if (dog == null) {
-            return;
-        }
         MyDog.instance().logDebug("Toggling dog mode.");
         this.setIsAngry(angry);
         setDogCustomName();
@@ -258,12 +247,12 @@ public class Dog {
     }
 
     public void sit(boolean sit) {
-        Wolf dog = (Wolf) MyDog.instance().getServer().getEntity(dogId);
-        if (dog == null || !dog.isValid()) {
+        Wolf wolf = getWolf();
+        if (wolf == null) {
             return;
         }
 
-        dog.setSitting(sit);
+        wolf.setSitting(sit);
         getDogLocation();
     }
 
@@ -304,8 +293,8 @@ public class Dog {
     }
 
     public Location getDogLocation() {
-        Entity dogEntity = MyDog.instance().getServer().getEntity(dogId);
-        if (dogEntity == null || !dogEntity.isValid()) {
+        Wolf wolf = getWolf();
+        if (wolf == null) {
             if (MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".LastSeen.World") != null) {
                 String lastSeenWorld = MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".LastSeen.World");
                 if (lastSeenWorld == null) {
@@ -316,25 +305,17 @@ public class Dog {
             return null;
         }
 
-        this.location = dogEntity.getLocation();
-        if (this.location.getWorld() != null) {
-            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
-        }
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
-
-        MyDog.getDogManager().saveTimed();
-        return location;
+        saveDogLocation();
+        return this.location;
     }
 
     public boolean saveDogLocation() {
-        Entity dogEntity = MyDog.instance().getServer().getEntity(dogId);
-        if (dogEntity == null || !dogEntity.isValid()) {
+        Wolf wolf = getWolf();
+        if (wolf == null) {
             return false;
         }
 
-        this.location = dogEntity.getLocation();
+        this.location = wolf.getLocation();
         if (this.location.getWorld() != null) {
             MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
         }
@@ -363,9 +344,9 @@ public class Dog {
             return false;
         }
 
-        Wolf dog = (Wolf) MyDog.instance().getServer().getEntity(dogId);
+        Wolf wolf = getWolf();
 
-        if (dog == null || !dog.isValid()) {
+        if (wolf == null) {
             return false;
         }
 
@@ -379,7 +360,7 @@ public class Dog {
             this.dogIdentifier = MyDog.getDogManager().generateNewId(player.getUniqueId());
             MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".Owner", dogOwnerId);
             MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".ID", dogIdentifier);
-            dog.setOwner(player);
+            wolf.setOwner(player);
         }
 
         MyDog.getDogManager().saveTimed();
@@ -463,23 +444,18 @@ public class Dog {
 
     public boolean setDogCustomName() {
         MyDog.instance().logDebug("Setting custom name... dogId: " + dogId);
-        if (MyDog.instance().getServer().getEntity(dogId) == null || !MyDog.instance().getServer().getEntity(dogId).isValid() || !(MyDog.instance().getServer().getEntity(dogId) instanceof Wolf)) {
+        Wolf wolf = getWolf();
+        if (wolf == null) {
             MyDog.instance().logDebug("Retuning false!");
             return false;
         }
 
-        Wolf dog = (Wolf) MyDog.instance().getServer().getEntity(dogId);
-
         if (MyDog.getDogManager().getDogsConfig().contains(dogId.toString())) {
             String customName = getDogCustomName();
             MyDog.instance().logDebug("Setting customName to: " + customName);
-            dog.setCustomName(customName);
+            wolf.setCustomName(customName);
 
-            if (MyDog.instance().onlyShowNametagOnHover) {
-                dog.setCustomNameVisible(false);
-            } else {
-                dog.setCustomNameVisible(true);
-            }
+            wolf.setCustomNameVisible(!MyDog.instance().onlyShowNametagOnHover);
             MyDog.instance().logDebug("Returning true!");
             return true;
         }
@@ -497,7 +473,7 @@ public class Dog {
     public boolean setIdentifier(int id) {
         // If the ID is already used, return false
         for (String dogIdString : MyDog.getDogManager().getDogsConfig().getKeys(false)) {
-            if (MyDog.getDogManager().getDogsConfig().getString(dogIdString + ".ID").equals(Integer.toString(id)) && MyDog.getDogManager().getDogsConfig().getString(dogIdString + ".Owner").contains(dogOwnerId.toString())) {
+            if (Objects.equals(MyDog.getDogManager().getDogsConfig().getString(dogIdString + ".ID"), Integer.toString(id)) && Objects.requireNonNull(MyDog.getDogManager().getDogsConfig().getString(dogIdString + ".Owner")).contains(dogOwnerId.toString())) {
                 return false;
             }
         }
@@ -508,7 +484,7 @@ public class Dog {
     }
 
     public boolean setHealth() {
-        Wolf wolf = (Wolf) MyDog.instance().getServer().getEntity(dogId);
+        Wolf wolf = getWolf();
 
         if (wolf == null) {
             MyDog.instance().logDebug("Failed to set Dog health, Wolf entity is null!");
@@ -533,12 +509,15 @@ public class Dog {
         }
 
         AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        if (wolfMaxHealth == null) {
+            return false;
+        }
+
         MyDog.instance().logDebug("Dog Maxhealth Before: " + wolfMaxHealth.getValue());
         // wolfMaxHealth.setBaseValue((wolfMaxHealth.getValue()/(0.5*(getLevel()-1)))*(0.5*getLevel()));
         wolfMaxHealth.setBaseValue(health);
         wolf.setHealth(wolfMaxHealth.getValue());
         MyDog.instance().logDebug("Dog Maxhealth After: " + wolfMaxHealth.getValue());
-
         return true;
     }
 
@@ -583,9 +562,9 @@ public class Dog {
 //		}
 
     public boolean setDamage() {
-        Wolf wolf = (Wolf) MyDog.instance().getServer().getEntity(dogId);
+        Wolf wolf = getWolf();
 
-        if (wolf == null || !wolf.isValid()) {
+        if (wolf == null) {
             MyDog.instance().logDebug("Failed to set Dog damage, Wolf entity is null or invalid!");
             return false;
         }
@@ -608,6 +587,9 @@ public class Dog {
         }
 
         AttributeInstance wolfDamage = wolf.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+        if (wolfDamage == null) {
+            return false;
+        }
         MyDog.instance().logDebug("Dog Damage Before: " + wolfDamage.getValue());
         wolfDamage.setBaseValue(damage);
         MyDog.instance().logDebug("Dog Damage After: " + wolfDamage.getValue());

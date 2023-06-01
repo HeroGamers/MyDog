@@ -6,16 +6,15 @@ import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 
 public class ColorUtils {
-    private static Random random = new Random();
+    private static final Random random = new Random();
 
     public static ChatColor getChatColorFromDyeColor(DyeColor dyeColor) {
         switch (dyeColor) {
             case BLACK:
+            case BROWN:
                 return ChatColor.BLACK;
             case BLUE:
                 return ChatColor.DARK_BLUE;
-            case BROWN:
-                return ChatColor.BLACK;
             case CYAN:
                 return ChatColor.BLUE;
             case GRAY:
@@ -41,7 +40,6 @@ public class ColorUtils {
             case YELLOW:
                 return ChatColor.YELLOW;
             case WHITE:
-                return ChatColor.WHITE;
             default:
                 return ChatColor.WHITE;
         }
