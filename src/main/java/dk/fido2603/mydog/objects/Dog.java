@@ -5,6 +5,7 @@ import dk.fido2603.mydog.utils.ColorUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 
@@ -303,15 +304,22 @@ public class Dog {
     }
 
     public Location getDogLocation() {
-        if (MyDog.instance().getServer().getEntity(dogId) == null || !MyDog.instance().getServer().getEntity(dogId).isValid()) {
+        Entity dogEntity = MyDog.instance().getServer().getEntity(dogId);
+        if (dogEntity == null || !dogEntity.isValid()) {
             if (MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".LastSeen.World") != null) {
-                return new Location(MyDog.instance().getServer().getWorld(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".LastSeen.World")), MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".LastSeen.X"), MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".LastSeen.Y"), MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".LastSeen.Z"));
+                String lastSeenWorld = MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".LastSeen.World");
+                if (lastSeenWorld == null) {
+                    return null;
+                }
+                return new Location(MyDog.instance().getServer().getWorld(lastSeenWorld), MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".LastSeen.X"), MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".LastSeen.Y"), MyDog.getDogManager().getDogsConfig().getInt(dogId.toString() + ".LastSeen.Z"));
             }
             return null;
         }
 
-        this.location = MyDog.instance().getServer().getEntity(dogId).getLocation();
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
+        this.location = dogEntity.getLocation();
+        if (this.location.getWorld() != null) {
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
+        }
         MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
         MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
         MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
@@ -321,12 +329,15 @@ public class Dog {
     }
 
     public boolean saveDogLocation() {
-        if (MyDog.instance().getServer().getEntity(dogId) == null || !MyDog.instance().getServer().getEntity(dogId).isValid()) {
+        Entity dogEntity = MyDog.instance().getServer().getEntity(dogId);
+        if (dogEntity == null || !dogEntity.isValid()) {
             return false;
         }
 
-        this.location = MyDog.instance().getServer().getEntity(dogId).getLocation();
-        MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
+        this.location = dogEntity.getLocation();
+        if (this.location.getWorld() != null) {
+            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
+        }
         MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
         MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
         MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
@@ -635,14 +646,7 @@ public class Dog {
         }
 
         // Save the Dog's last seen location
-        if (this.location == null) {
-            this.location = getDogLocation();
-        } else {
-            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.World", location.getWorld().getName());
-            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.X", location.getX());
-            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Y", location.getY());
-            MyDog.getDogManager().getDogsConfig().set(dogId.toString() + ".LastSeen.Z", location.getZ());
-        }
+        this.location = getDogLocation();
 
         // Give the Dog a level
         if (MyDog.instance().useLevels) {
