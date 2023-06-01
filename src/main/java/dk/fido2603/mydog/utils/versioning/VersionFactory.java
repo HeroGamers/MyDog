@@ -42,7 +42,7 @@ public class VersionFactory {
      * net.minecraft.server.v1_X_RY package. <br/>
      */
     public static Version getNmsVersion() {
-        String NMS = null;
+        String NMS;
         try {
             NMS = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
         } catch (ArrayIndexOutOfBoundsException ex) {

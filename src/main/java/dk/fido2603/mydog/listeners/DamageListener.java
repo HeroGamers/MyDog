@@ -16,7 +16,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 public class DamageListener implements Listener {
-    private MyDog plugin = null;
+    private final MyDog plugin;
 
     public DamageListener(MyDog p) {
         this.plugin = p;
@@ -75,16 +75,13 @@ public class DamageListener implements Listener {
 
                 AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
 
-                if (wolfMaxHealth.getValue() != health) {
+                if (wolfMaxHealth != null && wolfMaxHealth.getValue() != health) {
                     wolfMaxHealth.setBaseValue(health);
                 }
 
                 if (wolf.getHealth() < health) {
-                    if (wolf.getHealth() + healthPoints > health) {
-                        wolf.setHealth(health);
-                    } else {
-                        wolf.setHealth(wolf.getHealth() + healthPoints);
-                    }
+                    // If health would overflow, just set full health
+                    wolf.setHealth(Math.min(wolf.getHealth() + healthPoints, health));
                     plugin.logDebug("Gave the dog, " + dog.getDogName() + ", " + healthPoints + " in health.");
                 }
             }
@@ -187,11 +184,10 @@ public class DamageListener implements Listener {
                         case PLAYER:
                             if (plugin.allowPlayerKillExp) {
                                 gainedExp = 70;
-                                break;
                             } else {
                                 gainedExp = 0;
-                                break;
                             }
+                            break;
                         case ELDER_GUARDIAN:
                         case GIANT:
                             gainedExp = 90;

@@ -9,8 +9,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class PermissionsManager {
-    private String pluginName = "null";
-    private MyDog plugin;
+    private final String pluginName = "null";
+    private final MyDog plugin;
     private Permission vaultPermission = null;
     private Chat vaultChat = null;
 
@@ -19,10 +19,14 @@ public class PermissionsManager {
 
         if (p.vaultEnabled) {
             RegisteredServiceProvider<Permission> permissionProvider = plugin.getServer().getServicesManager().getRegistration(Permission.class);
-            vaultPermission = permissionProvider.getProvider();
+            if (permissionProvider != null) {
+                vaultPermission = permissionProvider.getProvider();
+            }
 
             RegisteredServiceProvider<Chat> chatProvider = plugin.getServer().getServicesManager().getRegistration(Chat.class);
-            vaultChat = chatProvider.getProvider();
+            if (chatProvider != null) {
+                vaultChat = chatProvider.getProvider();
+            }
         }
     }
 

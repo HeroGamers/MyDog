@@ -3,7 +3,7 @@ package dk.fido2603.mydog.objects;
 import dk.fido2603.mydog.MyDog;
 
 public class LevelFactory {
-    private MyDog plugin = null;
+    private final MyDog plugin;
 
     public LevelFactory(MyDog plugin) {
         this.plugin = plugin;

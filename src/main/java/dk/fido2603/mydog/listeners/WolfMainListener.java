@@ -24,7 +24,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class WolfMainListener implements Listener {
-    private MyDog plugin = null;
+    private final MyDog plugin;
 
     public WolfMainListener(MyDog p) {
         this.plugin = p;
@@ -52,7 +52,7 @@ public class WolfMainListener implements Listener {
             public void run() {
                 plugin.logDebug("Running newTamedDog BukkitRunnable...");
                 Dog dog = MyDog.getDogManager().newDog(wolf, owner);
-                plugin.logDebug("New dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + plugin.getServer().getPlayer(dog.getOwnerId()).getName() + " - OwnerId: " + dog.getOwnerId());
+                plugin.logDebug("New dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + Objects.requireNonNull(plugin.getServer().getPlayer(dog.getOwnerId())).getName() + " - OwnerId: " + dog.getOwnerId());
                 Location dogLocation = dog.getDogLocation();
                 plugin.logDebug("Dog Location = X: " + dogLocation.getX() + " Y: " + dogLocation.getY() + " Z: " + dogLocation.getZ());
 
@@ -122,9 +122,9 @@ public class WolfMainListener implements Listener {
         Wolf wolf = (Wolf) entity;
         ItemStack item = null;
 
-        if (hand.equals(EquipmentSlot.HAND)) {
+        if (hand.equals(EquipmentSlot.HAND) && player.getEquipment() != null) {
             item = player.getEquipment().getItemInMainHand();
-        } else if (hand.equals(EquipmentSlot.OFF_HAND)) {
+        } else if (hand.equals(EquipmentSlot.OFF_HAND) && player.getEquipment() != null) {
             item = player.getEquipment().getItemInOffHand();
         } else {
             plugin.logDebug("No item in hand.");
@@ -202,7 +202,7 @@ public class WolfMainListener implements Listener {
                 plugin.logDebug("New already-tamed dog creation failed!");
                 return 1; // Error
             }
-            plugin.logDebug("New already-tamed dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + plugin.getServer().getPlayer(dog.getOwnerId()).getName() + " - OwnerId: " + dog.getOwnerId());
+            plugin.logDebug("New already-tamed dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + Objects.requireNonNull(plugin.getServer().getPlayer(dog.getOwnerId())).getName() + " - OwnerId: " + dog.getOwnerId());
             Location dogLocation = dog.getDogLocation();
             plugin.logDebug("Dog Location = X: " + dogLocation.getX() + " Y: " + dogLocation.getY() + " Z: " + dogLocation.getZ());
 
@@ -268,16 +268,13 @@ public class WolfMainListener implements Listener {
 
             AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
 
-            if (wolfMaxHealth.getValue() != health) {
+            if (wolfMaxHealth != null && wolfMaxHealth.getValue() != health) {
                 wolfMaxHealth.setBaseValue(health);
             }
 
             if (wolf.getHealth() >= 20.0 && wolf.getHealth() < health) {
-                if (wolf.getHealth() + healthPoints > health) {
-                    wolf.setHealth(health);
-                } else {
-                    wolf.setHealth(wolf.getHealth() + healthPoints);
-                }
+                // Avoid health overflow, so get min value
+                wolf.setHealth(Math.min(wolf.getHealth() + healthPoints, health));
                 plugin.logDebug("Gave the dog, " + dog.getDogName() + ", " + healthPoints + " in health.");
                 if (player.getGameMode() != GameMode.CREATIVE) {
                     item.setAmount(item.getAmount() - 1);
@@ -384,7 +381,7 @@ public class WolfMainListener implements Listener {
         }
 
         // Check if the player has a name_tag equipped
-        if (item.getType().equals(Material.NAME_TAG) && item.getItemMeta().hasDisplayName()) {
+        if (item.getType().equals(Material.NAME_TAG) && item.getItemMeta() != null && item.getItemMeta().hasDisplayName()) {
             if (!plugin.allowNametagRename || !dog.getOwnerId().equals(player.getUniqueId())) {
                 plugin.logDebug("NametagRename is disabled or not owner trying to rename dog!");
                 return 2; // Cancel event
@@ -402,13 +399,13 @@ public class WolfMainListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBreedEvent(EntityBreedEvent event) {
-        if (event.getEntity() == null || !(event.getEntity() instanceof Wolf) || /*(!MyDog.getDogManager().isDog(event.getMother().getUniqueId())) || (!MyDog.getDogManager().isDog(event.getFather().getUniqueId())) ||*/ !(event.getBreeder() instanceof Player)) {
+        if (!(event.getEntity() instanceof Wolf) || /*(!MyDog.getDogManager().isDog(event.getMother().getUniqueId())) || (!MyDog.getDogManager().isDog(event.getFather().getUniqueId())) ||*/ !(event.getBreeder() instanceof Player)) {
             plugin.logDebug("Entity breed return!");
             return;
         }
 
         Wolf wolf = (Wolf) event.getEntity();
-        Player ownerFind = null;
+        Player ownerFind;
 
         if (wolf.getOwner() != null) {
             ownerFind = (Player) wolf.getOwner();
@@ -429,7 +426,7 @@ public class WolfMainListener implements Listener {
             public void run() {
                 plugin.logDebug("Running newDogBreed BukkitRunnable...");
                 Dog dog = MyDog.getDogManager().newDog(wolf, owner);
-                plugin.logDebug("New dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + plugin.getServer().getPlayer(dog.getOwnerId()).getName() + " - OwnerId: " + dog.getOwnerId());
+                plugin.logDebug("New dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + Objects.requireNonNull(plugin.getServer().getPlayer(dog.getOwnerId())).getName() + " - OwnerId: " + dog.getOwnerId());
                 Location dogLocation = dog.getDogLocation();
                 plugin.logDebug("Dog Location = X: " + dogLocation.getX() + " Y: " + dogLocation.getY() + " Z: " + dogLocation.getZ());
 

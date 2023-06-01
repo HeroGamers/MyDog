@@ -7,7 +7,7 @@ import org.bukkit.entity.*;
 import java.util.List;
 
 public class AttackModeTask implements Runnable {
-    private MyDog plugin;
+    private final MyDog plugin;
 
     public AttackModeTask(MyDog instance) {
         this.plugin = instance;

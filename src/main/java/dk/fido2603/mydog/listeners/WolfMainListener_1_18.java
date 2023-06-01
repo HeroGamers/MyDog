@@ -11,7 +11,7 @@ import org.bukkit.event.world.EntitiesUnloadEvent;
 import java.util.List;
 
 public class WolfMainListener_1_18 implements Listener {
-    private MyDog plugin = null;
+    private final MyDog plugin;
 
     public WolfMainListener_1_18(MyDog p) {
         this.plugin = p;
