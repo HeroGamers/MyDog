@@ -4,7 +4,6 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 import dk.fido2603.mydog.MyDog;
-import org.apache.commons.lang3.Validate;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
@@ -1065,9 +1064,9 @@ public class CommandManager {
     }
 
     public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
-        Validate.notNull(sender, "Sender cannot be null");
-        Validate.notNull(args, "Arguments cannot be null");
-        Validate.notNull(alias, "Alias cannot be null");
+        if (sender == null || alias == null || args == null) {
+            return Collections.emptyList();
+        }
 
         List<String> result = new ArrayList<String>();
 
