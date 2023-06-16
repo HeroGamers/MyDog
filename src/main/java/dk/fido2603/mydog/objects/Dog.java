@@ -56,7 +56,10 @@ public class Dog {
         if (customName == null || customName.isEmpty()) {
             this.dogName = MyDog.getDogManager().newDogName();
         } else {
+            // We set the dog name
             this.dogName = customName;
+            // We run the get dog name function to get the name without the color codes and levels, just in case
+            this.dogName = getDogName();
         }
 
         // Generate a random Collar Color and set the Dog's Color
@@ -112,11 +115,34 @@ public class Dog {
     }
 
     public String getDogName() {
-        if (dogName != null) {
-            return dogName;
+        String name = dogName;
+        if (dogName == null || dogName.isEmpty()) {
+            name = MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".Name");
+
+            if (name == null || name.isEmpty()) {
+                Wolf wolf = getWolf();
+                if (wolf != null) {
+                    name = wolf.getCustomName();
+                }
+
+                if (name == null || name.isEmpty()) {
+                    name = MyDog.getDogManager().newDogName();
+                }
+            }
         }
 
-        return MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".Name", "UNKNOWN DOGNAME");
+        // Remove color codes from the name
+        name = ChatColor.stripColor(name);
+
+        // Remove the level
+        name = name.replaceAll("\\[\\d+]", "");
+        // Remove the mode
+        name = name.replaceAll("\\[[⚔⛨]]", "");
+
+        // And strip string
+        name = name.trim();
+
+        return name;
     }
 
     public Wolf getWolf() {
@@ -435,7 +461,7 @@ public class Dog {
     public String getDogCustomName() {
         if (MyDog.getDogManager().getDogsConfig().contains(dogId.toString())) {
             if (MyDog.instance().useLevels && MyDog.instance().showLevelsInNametag) {
-                return (nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + "" + this.level + ChatColor.GRAY + "]" + (isAngry() ? ANGRY_MODE : DEFENCE_MODE));
+                return (nameColor + dogName + ChatColor.GRAY + " [" + ChatColor.GOLD + this.level + ChatColor.GRAY + "]" + (isAngry() ? ANGRY_MODE : DEFENCE_MODE));
             }
             else {
                 return nameColor + dogName;
