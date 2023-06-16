@@ -393,8 +393,6 @@ public class DogManager {
                 sound = Sound.valueOf(plugin.levelUpSound);
             }
 
-            dog.setDogName(dog.getDogName());
-
             owner.playSound(owner.getLocation(), sound, 3.0F, 1.0F);
         }
 
