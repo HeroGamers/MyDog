@@ -1,13 +1,13 @@
 name: MyDog
 main: dk.fido2603.mydog.MyDog
-author: Fido2603
+author: HeroGamers
 version: ${project.version}
 api-version: 1.13
 load: STARTUP
 description: Tamed wolves but at least 10x better!
 depend: []
 softdepend: [Vault]
-website: https://github.com/DoggyCraftDK/MyDog
+website: https://github.com/HeroGamers/MyDog
 commands:
    mydog:
       description: Command for the MyDog plugin
