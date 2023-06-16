@@ -190,17 +190,21 @@ public class WolfMainListener implements Listener {
                 return 1; // Error
             }
 
-            if ((wolf.getCustomName() == null || wolf.getCustomName().isEmpty()) && wolf.getCollarColor() == DyeColor.RED) {
-                dog = MyDog.getDogManager().newDog(wolf, owner);
-            } else if (wolf.getCustomName() == null || wolf.getCustomName().isEmpty()) {
-                dog = MyDog.getDogManager().newDog(wolf, owner, null, wolf.getCollarColor());
-            } else if ((wolf.getCustomName() != null && !wolf.getCustomName().isEmpty()) && wolf.getCollarColor() == DyeColor.RED) {
-                dog = MyDog.getDogManager().newDog(wolf, owner, wolf.getCustomName(), null);
-            } else if (wolf.getCustomName() != null && !wolf.getCustomName().isEmpty()) {
-                dog = MyDog.getDogManager().newDog(wolf, owner, wolf.getCustomName(), wolf.getCollarColor());
+            String customName = wolf.getCustomName();
+            DyeColor collarColor = wolf.getCollarColor();
+
+            if ((customName == null || customName.isEmpty()) && collarColor == DyeColor.RED) {
+                // No custom name or collar color
+                dog = MyDog.getDogManager().newDog(wolf, owner, null, null);
+            } else if (customName == null || customName.isEmpty()) {
+                // No custom name
+                dog = MyDog.getDogManager().newDog(wolf, owner, null, collarColor);
+            } else if (collarColor == DyeColor.RED) {
+                // No collar color
+                dog = MyDog.getDogManager().newDog(wolf, owner, customName, null);
             } else {
-                plugin.logDebug("New already-tamed dog creation failed!");
-                return 1; // Error
+                // Custom name and collar color
+                dog = MyDog.getDogManager().newDog(wolf, owner, customName, collarColor);
             }
             plugin.logDebug("New already-tamed dog! Name: " + dog.getDogName() + " - DogId: " + dog.getDogId() + " - Owner: " + Objects.requireNonNull(plugin.getServer().getPlayer(dog.getOwnerId())).getName() + " - OwnerId: " + dog.getOwnerId());
             Location dogLocation = dog.getDogLocation();
