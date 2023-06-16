@@ -124,6 +124,8 @@ public class DamageListener implements Listener {
                         case GLOW_SQUID:
                         case TROPICAL_FISH:
                         case TURTLE:
+                        case FROG:
+                        case ALLAY:
                             gainedExp = 5;
                             break;
                         case COW:
@@ -145,6 +147,7 @@ public class DamageListener implements Listener {
                         case STRIDER:
                         case DONKEY:
                         case GOAT:
+                        case CAMEL:
                         case WITCH:
                         case SKELETON_HORSE:
                         case VEX:
@@ -156,6 +159,7 @@ public class DamageListener implements Listener {
                         case MULE:
                         case ZOMBIE_HORSE:
                         case ZOMBIE_VILLAGER:
+                        case SNIFFER:
                         case PIGLIN:
                         case ZOMBIFIED_PIGLIN:
                         case POLAR_BEAR:
@@ -165,6 +169,7 @@ public class DamageListener implements Listener {
                         case GUARDIAN:
                         case MAGMA_CUBE:
                         case PIGLIN_BRUTE:
+                        case ZOGLIN:
                         case PHANTOM:
                         case PILLAGER:
                         case ENDERMAN:
@@ -193,9 +198,11 @@ public class DamageListener implements Listener {
                             gainedExp = 90;
                             break;
                         case WITHER:
+                        case WARDEN:
                         case ENDER_DRAGON:
                             gainedExp = 200;
                             break;
+
                         default:
                             gainedExp = 0;
                             break;
