@@ -162,6 +162,10 @@ public class Dog {
             return birthday;
         }
 
+        if (MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".Birthday") == null) {
+            setBirthday(new Date());
+        }
+
         try {
             return formatter.parse(MyDog.getDogManager().getDogsConfig().getString(dogId.toString() + ".Birthday"));
         } catch (ParseException e) {
@@ -471,7 +475,11 @@ public class Dog {
     public boolean setIdentifier(int id) {
         // If the ID is already used, return false
         for (String dogIdString : MyDog.getDogManager().getDogsConfig().getKeys(false)) {
-            if (Objects.equals(MyDog.getDogManager().getDogsConfig().getString(dogIdString + ".ID"), Integer.toString(id)) && Objects.requireNonNull(MyDog.getDogManager().getDogsConfig().getString(dogIdString + ".Owner")).contains(dogOwnerId.toString())) {
+            if (MyDog.getDogManager().getDogsConfig().getString(dogIdString + ".ID") == null) continue;
+            if (MyDog.getDogManager().getDogsConfig().getString(dogIdString + ".Owner") == null) continue;
+
+            if (Integer.toString(id).equals(MyDog.getDogManager().getDogsConfig().getString(dogIdString + ".ID"))
+                    && dogOwnerId.toString().equals(MyDog.getDogManager().getDogsConfig().getString(dogIdString + ".Owner"))) {
                 return false;
             }
         }
