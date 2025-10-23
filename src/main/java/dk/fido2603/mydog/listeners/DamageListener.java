@@ -4,10 +4,14 @@ import dk.fido2603.mydog.MyDog;
 
 import dk.fido2603.mydog.objects.Dog;
 import dk.fido2603.mydog.objects.LevelFactory;
+import net.md_5.bungee.api.ChatColor;
+
+import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -22,8 +26,11 @@ public class DamageListener implements Listener {
         this.plugin = p;
     }
 
+	/**
+	 * EntityDamageEvent Handling for when Dog receives Damage to another Entity.
+	 */
     @EventHandler
-    public void onWolfEntityDamage(EntityDamageByEntityEvent e) {
+    public void onWolfReceivesEntityDamage(EntityDamageByEntityEvent e) {
         if (e.getEntity().getType() != EntityType.WOLF || !(MyDog.getDogManager().isDog(e.getEntity().getUniqueId()))) {
             return;
         }
@@ -41,8 +48,11 @@ public class DamageListener implements Listener {
         // TODO something with a Dog's equipped armor to lower damage caused
     }
 
+	/**
+	 * EntityDamageEvent Handling for when Dog does Damage to another Entity.
+	 */
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onWolfEntityDamage2(EntityDamageByEntityEvent e) {
+    public void onWolfDoesEntityDamage(EntityDamageByEntityEvent e) {
         if (e.getDamager().getType() != EntityType.WOLF || !(MyDog.getDogManager().isDog(e.getDamager().getUniqueId())) || plugin.lifesteal == 0.0D) {
             return;
         }
@@ -216,4 +226,51 @@ public class DamageListener implements Listener {
             }
         }
     }
+
+	/**
+	 * Handles the EntityDamageEvent for checking damage dealt to a Dog entity.
+	 * // TODO Message Cooldown / Only Display once after percentage was reached
+	 */
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onEntityDamage(EntityDamageEvent e) {
+		if (e.getEntity().getType() != EntityType.WOLF ||
+				!(MyDog.getDogManager().isDog(e.getEntity().getUniqueId()))) {
+			return;
+		}
+
+		Wolf wolf = (Wolf) e.getEntity();
+		Dog dog = MyDog.getDogManager().getDog(wolf.getUniqueId());
+
+		// Low Health Check
+		int dogsLevel = dog.getLevel();
+		if (dogsLevel < 1) {
+			dogsLevel = 1;
+		}
+
+		LevelFactory.Level level = plugin.dogLevels.get(dogsLevel);
+		if (level == null) {
+			return;  // Should not happen (normally)
+		}
+
+		double maxHealth = level.health;
+		if (maxHealth < 5.0) {
+			maxHealth = 5.0;
+		}
+
+		// Health nach dem Schaden berechnen
+		double healthAfterDamage = wolf.getHealth() - e.getFinalDamage();
+		boolean isLifeUnderPercent = healthAfterDamage <= (maxHealth * 0.25);
+
+		if (isLifeUnderPercent && healthAfterDamage > 0) {
+			Player player = Bukkit.getPlayer(dog.getOwnerId());
+			if (player != null && player.isOnline()) {
+				player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+						plugin.dogLowHealth
+								.replace("{chatPrefix}", plugin.getChatPrefix())
+								.replace("{dogNameColor}", "&" + dog.getDogColor().getChar())
+								.replace("{dogName}", dog.getDogName())
+				));
+			}
+		}
+	}
 }
