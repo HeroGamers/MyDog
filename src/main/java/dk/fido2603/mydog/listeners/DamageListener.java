@@ -1,5 +1,9 @@
 package dk.fido2603.mydog.listeners;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import dk.fido2603.mydog.MyDog;
 
 import dk.fido2603.mydog.objects.Dog;
@@ -21,8 +25,10 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 public class DamageListener implements Listener {
     private final MyDog plugin;
+	private final Map<UUID, Long> lowHealthCooldowns = new HashMap<>();
 
-    public DamageListener(MyDog p) {
+
+	public DamageListener(MyDog p) {
         this.plugin = p;
     }
 
@@ -229,7 +235,6 @@ public class DamageListener implements Listener {
 
 	/**
 	 * Handles the EntityDamageEvent for checking damage dealt to a Dog entity.
-	 * // TODO Message Cooldown / Only Display once after percentage was reached
 	 */
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onEntityDamage(EntityDamageEvent e) {
@@ -257,19 +262,29 @@ public class DamageListener implements Listener {
 			maxHealth = 5.0;
 		}
 
-		// Health nach dem Schaden berechnen
+		// calculate health after damage calculation
 		double healthAfterDamage = wolf.getHealth() - e.getFinalDamage();
 		boolean isLifeUnderPercent = healthAfterDamage <= (maxHealth * 0.25);
 
 		if (isLifeUnderPercent && healthAfterDamage > 0) {
-			Player player = Bukkit.getPlayer(dog.getOwnerId());
-			if (player != null && player.isOnline()) {
-				player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-						plugin.dogLowHealth
-								.replace("{chatPrefix}", plugin.getChatPrefix())
-								.replace("{dogNameColor}", "&" + dog.getDogColor().getChar())
-								.replace("{dogName}", dog.getDogName())
-				));
+			UUID dogId = dog.getDogId();
+			long lastMessage = lowHealthCooldowns.getOrDefault(dogId, 0L);
+
+			long now = System.currentTimeMillis();
+			long cooldownMillis = 5000; // 5 Seconds cooldown TODO --> settings?
+
+			if (now - lastMessage >= cooldownMillis) {
+				Player player = Bukkit.getPlayer(dog.getOwnerId());
+				if (player != null && player.isOnline()) {
+					player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+							plugin.dogLowHealth
+									.replace("{chatPrefix}", plugin.getChatPrefix())
+									.replace("{dogNameColor}", "&" + dog.getDogColor().getChar())
+									.replace("{dogName}", dog.getDogName())
+									.replace("{health}", String.valueOf(Math.round(healthAfterDamage)))
+					));
+				}
+				lowHealthCooldowns.put(dogId, now);
 			}
 		}
 	}
