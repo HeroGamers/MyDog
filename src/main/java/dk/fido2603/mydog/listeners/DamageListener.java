@@ -234,57 +234,61 @@ public class DamageListener implements Listener {
     }
 
 	/**
-	 * Handles the EntityDamageEvent for checking damage dealt to a Dog entity.
+	 * Handles the EntityDamageEvent for checking damage dealt to a Dog entity by every damage source.
 	 */
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onEntityDamage(EntityDamageEvent e) {
-		if (e.getEntity().getType() != EntityType.WOLF ||
-				!(MyDog.getDogManager().isDog(e.getEntity().getUniqueId()))) {
+		boolean isReceiverWolf = e.getEntity().getType() == EntityType.WOLF;
+		boolean isWolfDog = MyDog.getDogManager().isDog(e.getEntity().getUniqueId());
+
+		if (!isReceiverWolf || !isWolfDog) {
 			return;
 		}
 
 		Wolf wolf = (Wolf) e.getEntity();
 		Dog dog = MyDog.getDogManager().getDog(wolf.getUniqueId());
 
-		// Low Health Check
-		int dogsLevel = dog.getLevel();
-		if (dogsLevel < 1) {
-			dogsLevel = 1;
-		}
+		if (plugin.isLowHealthMessageEnabled) {
+			// Low Health Check
+			int dogsLevel = dog.getLevel();
+			if (dogsLevel < 1) {
+				dogsLevel = 1;
+			}
 
-		LevelFactory.Level level = plugin.dogLevels.get(dogsLevel);
-		if (level == null) {
-			return;  // Should not happen (normally)
-		}
+			LevelFactory.Level level = plugin.dogLevels.get(dogsLevel);
+			if (level == null) {
+				return;  // Should not happen (normally)
+			}
 
-		double maxHealth = level.health;
-		if (maxHealth < 5.0) {
-			maxHealth = 5.0;
-		}
+			double maxHealth = level.health;
+			if (maxHealth < 5.0) {
+				maxHealth = 5.0;
+			}
 
-		// calculate health after damage calculation
-		double healthAfterDamage = wolf.getHealth() - e.getFinalDamage();
-		boolean isLifeUnderPercent = healthAfterDamage <= (maxHealth * 0.25);
+			// calculate health after damage calculation
+			double healthAfterDamage = wolf.getHealth() - e.getFinalDamage();
+			boolean isLifeUnderPercent = healthAfterDamage <= (maxHealth * plugin.lowHealthThreshold);
 
-		if (isLifeUnderPercent && healthAfterDamage > 0) {
-			UUID dogId = dog.getDogId();
-			long lastMessage = lowHealthCooldowns.getOrDefault(dogId, 0L);
+			if (isLifeUnderPercent && healthAfterDamage > 0) {
+				UUID dogId = dog.getDogId();
+				long lastMessage = lowHealthCooldowns.getOrDefault(dogId, 0L);
 
-			long now = System.currentTimeMillis();
-			long cooldownMillis = 5000; // 5 Seconds cooldown TODO --> settings?
+				long now = System.currentTimeMillis();
+				long cooldownMillis = plugin.lowHealthMessageCooldown; // cooldown to not spam the player
 
-			if (now - lastMessage >= cooldownMillis) {
-				Player player = Bukkit.getPlayer(dog.getOwnerId());
-				if (player != null && player.isOnline()) {
-					player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-							plugin.dogLowHealth
-									.replace("{chatPrefix}", plugin.getChatPrefix())
-									.replace("{dogNameColor}", "&" + dog.getDogColor().getChar())
-									.replace("{dogName}", dog.getDogName())
-									.replace("{health}", String.valueOf(Math.round(healthAfterDamage)))
-					));
+				if (now - lastMessage >= cooldownMillis) {
+					Player player = Bukkit.getPlayer(dog.getOwnerId());
+					if (player != null && player.isOnline()) {
+						player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+								plugin.dogLowHealth
+										.replace("{chatPrefix}", plugin.getChatPrefix())
+										.replace("{dogNameColor}", "&" + dog.getDogColor().getChar())
+										.replace("{dogName}", dog.getDogName())
+										.replace("{health}", String.valueOf(Math.round(healthAfterDamage)))
+						));
+					}
+					lowHealthCooldowns.put(dogId, now);
 				}
-				lowHealthCooldowns.put(dogId, now);
 			}
 		}
 	}

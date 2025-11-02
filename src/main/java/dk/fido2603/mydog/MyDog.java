@@ -63,6 +63,9 @@ public class MyDog extends JavaPlugin {
     public boolean revivalUsingPlayerExp = true;
     public boolean allowArrowDamage = false;
     public double lifesteal = 0.25D;
+	public boolean isLowHealthMessageEnabled = true;
+	public double lowHealthThreshold = 0.25D;
+	public int lowHealthMessageCooldown = 1000;
 
     public String levelUpSound = "ENTITY_WOLF_HOWL";
     public String levelUpString = "&5&l[{chatPrefix}] &r&5Your dog, {dogNameColor}{dogName}&5, just leveled up to &dLevel {level}&5!";
@@ -306,6 +309,9 @@ public class MyDog extends JavaPlugin {
         this.revivalUsingPlayerExp = config.getBoolean("DogSettings.RevivalUsingPlayerExp", false);
         this.allowArrowDamage = config.getBoolean("DogSettings.AllowArrowDamage", false);
         this.lifesteal = config.getDouble("DogSettings.Lifesteal", 0.25D);
+		this.isLowHealthMessageEnabled = config.getBoolean("DogSettings.EnableLowHealthMessage", true);
+		this.lowHealthMessageCooldown = config.getInt("DogSettings.LowHealthMessageCooldown", 1000);
+		this.lowHealthThreshold = config.getDouble("DogSettings.LowHealthThreshold", 0.25D);
         if (config.contains("DogSettings.DogNames") && !config.getStringList("DogSettings.DogNames").isEmpty()) {
             this.dogNames = config.getStringList("DogSettings.DogNames");
         }
@@ -377,6 +383,9 @@ public class MyDog extends JavaPlugin {
         config.set("DogSettings.RevivalUsingPlayerExp", this.revivalUsingPlayerExp);
         config.set("DogSettings.AllowArrowDamage", this.allowArrowDamage);
         config.set("DogSettings.Lifesteal", this.lifesteal);
+		config.set("DogSettings.EnableLowHealthMessage", this.isLowHealthMessageEnabled);
+        config.set("DogSettings.LowHealthThreshold", this.lowHealthThreshold);
+		config.set("DogSettings.LowHealthMessageCooldown", this.lowHealthMessageCooldown);
 
         // Levels
         for (Integer level : this.dogLevels.keySet()) {
