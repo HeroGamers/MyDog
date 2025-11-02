@@ -1200,149 +1200,225 @@ public class CommandManager {
 		}
 
 		List<String> result = new ArrayList<>();
-
 		Player player = null;
+
 		if (sender instanceof Player) {
 			player = (Player) sender;
 		}
 
-		if (args.length == 1 && (cmd.getName().equalsIgnoreCase("mydog") || cmd.getName().equalsIgnoreCase("dog") || cmd.getName()
-				.equalsIgnoreCase("dogs") || cmd.getName().equalsIgnoreCase("md"))) {
-			List<String> arg1 = new ArrayList<>();
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.help"))) {
-				arg1.add("help");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.reload"))) {
-				arg1.add("reload");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.save"))) {
-				arg1.add("save");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.list"))) {
-				arg1.add("list");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.dogs"))) {
-				arg1.add("dogs");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown"))) {
-				arg1.add("putdown");
-				arg1.add("kill");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere"))) {
-				arg1.add("comehere");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.stats"))) {
-				arg1.add("info");
-				arg1.add("stats");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.free"))) {
-				arg1.add("free");
-				arg1.add("release");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.rename"))) {
-				arg1.add("rename");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.setid"))) {
-				arg1.add("setid");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.sit"))) {
-				arg1.add("sit");
-				arg1.add("stand");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.togglemode"))) {
-				arg1.add("attack");
-				arg1.add("defend");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.trade"))) {
-				arg1.add("trade");
-				arg1.add("tradeaccept");
-				arg1.add("tradedecline");
-				arg1.add("tradedeny");
-			}
-			if (plugin.allowRevival && (player == null || (player.isOp() || MyDog.getPermissionsManager()
-					.hasPermission(player, "mydog.dead")))) {
-				arg1.add("dead");
-			}
-			if (plugin.allowRevival && (player == null || (player.isOp() || MyDog.getPermissionsManager()
-					.hasPermission(player, "mydog.revive")))) {
-				arg1.add("revive");
-			}
-			if (player == null || (player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.editlevel"))) {
-				arg1.add("setlevel");
-			}
-			Iterable<String> FIRST_ARGUMENTS = arg1;
-			StringUtil.copyPartialMatches(args[0], FIRST_ARGUMENTS, result);
-		} else if (args.length == 2) {
-			List<String> arg2 = new ArrayList<>();
-
-			if (player != null && (args[0].equalsIgnoreCase("setlevel") || args[0].equalsIgnoreCase("release") || args[0].equalsIgnoreCase(
-					"free") || args[0].equalsIgnoreCase("setfree") || args[0].equalsIgnoreCase("setid"))) {
-				List<Dog> dogs = MyDog.getDogManager().getDogs(player.getUniqueId());
-				for (Dog dog : dogs) {
-					arg2.add(Integer.toString(dog.getIdentifier()));
-				}
-			}
-
-			if (player != null && (args[0].equalsIgnoreCase("putdown") || args[0].equalsIgnoreCase("rename") || args[0].equalsIgnoreCase(
-					"info") || args[0].equalsIgnoreCase("kill") || args[0].equalsIgnoreCase("stats") || args[0].equalsIgnoreCase(
-					"trade"))) {
-				List<Dog> dogs = MyDog.getDogManager().getAliveDogs(player.getUniqueId());
-				for (Dog dog : dogs) {
-					arg2.add(Integer.toString(dog.getIdentifier()));
-				}
-			}
-
-			if (player != null && (plugin.allowRevival && args[0].equalsIgnoreCase("revive"))) {
-				List<Dog> dogs = MyDog.getDogManager().getDeadDogs(player.getUniqueId());
-				for (Dog dog : dogs) {
-					arg2.add(Integer.toString(dog.getIdentifier()));
-				}
-			}
-
-			if (player != null && (args[0].equalsIgnoreCase("sit") || args[0].equalsIgnoreCase("stand") || args[0].equalsIgnoreCase(
-					"comehere") || args[0].equalsIgnoreCase("attack") || args[0].equalsIgnoreCase("defend"))) {
-				arg2.add("all");
-
-				List<Dog> dogs = MyDog.getDogManager().getAliveDogs(player.getUniqueId());
-				for (Dog dog : dogs) {
-					arg2.add(Integer.toString(dog.getIdentifier()));
-				}
-			}
-
-			Iterable<String> SECOND_ARGUMENTS = arg2;
-			StringUtil.copyPartialMatches(args[1], SECOND_ARGUMENTS, result);
-		} else if (args.length == 3) {
-			List<String> arg3 = new ArrayList<>();
-
-			if (args[0].equalsIgnoreCase("rename")) {
-				arg3.add("<name>");
-			} else if (args[0].equalsIgnoreCase("setid")) {
-				arg3.add("<custom_id>");
-			} else if (args[0].equalsIgnoreCase("setlevel")) {
-				arg3.add("<level>");
-			} else if (args[0].equalsIgnoreCase("trade")) {
-				// idk how, uhm, good this might be
-				Collection<? extends Player> players = plugin.getServer().getOnlinePlayers();
-				for (Player playerObj : players) {
-					if (playerObj != null) {
-						arg3.add(playerObj.getName());
-					}
-				}
-			}
-
-			Iterable<String> THIRD_ARGUMENTS = arg3;
-			StringUtil.copyPartialMatches(args[2], THIRD_ARGUMENTS, result);
-		} else if (args.length == 4) {
-			List<String> arg4 = new ArrayList<>();
-
-			if (args[0].equalsIgnoreCase("trade")) {
-				arg4.add("[price]");
-			}
-
-			Iterable<String> FOURTH_ARGUMENTS = arg4;
-			StringUtil.copyPartialMatches(args[3], FOURTH_ARGUMENTS, result);
+		if (!cmd.getName().equalsIgnoreCase("mydog") &&
+			!cmd.getName().equalsIgnoreCase("dog") &&
+			!cmd.getName().equalsIgnoreCase("dogs") &&
+			!cmd.getName().equalsIgnoreCase("md")) {
+			return Collections.emptyList();
 		}
 
+		switch (args.length) {
+			case 1:
+				return getFirstArgCompletions(player);
+
+			case 2:
+				return getSecondArgCompletions(player, args[0], args[1]);
+
+			case 3:
+				return getThirdArgCompletions(player, args[0], args[2]);
+
+			case 4:
+				return getFourthArgCompletions(args[0], args[3]);
+
+			default:
+				return Collections.emptyList();
+		}
+	}
+
+	private List<String> getFirstArgCompletions(Player player) {
+		List<String> completions = new ArrayList<>();
+
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.help")) {
+			completions.add("help");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.reload")) {
+			completions.add("reload");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.save")) {
+			completions.add("save");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.list")) {
+			completions.add("list");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.dogs")) {
+			completions.add("dogs");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.putdown")) {
+			completions.add("putdown");
+			completions.add("kill");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.comehere")) {
+			completions.add("comehere");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.stats")) {
+			completions.add("info");
+			completions.add("stats");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.free")) {
+			completions.add("free");
+			completions.add("release");
+			completions.add("setfree");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.rename")) {
+			completions.add("rename");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.setid")) {
+			completions.add("setid");
+			completions.add("changeid");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.sit")) {
+			completions.add("sit");
+			completions.add("stand");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.togglemode")) {
+			completions.add("attack");
+			completions.add("defend");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.trade")) {
+			completions.add("trade");
+			completions.add("tradeaccept");
+			completions.add("tradedecline");
+			completions.add("tradedeny");
+		}
+		if (plugin.allowRevival && (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.dead"))) {
+			completions.add("dead");
+		}
+		if (plugin.allowRevival && (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.revive"))) {
+			completions.add("revive");
+		}
+		if (player == null || player.isOp() || MyDog.getPermissionsManager().hasPermission(player, "mydog.editlevel")) {
+			completions.add("setlevel");
+			completions.add("editlevel");
+		}
+
+		return completions;
+	}
+
+	private List<String> getSecondArgCompletions(Player player, String subCommand, String partial) {
+		List<String> completions = new ArrayList<>();
+
+		if (player == null) {
+			return completions;
+		}
+
+		String cmd = subCommand.toLowerCase();
+
+		switch (cmd) {
+			case "setlevel":
+			case "editlevel":
+			case "release":
+			case "free":
+			case "setfree":
+			case "setid":
+			case "changeid": {
+				List<Dog> dogs = MyDog.getDogManager().getDogs(player.getUniqueId());
+				for (Dog dog : dogs) {
+					completions.add(Integer.toString(dog.getIdentifier()));
+				}
+				break;
+			}
+
+			case "putdown":
+			case "kill":
+			case "rename":
+			case "info":
+			case "stats":
+			case "trade": {
+				List<Dog> dogs = MyDog.getDogManager().getAliveDogs(player.getUniqueId());
+				for (Dog dog : dogs) {
+					completions.add(Integer.toString(dog.getIdentifier()));
+				}
+				break;
+			}
+
+			case "revive": {
+				if (plugin.allowRevival) {
+					List<Dog> dogs = MyDog.getDogManager().getDeadDogs(player.getUniqueId());
+					for (Dog dog : dogs) {
+						completions.add(Integer.toString(dog.getIdentifier()));
+					}
+				}
+				break;
+			}
+
+			case "sit":
+			case "stand":
+			case "comehere":
+			case "attack":
+			case "defend": {
+				completions.add("all");
+				List<Dog> dogs = MyDog.getDogManager().getAliveDogs(player.getUniqueId());
+				for (Dog dog : dogs) {
+					completions.add(Integer.toString(dog.getIdentifier()));
+				}
+				break;
+			}
+
+			default:
+				break;
+		}
+
+		List<String> result = new ArrayList<>();
+		StringUtil.copyPartialMatches(partial, completions, result);
+		Collections.sort(result);
+		return result;
+	}
+
+	private List<String> getThirdArgCompletions(Player player, String subCommand, String partial) {
+		List<String> completions = new ArrayList<>();
+
+		String cmd = subCommand.toLowerCase();
+
+		switch (cmd) {
+			case "rename":
+				completions.add("<name>");
+				break;
+
+			case "setid":
+			case "changeid":
+				completions.add("<custom_id>");
+				break;
+
+			case "setlevel":
+			case "editlevel":
+				completions.add("<level>");
+				break;
+
+			case "trade": {
+				Collection<? extends Player> players = plugin.getServer().getOnlinePlayers();
+				for (Player playerObj : players) {
+					if (playerObj != null && (player == null || !playerObj.getUniqueId().equals(player.getUniqueId()))) {
+						completions.add(playerObj.getName());
+					}
+				}
+				break;
+			}
+
+			default:
+				break;
+		}
+
+		List<String> result = new ArrayList<>();
+		StringUtil.copyPartialMatches(partial, completions, result);
+		Collections.sort(result);
+		return result;
+	}
+
+	private List<String> getFourthArgCompletions(String subCommand, String partial) {
+		List<String> completions = new ArrayList<>();
+
+		if (subCommand.equalsIgnoreCase("trade")) {
+			completions.add("[price]");
+		}
+
+		List<String> result = new ArrayList<>();
+		StringUtil.copyPartialMatches(partial, completions, result);
 		Collections.sort(result);
 		return result;
 	}
