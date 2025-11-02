@@ -280,7 +280,7 @@ public class DamageListener implements Listener {
 					Player player = Bukkit.getPlayer(dog.getOwnerId());
 					if (player != null && player.isOnline()) {
 						player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-								plugin.dogLowHealth
+								plugin.dogLowHealthString
 										.replace("{chatPrefix}", plugin.getChatPrefix())
 										.replace("{dogNameColor}", "&" + dog.getDogColor().getChar())
 										.replace("{dogName}", dog.getDogName())
