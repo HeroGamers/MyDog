@@ -78,7 +78,7 @@ public class MyDog extends JavaPlugin {
     public String tameLimitString = "&c&l[{chatPrefix}] &r&cTaming failed! Looks like you have reached your limit of dogs! You can maybe set some dead dogs free, or revive some?";
     public String pettingString = "&6Who's a good doggo?! {dogNameColor}{dogName}&6 is!";
     public String pettingSplashString = "{dogNameColor}{dogName}&6 splashes water all over you!";
-	public String dogLowHealth = "&6&l[{chatPrefix}]&r &c{dogNameColor}{dogName}&6 has low health! &7(&c{health}&7)";
+	public String dogLowHealthString = "&6&l[{chatPrefix}]&r &c{dogNameColor}{dogName}&6 has low health! &7(&c{health}&7)";
 
 	private static MyDog plugin;
     private static FileConfiguration config = null;
