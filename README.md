@@ -2,11 +2,6 @@
 <div align="center">
 
 [![Maven Test](https://github.com/HeroGamers/MyDog/actions/workflows/maven-test.yml/badge.svg)](https://github.com/HeroGamers/MyDog/actions/workflows/maven-test.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=alert_status)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=ncloc)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=bugs)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=HeroGamers_MyDog&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=HeroGamers_MyDog)
 </div>
 
 Tamed wolves but at least 10x better.
