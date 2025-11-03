@@ -106,6 +106,8 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.2.4</version>
                 <configuration>
+                    <!-- Avoid generating dependency-reduced-pom which can cause issues in some builds -->
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
                     <relocations>
                         <!-- Relocate bStats to our own package -->
                         <relocation>
@@ -113,6 +115,26 @@
                             <shadedPattern>${project.groupId}.${project.artifactId}.utils</shadedPattern>
                         </relocation>
                     </relocations>
+                    <!-- Exclude signature files and duplicate MANIFESTs, and merge the plugin's manifest entries -->
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                                <exclude>META-INF/MANIFEST.MF</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <transformers>
+                        <!-- Merge plugin/manufacturer entries into the final manifest -->
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>${project.groupId}.${project.artifactId}.MyDog</mainClass>
+                        </transformer>
+                        <!-- Merge service provider files if any -->
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                    </transformers>
                 </configuration>
                 <executions>
                     <execution>

@@ -36,6 +36,9 @@ dependency-reduced-pom.xml
 .project
 /.settings/
 
+# VSCode-specific
+.vscode/
+
 # IDEA-specific
 /.idea/
 mydog.iml
