@@ -51,11 +51,15 @@ public final class AttackModeTask implements Runnable {
         }
     }
 
+    /**
+     * The closest monster the owner can see. Monsters behind walls or underground are skipped, or dogs pile up
+     * trying to reach them (and get crammed to death).
+     */
     private static Monster closestMonster(Player player) {
         Monster closest = null;
         double closestDistance = Double.MAX_VALUE;
         for (Entity entity : player.getNearbyEntities(SEARCH_RADIUS, SEARCH_RADIUS, SEARCH_RADIUS)) {
-            if (entity instanceof Monster monster) {
+            if (entity instanceof Monster monster && player.hasLineOfSight(monster)) {
                 double distance = entity.getLocation().distanceSquared(player.getLocation());
                 if (distance < closestDistance) {
                     closestDistance = distance;

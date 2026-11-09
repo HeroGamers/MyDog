@@ -47,6 +47,9 @@ dogs:
   allow-nametag-rename: true
   # Let arrows hurt dogs.
   arrow-damage: false
+  # Let dogs take damage from being crammed together (too many mobs in one spot). Off by default, since a pack of
+  # dogs can easily end up in one spot, e.g. after being teleported or while chasing a mob they can't reach.
+  cramming-damage: false
   # Share of the damage a dog deals that it heals back (0.25 = 25%, 0 turns it off).
   lifesteal: 0.25
   low-health-warning:

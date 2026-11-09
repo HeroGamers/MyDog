@@ -53,6 +53,15 @@ public final class CombatListener implements Listener {
         }
     }
 
+    /** Packs of dogs easily end up in one spot, so cramming damage can be turned off. */
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onDogCrammed(EntityDamageEvent event) {
+        if (event.getCause() == EntityDamageEvent.DamageCause.CRAMMING && !settings.get().dogs().crammingDamage()
+                && dogService.dogOf(event.getEntity()).isPresent()) {
+            event.setCancelled(true);
+        }
+    }
+
     /** Dogs heal a share of the damage they deal. */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onDogDealsDamage(EntityDamageByEntityEvent event) {
