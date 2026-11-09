@@ -22,7 +22,7 @@ public final class RenameCommand extends SubCommand {
         if (args.size() < 2) {
             throw new UsageException();
         }
-        Dog dog = ownLivingDog((Player) sender, args.getFirst());
+        Dog dog = livingDog((Player) sender, args.getFirst(), Access.SHARED);
         String name = DogService.cleanName(String.join(" ", args.subList(1, args.size())));
         if (name.isEmpty() || name.length() > MAX_NAME_LENGTH) {
             throw new CommandException("command.rename.invalid-length");
@@ -33,6 +33,6 @@ public final class RenameCommand extends SubCommand {
 
     @Override
     public List<String> complete(CommandSender sender, List<String> args) {
-        return args.size() == 1 ? livingDogIds(sender) : List.of();
+        return args.size() == 1 ? livingDogIds(sender, true) : List.of();
     }
 }

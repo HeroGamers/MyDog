@@ -89,6 +89,12 @@ mydog.calm:
 mydog.store:
   description: Player can store their dogs away and summon them again
   default: true
+mydog.share:
+  description: Player can share their dogs with friends, who can then look after them
+  default: true
+mydog.admin.others:
+  description: Player can use commands on any player's dogs (as owner:id) and list them with /mydog list <player>
+  default: false
 mydog.harm.others:
   description: Player can hurt other players' dogs, even when dogs.protection.from-other-players is on
   default: false

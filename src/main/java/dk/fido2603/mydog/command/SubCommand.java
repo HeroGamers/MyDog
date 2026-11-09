@@ -2,12 +2,14 @@ package dk.fido2603.mydog.command;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+import java.util.UUID;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import dk.fido2603.mydog.message.Messages;
 import dk.fido2603.mydog.objects.Dog;
+import dk.fido2603.mydog.service.Permissions;
 
 /**
  * One {@code /mydog <name>} command. The router checks the permission and whether a player is needed before
@@ -73,7 +75,16 @@ public abstract class SubCommand {
         return List.of();
     }
 
-    // Helpers for commands about the sender's own dogs
+    // Picking dogs. A dog is "<id>" (one of your own) or "<owner>:<id>" (one shared with you, or any dog for admins
+    // with mydog.admin.others).
+
+    /** Who may use a command on a dog. */
+    protected enum Access {
+        /** Its owner (and admins): giving it away, putting it down, changing its ID or level, ... */
+        OWNER,
+        /** Also its co-owners: looking after it. */
+        SHARED
+    }
 
     protected static int parseIdentifier(String arg) throws CommandException {
         try {
@@ -83,47 +94,80 @@ public abstract class SubCommand {
         }
     }
 
-    /** One of the player's dogs, alive or dead, by ID. */
-    protected Dog ownDog(Player player, String arg) throws CommandException {
-        return services.dogs().find(player.getUniqueId(), parseIdentifier(arg))
+    /** A dog, alive or dead, that the player may use this command on. */
+    protected Dog dog(Player player, String arg, Access access) throws CommandException {
+        int separator = arg.lastIndexOf(':');
+        if (separator < 0) {
+            return services.dogs().find(player.getUniqueId(), parseIdentifier(arg))
+                    .orElseThrow(() -> new CommandException("command.dog-not-found"));
+        }
+
+        String ownerName = arg.substring(0, separator);
+        UUID ownerId = services.dogs().ownerByName(ownerName)
+                .orElseThrow(() -> new CommandException("command.owner-not-found", Messages.text("name", ownerName)));
+        Dog dog = services.dogs().find(ownerId, parseIdentifier(arg.substring(separator + 1)))
                 .orElseThrow(() -> new CommandException("command.dog-not-found"));
+
+        if (ownerId.equals(player.getUniqueId()) || Permissions.has(player, Permissions.ADMIN_OTHERS)) {
+            return dog;
+        }
+        if (dog.getCoOwners().contains(player.getUniqueId())) {
+            if (access == Access.OWNER) {
+                throw new CommandException("command.owner-only", Messages.dog(dog));
+            }
+            return dog;
+        }
+        // Don't tell players about dogs they have nothing to do with
+        throw new CommandException("command.dog-not-found");
     }
 
-    /** One of the player's living dogs, by ID. */
-    protected Dog ownLivingDog(Player player, String arg) throws CommandException {
-        Dog dog = ownDog(player, arg);
+    protected Dog livingDog(Player player, String arg, Access access) throws CommandException {
+        Dog dog = dog(player, arg, access);
         if (dog.isDead()) {
             throw new CommandException("command.dog-not-found");
         }
         return dog;
     }
 
-    /** All the player's living dogs for {@code all}, otherwise the one with that ID. */
-    protected List<Dog> ownLivingDogs(Player player, String arg) throws CommandException {
+    /** For {@code all}: the player's own living dogs. Otherwise the one dog, which may be shared with them. */
+    protected List<Dog> livingDogs(Player player, String arg) throws CommandException {
         if (arg.equalsIgnoreCase("all")) {
             return services.dogs().aliveDogsOf(player.getUniqueId());
         }
-        return List.of(ownLivingDog(player, arg));
+        return List.of(livingDog(player, arg, Access.SHARED));
     }
 
-    protected List<String> livingDogIds(CommandSender sender) {
-        return dogIds(sender, player -> services.dogs().aliveDogsOf(player.getUniqueId()));
-    }
-
-    protected List<String> allDogIds(CommandSender sender) {
-        return dogIds(sender, player -> services.dogs().dogsOf(player.getUniqueId()));
-    }
-
-    protected List<String> deadDogIds(CommandSender sender) {
-        return dogIds(sender, player -> services.dogs().deadDogsOf(player.getUniqueId()));
-    }
-
-    private static List<String> dogIds(CommandSender sender, Function<Player, List<Dog>> dogs) {
+    /** IDs of the player's own living dogs, plus "owner:id" for dogs shared with them when {@code shared}. */
+    protected List<String> livingDogIds(CommandSender sender, boolean shared) {
         if (!(sender instanceof Player player)) {
             return List.of();
         }
+        List<String> ids = ids(services.dogs().aliveDogsOf(player.getUniqueId()));
+        if (shared) {
+            for (Dog dog : services.dogs().sharedWith(player.getUniqueId())) {
+                ids.add(qualifiedId(dog));
+            }
+        }
+        return ids;
+    }
+
+    protected List<String> allDogIds(CommandSender sender) {
+        return sender instanceof Player player ? ids(services.dogs().dogsOf(player.getUniqueId())) : List.of();
+    }
+
+    protected List<String> deadDogIds(CommandSender sender) {
+        return sender instanceof Player player ? ids(services.dogs().deadDogsOf(player.getUniqueId())) : List.of();
+    }
+
+    /** "owner:id", how other players refer to a dog. */
+    protected String qualifiedId(Dog dog) {
+        String owner = services.server().getOfflinePlayer(dog.getOwnerId()).getName();
+        return (owner != null ? owner : dog.getOwnerId().toString()) + ":" + dog.getIdentifier();
+    }
+
+    private static List<String> ids(List<Dog> dogs) {
         List<String> ids = new ArrayList<>();
-        for (Dog dog : dogs.apply(player)) {
+        for (Dog dog : dogs) {
             ids.add(Integer.toString(dog.getIdentifier()));
         }
         return ids;

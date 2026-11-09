@@ -32,6 +32,7 @@ import dk.fido2603.mydog.command.ReviveCommand;
 import dk.fido2603.mydog.command.SaveCommand;
 import dk.fido2603.mydog.command.SetIdCommand;
 import dk.fido2603.mydog.command.SetLevelCommand;
+import dk.fido2603.mydog.command.ShareCommand;
 import dk.fido2603.mydog.command.SitCommand;
 import dk.fido2603.mydog.command.StatsCommand;
 import dk.fido2603.mydog.command.StoreCommand;
@@ -147,6 +148,8 @@ public final class MyDog extends JavaPlugin {
         router.register(new TradeCommand(services));
         router.register(new TradeAcceptCommand(services));
         router.register(new TradeDeclineCommand(services));
+        router.register(ShareCommand.share(services));
+        router.register(ShareCommand.unshare(services));
         router.register(new StatsCommand(services));
         router.register(new RenameCommand(services));
         router.register(new SetIdCommand(services));

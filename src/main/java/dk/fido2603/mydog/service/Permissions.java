@@ -10,6 +10,7 @@ public final class Permissions {
     public static final String PET_OTHERS = "mydog.pet.others";
     public static final String TRADE = "mydog.trade";
     public static final String HARM_OTHERS = "mydog.harm.others";
+    public static final String ADMIN_OTHERS = "mydog.admin.others";
     public static final String LIMIT_PREFIX = "mydog.limit.";
 
     private Permissions() {

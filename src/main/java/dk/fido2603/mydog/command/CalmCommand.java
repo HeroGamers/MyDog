@@ -24,7 +24,7 @@ public final class CalmCommand extends SubCommand {
             throw new UsageException();
         }
         String which = args.isEmpty() ? "all" : args.getFirst();
-        List<Dog> dogs = ownLivingDogs((Player) sender, which);
+        List<Dog> dogs = livingDogs((Player) sender, which);
         for (Dog dog : dogs) {
             services.dogs().calm(dog);
         }
@@ -41,7 +41,7 @@ public final class CalmCommand extends SubCommand {
         if (args.size() != 1) {
             return List.of();
         }
-        List<String> options = new ArrayList<>(livingDogIds(sender));
+        List<String> options = new ArrayList<>(livingDogIds(sender, true));
         options.add("all");
         return options;
     }

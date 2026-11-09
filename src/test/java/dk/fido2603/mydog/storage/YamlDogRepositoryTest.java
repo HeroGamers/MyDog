@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -39,6 +40,8 @@ class YamlDogRepositoryTest {
                 new Dog.LastSeen("world", 1.5, 64, -3));
         dog.setAppearance(new Dog.Appearance(DyeColor.LIGHT_BLUE, "minecraft:snowy", "minecraft:cute"));
         dog.setStored(new Dog.Stored(31.5, null));
+        UUID friend = UUID.randomUUID();
+        dog.addCoOwner(friend);
         Dog noAppearance = new Dog(UUID.randomUUID(), ownerId, 1, "Rex", NamedTextColor.WHITE, 1, 0, born, false, true, null);
 
         YamlDogRepository first = repository(file);
@@ -59,6 +62,7 @@ class YamlDogRepositoryTest {
         assertEquals(new Dog.LastSeen("world", 1.5, 64, -3), loaded.getLastSeen());
         assertEquals(new Dog.Appearance(DyeColor.LIGHT_BLUE, "minecraft:snowy", "minecraft:cute"), loaded.getAppearance());
         assertEquals(new Dog.Stored(31.5, null), loaded.getStored());
+        assertEquals(Set.of(friend), loaded.getCoOwners());
 
         Dog loadedRex = second.findByOwnerAndIdentifier(ownerId, 1).orElseThrow();
         assertTrue(loadedRex.isDead());

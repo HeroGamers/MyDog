@@ -27,7 +27,11 @@ public final class TradeCommand extends SubCommand {
             throw new UsageException();
         }
         Player seller = (Player) sender;
-        Dog dog = ownDog(seller, args.getFirst());
+        Dog dog = dog(seller, args.getFirst(), Access.OWNER);
+        // Only the owner can sell a dog, so the money goes to the right person
+        if (!dog.getOwnerId().equals(seller.getUniqueId())) {
+            throw new CommandException("command.owner-only", Messages.dog(dog));
+        }
         if (dog.isDead()) {
             throw new CommandException("command.trade.dead-dog");
         }
@@ -89,7 +93,7 @@ public final class TradeCommand extends SubCommand {
     @Override
     public List<String> complete(CommandSender sender, List<String> args) {
         return switch (args.size()) {
-            case 1 -> livingDogIds(sender);
+            case 1 -> livingDogIds(sender, false);
             case 2 -> {
                 List<String> names = new ArrayList<>();
                 for (Player player : services.server().getOnlinePlayers()) {

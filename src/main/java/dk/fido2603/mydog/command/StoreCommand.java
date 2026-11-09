@@ -38,7 +38,7 @@ public final class StoreCommand extends SubCommand {
         }
         Player player = (Player) sender;
         boolean all = args.getFirst().equalsIgnoreCase("all");
-        List<Dog> dogs = ownLivingDogs(player, args.getFirst()).stream().filter(dog -> dog.isStored() != store).toList();
+        List<Dog> dogs = livingDogs(player, args.getFirst()).stream().filter(dog -> dog.isStored() != store).toList();
         if (dogs.isEmpty()) {
             throw new CommandException(all ? "command." + name() + ".none" : "command." + name() + ".already");
         }

@@ -1,7 +1,9 @@
 package dk.fido2603.mydog.objects;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -49,6 +51,7 @@ public final class Dog {
     private Appearance appearance;
     private final Set<TreatKind> freeChoicesUsed = EnumSet.noneOf(TreatKind.class);
     private Stored stored;
+    private final Set<UUID> coOwners = new LinkedHashSet<>();
 
     /** A stored dog's health and the wolf armor it wore (or null). */
     public record Stored(double health, ItemStack armor) {}
@@ -124,6 +127,23 @@ public final class Dog {
 
     public Appearance getAppearance() {
         return appearance;
+    }
+
+    /** Players the owner shared the dog with: they can look after it, but not give it away. */
+    public Set<UUID> getCoOwners() {
+        return Collections.unmodifiableSet(coOwners);
+    }
+
+    public void addCoOwner(UUID player) {
+        coOwners.add(player);
+    }
+
+    public void removeCoOwner(UUID player) {
+        coOwners.remove(player);
+    }
+
+    public void clearCoOwners() {
+        coOwners.clear();
     }
 
     /** Whether the dog has been put away with /mydog store; its wolf doesn't exist until it is summoned. */
