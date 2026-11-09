@@ -382,7 +382,7 @@ public class TeleportationManager {
     private boolean isTransparent(Material materialType) {
         switch (materialType) {
             case AIR:
-            case GRASS:
+            case SHORT_GRASS:
             case OAK_SAPLING:
             case SPRUCE_SAPLING:
             case JUNGLE_SAPLING:

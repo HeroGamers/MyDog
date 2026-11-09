@@ -67,7 +67,7 @@ public class MyDog extends JavaPlugin {
 	public double lowHealthThreshold = 0.25D;
 	public int lowHealthMessageCooldown = 1000;
 
-    public String levelUpSound = "ENTITY_WOLF_HOWL";
+    public String levelUpSound = "ENTITY_WOLF_AMBIENT";
     public String levelUpString = "&5&l[{chatPrefix}] &r&5Your dog, {dogNameColor}{dogName}&5, just leveled up to &dLevel {level}&5!";
     public String cannotTeleportTameableString = "&c&l[{chatPrefix}] &r&cHello! Looks like you just teleported away from your Pet(s)! " +
             "They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...";
@@ -348,7 +348,7 @@ public class MyDog extends JavaPlugin {
         }
 
         // Messages and sounds
-        this.levelUpSound = config.getString("PlayerInteraction.LevelUpSound", "ENTITY_WOLF_HOWL");
+        this.levelUpSound = config.getString("PlayerInteraction.LevelUpSound", "ENTITY_WOLF_AMBIENT");
         this.levelUpString = config.getString("PlayerInteraction.LevelUpString", "&5&l[{chatPrefix}] &r&5Your dog, {dogNameColor}{dogName}&5, just leveled up to &dLevel {level}&5!");
         this.cannotTeleportTameableString = config.getString("PlayerInteraction.CannotTeleportTameableString", "&c&l[{chatPrefix}] &r&cHello! Looks like you just teleported away from your Pet(s)! " +
                 "They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them...");

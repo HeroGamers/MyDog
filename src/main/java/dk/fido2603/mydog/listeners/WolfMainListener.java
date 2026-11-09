@@ -270,7 +270,7 @@ public class WolfMainListener implements Listener {
                 health = 10.0;
             }
 
-            AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+            AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.MAX_HEALTH);
 
             if (wolfMaxHealth != null && wolfMaxHealth.getValue() != health) {
                 wolfMaxHealth.setBaseValue(health);

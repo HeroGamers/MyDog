@@ -553,7 +553,7 @@ public class CommandManager {
 			String healthString = "";
 			if (wolf != null) {
 				double health = wolf.getHealth();
-				AttributeInstance maxHealthInstance = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+				AttributeInstance maxHealthInstance = wolf.getAttribute(Attribute.MAX_HEALTH);
 				double maxHealth;
 				if (maxHealthInstance != null) {
 					maxHealth = maxHealthInstance.getValue();
@@ -863,7 +863,7 @@ public class CommandManager {
 		if (wolf != null) {
 			// Health graphics
 			double health = wolf.getHealth();
-			AttributeInstance maxHealthInstance = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+			AttributeInstance maxHealthInstance = wolf.getAttribute(Attribute.MAX_HEALTH);
 			double maxHealth;
 			if (maxHealthInstance != null) {
 				maxHealth = maxHealthInstance.getValue();
@@ -880,7 +880,7 @@ public class CommandManager {
 							+ df.format(health) + ChatColor.AQUA + "" + ChatColor.BOLD + "/" + ChatColor.RESET + ChatColor.AQUA + df.format(
 							maxHealth) + ChatColor.AQUA + "" + ChatColor.BOLD + "]");
 
-			AttributeInstance attackDamage = wolf.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+			AttributeInstance attackDamage = wolf.getAttribute(Attribute.ATTACK_DAMAGE);
 			sender.sendMessage(
 					ChatColor.AQUA + "Damage: " + ChatColor.WHITE + (attackDamage != null ? attackDamage.getValue() : 0) + " HP");
 		}
