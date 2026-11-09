@@ -12,8 +12,10 @@ import org.bstats.bukkit.Metrics;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import dk.fido2603.mydog.api.MyDogApi;
 import dk.fido2603.mydog.command.CalmCommand;
 import dk.fido2603.mydog.command.ComehereCommand;
 import dk.fido2603.mydog.command.CommandRouter;
@@ -51,6 +53,7 @@ import dk.fido2603.mydog.migration.VersionedYaml;
 import dk.fido2603.mydog.objects.Dog;
 import dk.fido2603.mydog.service.DogService;
 import dk.fido2603.mydog.service.Effects;
+import dk.fido2603.mydog.service.MyDogApiService;
 import dk.fido2603.mydog.service.PluginMobs;
 import dk.fido2603.mydog.service.TeleportService;
 import dk.fido2603.mydog.service.TradeService;
@@ -126,6 +129,10 @@ public final class MyDog extends JavaPlugin {
                 new FeedTask(getServer(), dogService, messages, currentSettings), FeedTask.PERIOD_TICKS, FeedTask.PERIOD_TICKS);
         getServer().getScheduler().runTaskTimer(this, this::autosave, 20L * 60L, 20L * 60L);
 
+        // The API other plugins use, through Bukkit's services manager
+        getServer().getServicesManager().register(MyDogApi.class, new MyDogApiService(dogService, currentSettings), this,
+                ServicePriority.Normal);
+
         metrics = new Metrics(this, BSTATS_ID);
     }
 
@@ -169,6 +176,7 @@ public final class MyDog extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        getServer().getServicesManager().unregisterAll(this);
         if (metrics != null) {
             metrics.shutdown();
         }
@@ -182,7 +190,7 @@ public final class MyDog extends JavaPlugin {
         return settings;
     }
 
-    /** For {@link MyDogAPI}. */
+    /** For the deprecated {@link MyDogAPI}. */
     DogService dogService() {
         return dogService;
     }

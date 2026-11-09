@@ -41,6 +41,19 @@ For new feature requests, please open a GitHub Issue.
 MyDog upgrades `config.yml` and `dogs.yml` by itself on the first start, and keeps the old files as `config.yml.v1.bak` and `dogs.yml.v1.bak`.
 Messages now live in `messages.yml` and use [MiniMessage](https://docs.advntr.dev/minimessage/format.html) instead of `&` color codes; any messages you had changed are converted and moved there.
 
+## API for other plugins
+MyDog registers a `MyDogApi` in Bukkit's services manager. Add `softdepend: [MyDog]` to your plugin.yml, then:
+
+```java
+RegisteredServiceProvider<MyDogApi> provider = Bukkit.getServicesManager().getRegistration(MyDogApi.class);
+if (provider != null) {
+    MyDogApi myDog = provider.getProvider();
+    myDog.getDog(wolf).ifPresent(dog -> player.sendMessage(dog.name() + " is level " + dog.level()));
+}
+```
+
+It can look up dogs (`DogInfo` snapshots), give them experience, set their level and rename them. Only the `dk.fido2603.mydog.api` package is meant to stay stable between versions; the old `MyDogAPI` class still works, but is deprecated.
+
 ## Resources
 *	Resource page on [Spigot](https://www.spigotmc.org/resources/mydog.70260/).
 *	Project page on [Bukkit](https://dev.bukkit.org/projects/mydog).

@@ -7,8 +7,12 @@ import org.bukkit.entity.Wolf;
 import dk.fido2603.mydog.objects.Dog;
 
 /**
- * For other plugins: {@code new MyDogAPI(JavaPlugin.getPlugin(MyDog.class))}.
+ * The old API, kept so existing integrations keep working.
+ *
+ * @deprecated Use {@link dk.fido2603.mydog.api.MyDogApi} from Bukkit's services manager instead. This class hands out
+ * MyDog's internal {@link Dog}, which changes between versions and must not be modified.
  */
+@Deprecated(since = "0.3.0", forRemoval = true)
 public class MyDogAPI {
     private final MyDog plugin;
 
