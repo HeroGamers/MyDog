@@ -129,6 +129,18 @@ levels:
   level-up-sound: entity.wolf.ambient
   # Let dogs gain experience from killing players.
   player-kill-experience: true
+  # "table" uses the table below. "scaled" builds the levels from the scaled section instead, for a quick setup
+  # (it has no player-damage or effects).
+  mode: table
+  scaled:
+    max-level: 20
+    # Experience needed for the last level.
+    max-experience: 10000
+    # 1 makes every level the same step up; higher makes the first levels quick and the last ones much harder.
+    experience-curve: 2.0
+    # Level 1 gets min, the last level max, and the levels between are spread evenly.
+    health: {min: 40, max: 80}
+    damage: {min: 4, max: 20}
   # Experience needed for each level, and the max health and attack damage it gives.
   # Health is in half hearts (40 = 20 hearts, what a vanilla tamed wolf has). Vanilla wolves deal 4 damage.
   # Add player-damage to a level to make its dogs deal a different amount of damage to players, e.g.

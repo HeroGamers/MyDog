@@ -131,7 +131,7 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 config.getBoolean("levels.enabled"),
                 sound(log, config.getString("levels.level-up-sound", "")),
                 config.getBoolean("levels.player-kill-experience"),
-                levelTable(log, config),
+                "scaled".equalsIgnoreCase(config.getString("levels.mode", "table")) ? scaledTable(log, config) : levelTable(log, config),
                 experiencePerKill(log, config.getConfigurationSection("levels.experience-per-kill")),
                 Math.max(0, config.getInt("levels.experience-per-kill.default")));
 
@@ -229,6 +229,20 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
             experience.put(type, Math.max(0, section.getInt(key)));
         }
         return experience;
+    }
+
+    private static LevelTable scaledTable(Logger log, ConfigurationSection config) {
+        String path = "levels.scaled.";
+        int maxLevel = atLeast(log, config, path + "max-level", 1);
+        int maxExperience = atLeast(log, config, path + "max-experience", 0);
+        double curve = config.getDouble(path + "experience-curve");
+        if (curve <= 0.0) {
+            log.warning(path + "experience-curve must be above 0, using 1.");
+            curve = 1.0;
+        }
+        return LevelTable.scaled(maxLevel, maxExperience, curve,
+                config.getDouble(path + "health.min"), config.getDouble(path + "health.max"),
+                config.getDouble(path + "damage.min"), config.getDouble(path + "damage.max"));
     }
 
     /** Effects written as "speed:2" (Speed II), or just "speed" for level I. */

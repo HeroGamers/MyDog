@@ -58,6 +58,17 @@ class LevelTableTest {
     }
 
     @Test
+    void scaledTableSpreadsStats() {
+        LevelTable scaled = LevelTable.scaled(5, 1000, 2.0, 40, 80, 4, 20);
+        assertEquals(1, scaled.minLevel());
+        assertEquals(5, scaled.maxLevel());
+        assertEquals(new LevelTable.Level(1, 0, 40, 4), scaled.get(1));
+        assertEquals(new LevelTable.Level(5, 1000, 80, 20), scaled.get(5));
+        // Halfway: stats halfway, experience (0.5)^2 of the max with curve 2
+        assertEquals(new LevelTable.Level(3, 250, 60, 12), scaled.get(3));
+    }
+
+    @Test
     void statsHaveAFloor() {
         LevelTable weak = new LevelTable(Map.of(1, new LevelTable.Level(1, 0, 1, 0)));
         assertEquals(5.0, weak.get(1).health());
