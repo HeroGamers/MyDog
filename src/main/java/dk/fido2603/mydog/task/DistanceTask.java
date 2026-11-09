@@ -45,7 +45,7 @@ public final class DistanceTask implements Runnable {
             List<Wolf> strays = new ArrayList<>();
             for (var dog : dogService.aliveDogsOf(player.getUniqueId())) {
                 dogService.wolfOf(dog).ifPresent(wolf -> {
-                    if (!wolf.isSitting() && (!wolf.getWorld().equals(player.getWorld())
+                    if (!wolf.isSitting() && !wolf.isLeashed() && (!wolf.getWorld().equals(player.getWorld())
                             || wolf.getLocation().distanceSquared(player.getLocation()) >= maxDistanceSquared)) {
                         strays.add(wolf);
                     }

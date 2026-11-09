@@ -60,8 +60,10 @@ public final class TeleportService {
         Map<UUID, Optional<Location>> safeSpots = new HashMap<>();
 
         for (Entity entity : entities) {
+            // Like vanilla, pets on a lead stay put (teleporting them would also break the lead)
             if (!(entity instanceof Tameable pet) || !(entity instanceof Sittable sittable) || sittable.isSitting()
-                    || !(pet.getOwner() instanceof Player owner) || !owner.isOnline() || inFlight.contains(entity.getUniqueId())) {
+                    || pet.isLeashed() || !(pet.getOwner() instanceof Player owner) || !owner.isOnline()
+                    || inFlight.contains(entity.getUniqueId())) {
                 continue;
             }
             Optional<Dog> dog = dogService.dogOf(entity);
