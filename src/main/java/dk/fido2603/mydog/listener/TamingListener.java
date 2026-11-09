@@ -65,7 +65,7 @@ public final class TamingListener implements Listener {
 
     private void registerLater(Wolf wolf, Player owner) {
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            if (!wolf.isValid() || !wolf.isTamed() || dogService.dogOf(wolf).isPresent()) {
+            if (!wolf.isValid() || !wolf.isTamed() || dogService.dogOf(wolf).isPresent() || !dogService.canBecomeDog(wolf)) {
                 return;
             }
             Dog dog = dogService.register(wolf, owner, null, null);

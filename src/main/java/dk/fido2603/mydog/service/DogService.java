@@ -51,17 +51,19 @@ public final class DogService {
     private final Messages messages;
     private final Effects effects;
     private final DebugLog debug;
+    private final PluginMobs pluginMobs;
     /** Calmed dogs, until when (epoch millis). Kept in memory only. */
     private final Map<UUID, Long> calmUntil = new HashMap<>();
 
     public DogService(Server server, DogRepository dogs, Supplier<Settings> settings, Messages messages, Effects effects,
-                      DebugLog debug) {
+                      DebugLog debug, PluginMobs pluginMobs) {
         this.server = server;
         this.dogs = dogs;
         this.settings = settings;
         this.messages = messages;
         this.effects = effects;
         this.debug = debug;
+        this.pluginMobs = pluginMobs;
     }
 
     // Lookups
@@ -114,6 +116,11 @@ public final class DogService {
     }
 
     // Creating dogs
+
+    /** Whether a tamed wolf may become a dog: not when it is another plugin's mob, like a MythicMobs mount or an NPC. */
+    public boolean canBecomeDog(Wolf wolf) {
+        return !pluginMobs.belongsToOtherPlugin(wolf);
+    }
 
     /**
      * Turns a tamed wolf into a dog. A wolf that already has a name or a non-default collar (when importing wolves

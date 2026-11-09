@@ -73,6 +73,18 @@ dogs:
     # Pay with experience levels instead of money (money needs Vault and an economy plugin).
     use-player-levels: false
 
+attack-mode:
+  # What dogs in attack mode (/mydog attack) go after: "monsters" for every hostile mob, or "list" for only the
+  # mobs in targets. Other players' pets, NPCs and players are never attacked.
+  target: monsters
+  targets: [zombie, husk, drowned, skeleton, stray, bogged, spider, cave_spider, pillager, vindicator, witch]
+  # Never attacked, also not when they attack the owner. Vanilla wolves leave creepers alone too.
+  ignore: [creeper]
+  # Mobs attacking the owner come first, whether they are listed or not.
+  defend-owner-first: true
+  # Leave all MythicMobs mobs alone (this includes McPets pets).
+  ignore-mythic-mobs: false
+
 breeds:
   # Wolves tamed before breeds existed (Minecraft 1.20.5) all became Pale, and wolves from before personalities
   # (sound variants, 1.21.5) all sound Classic. Owners of such dogs may pick a breed and a personality once, for

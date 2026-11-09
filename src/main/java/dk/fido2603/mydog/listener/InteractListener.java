@@ -80,7 +80,8 @@ public final class InteractListener implements Listener {
     /** Wolves tamed before MyDog was installed become dogs when their owner right-clicks them. */
     @SuppressWarnings("deprecation") // Entity#getCustomName(): the String version is the one Spigot has
     private void importTamedWolf(Wolf wolf, Player player) {
-        if (!wolf.isTamed() || !(wolf.getOwner() instanceof Player owner) || !owner.getUniqueId().equals(player.getUniqueId())) {
+        if (!wolf.isTamed() || !(wolf.getOwner() instanceof Player owner) || !owner.getUniqueId().equals(player.getUniqueId())
+                || !dogService.canBecomeDog(wolf)) {
             return;
         }
         if (!dogService.canOwnMore(player)) {
