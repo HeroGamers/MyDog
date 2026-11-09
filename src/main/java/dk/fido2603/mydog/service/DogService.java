@@ -21,6 +21,9 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 
 import dk.fido2603.mydog.config.DefaultDogNames;
 import dk.fido2603.mydog.config.LevelTable;
@@ -213,6 +216,13 @@ public final class DogService {
         }
     }
 
+    /** The wolf armor the wolf is wearing, if any. */
+    public static Optional<ItemStack> armorOf(Wolf wolf) {
+        EntityEquipment equipment = wolf.getEquipment();
+        ItemStack armor = equipment != null ? equipment.getItem(EquipmentSlot.BODY) : null;
+        return armor == null || armor.getType().isAir() ? Optional.empty() : Optional.of(armor);
+    }
+
     /** The max health a dog's level gives it. */
     public double maxHealth(Dog dog) {
         return settings.get().levels().table().get(dog.getLevel()).health();
@@ -301,6 +311,11 @@ public final class DogService {
     @SuppressWarnings("deprecation") // see applyNametag
     public void release(Dog dog) {
         wolfOf(dog).ifPresent(wolf -> {
+            // Only tamed wolves wear armor, so it comes off before the wolf goes wild
+            armorOf(wolf).ifPresent(armor -> {
+                wolf.getWorld().dropItemNaturally(wolf.getLocation(), armor);
+                wolf.getEquipment().setItem(EquipmentSlot.BODY, null);
+            });
             wolf.setCustomName(null);
             wolf.setCustomNameVisible(false);
             wolf.setSitting(false);
