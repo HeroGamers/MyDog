@@ -105,7 +105,7 @@ public final class ConfigV1ToV2 implements Migration {
         }
 
         ConfigurationSection oldLevels = old.getConfigurationSection("DogSettings.Levels");
-        if (oldLevels != null && !oldLevels.getKeys(false).isEmpty()) {
+        if (oldLevels != null && !oldLevels.getKeys(false).isEmpty() && !isOldDefaultTable(oldLevels)) {
             config.set("levels.table", null);
             for (String level : oldLevels.getKeys(false)) {
                 config.set("levels.table." + level + ".experience", old.getInt("DogSettings.Levels." + level + ".Experience"));
@@ -121,6 +121,30 @@ public final class ConfigV1ToV2 implements Migration {
 
         migrateMessages(old);
         return config;
+    }
+
+    /**
+     * The level table 0.2.x shipped with, as {experience, health, damage} per level. It was written to every
+     * config, so a table equal to it was never chosen by the admin. Its health predates tamed wolves getting 40 health
+     * in 1.20.5 (it made dogs weaker than plain tamed wolves), so it is replaced by the new default.
+     */
+    private static final int[][] OLD_DEFAULT_TABLE = {
+            {0, 20, 4}, {10, 21, 5}, {100, 22, 6}, {200, 23, 7}, {500, 24, 8},
+            {1000, 26, 11}, {2000, 29, 13}, {3000, 31, 15}, {4000, 33, 17}, {5000, 36, 20}};
+
+    private static boolean isOldDefaultTable(ConfigurationSection levels) {
+        if (levels.getKeys(false).size() != OLD_DEFAULT_TABLE.length) {
+            return false;
+        }
+        for (int i = 0; i < OLD_DEFAULT_TABLE.length; i++) {
+            String level = Integer.toString(i + 1);
+            if (levels.getInt(level + ".Experience", -1) != OLD_DEFAULT_TABLE[i][0]
+                    || levels.getDouble(level + ".Health", -1) != OLD_DEFAULT_TABLE[i][1]
+                    || levels.getDouble(level + ".Damage", -1) != OLD_DEFAULT_TABLE[i][2]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @SuppressWarnings({"deprecation", "removal"}) // Sound.valueOf is the only way to read the old enum-style names

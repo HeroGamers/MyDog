@@ -76,18 +76,18 @@ levels:
   # Let dogs gain experience from killing players.
   player-kill-experience: true
   # Experience needed for each level, and the max health and attack damage it gives.
-  # Health is in half hearts (20 = 10 hearts).
+  # Health is in half hearts (40 = 20 hearts, what a vanilla tamed wolf has). Vanilla wolves deal 4 damage.
   table:
-    1: {experience: 0, health: 20, damage: 4}
-    2: {experience: 10, health: 21, damage: 5}
-    3: {experience: 100, health: 22, damage: 6}
-    4: {experience: 200, health: 23, damage: 7}
-    5: {experience: 500, health: 24, damage: 8}
-    6: {experience: 1000, health: 26, damage: 11}
-    7: {experience: 2000, health: 29, damage: 13}
-    8: {experience: 3000, health: 31, damage: 15}
-    9: {experience: 4000, health: 33, damage: 17}
-    10: {experience: 5000, health: 36, damage: 20}
+    1: {experience: 0, health: 40, damage: 4}
+    2: {experience: 10, health: 42, damage: 5}
+    3: {experience: 100, health: 44, damage: 6}
+    4: {experience: 200, health: 46, damage: 7}
+    5: {experience: 500, health: 48, damage: 8}
+    6: {experience: 1000, health: 52, damage: 11}
+    7: {experience: 2000, health: 58, damage: 13}
+    8: {experience: 3000, health: 62, damage: 15}
+    9: {experience: 4000, health: 66, damage: 17}
+    10: {experience: 5000, health: 72, damage: 20}
   # Experience a dog gets for each kill. Mobs that are not listed give nothing.
   # Keys are entity types, see https://minecraft.wiki/w/Java_Edition_data_values#Entities
   experience-per-kill:
