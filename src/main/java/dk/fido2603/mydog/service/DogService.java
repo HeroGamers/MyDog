@@ -12,6 +12,8 @@ import net.kyori.adventure.text.Component;
 
 import org.bukkit.DyeColor;
 import org.bukkit.EntityEffect;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.Server;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
@@ -161,6 +163,7 @@ public final class DogService {
 
     public void updateWolf(Dog dog, Wolf wolf) {
         applyNametag(dog, wolf);
+        rememberAppearance(dog, wolf, wolf.getCollarColor());
 
         Settings.Levels levels = settings.get().levels();
         if (!levels.enabled()) {
@@ -175,6 +178,38 @@ public final class DogService {
         AttributeInstance damage = wolf.getAttribute(Attribute.ATTACK_DAMAGE);
         if (damage != null) {
             damage.setBaseValue(stats.damage());
+        }
+    }
+
+    /** Saves how the wolf looks, so it can be revived looking the same. */
+    private void rememberAppearance(Dog dog, Wolf wolf, DyeColor collar) {
+        Dog.Appearance appearance = new Dog.Appearance(collar, wolf.getVariant().getKey().toString(),
+                wolf.getSoundVariant().getKey().toString());
+        if (!appearance.equals(dog.getAppearance())) {
+            dog.setAppearance(appearance);
+            dogs.markChanged(dog);
+        }
+    }
+
+    /** Gives a (new) wolf the looks the dog had. Parts that aren't known, or no longer exist, are left as they are. */
+    private void applyAppearance(Dog dog, Wolf wolf) {
+        Dog.Appearance appearance = dog.getAppearance();
+        if (appearance == null) {
+            return;
+        }
+        if (appearance.collar() != null) {
+            wolf.setCollarColor(appearance.collar());
+        }
+        NamespacedKey variantKey = appearance.variant() != null ? NamespacedKey.fromString(appearance.variant()) : null;
+        Wolf.Variant variant = variantKey != null ? Registry.WOLF_VARIANT.get(variantKey) : null;
+        if (variant != null) {
+            wolf.setVariant(variant);
+        }
+        NamespacedKey soundKey = appearance.soundVariant() != null ? NamespacedKey.fromString(appearance.soundVariant()) : null;
+        Registry<Wolf.SoundVariant> soundVariants = server.getRegistry(Wolf.SoundVariant.class);
+        Wolf.SoundVariant soundVariant = soundKey != null && soundVariants != null ? soundVariants.get(soundKey) : null;
+        if (soundVariant != null) {
+            wolf.setSoundVariant(soundVariant);
         }
     }
 
@@ -216,7 +251,11 @@ public final class DogService {
     public void setCollarColor(Dog dog, DyeColor color) {
         dog.setColor(DyeColors.nameColor(color));
         dogs.markChanged(dog);
-        wolfOf(dog).ifPresent(wolf -> applyNametag(dog, wolf));
+        wolfOf(dog).ifPresent(wolf -> {
+            applyNametag(dog, wolf);
+            // Called before vanilla dyes the collar, so record the new color rather than reading the wolf's
+            rememberAppearance(dog, wolf, color);
+        });
     }
 
     public void setAttackMode(Dog dog, boolean attack) {
@@ -341,6 +380,7 @@ public final class DogService {
             spawned.setTamed(true);
             spawned.setOwner(owner);
             spawned.setSitting(true);
+            applyAppearance(dog, spawned);
         });
         dogs.changeDogId(dog, wolf.getUniqueId());
         dog.setDead(false);
