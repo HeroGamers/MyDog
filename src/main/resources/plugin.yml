@@ -41,6 +41,8 @@ permissions:
       mydog.pet: true
       mydog.pet.others: true
       mydog.trade: true
+      mydog.breed: true
+      mydog.givetreat: true
   mydog.limit.*:
     description: "Limits how many dogs a player can own: mydog.limit.<n> allows at most n dogs, dead ones included. Operators have no limit."
     default: false
@@ -100,4 +102,10 @@ permissions:
     default: false
   mydog.save:
     description: Player can save the configuration(s)
+    default: false
+  mydog.breed:
+    description: Player can see their dogs' breed and personality, and pick them for dogs from before those existed
+    default: true
+  mydog.givetreat:
+    description: Player can give dog treats to players (also works from the console)
     default: false

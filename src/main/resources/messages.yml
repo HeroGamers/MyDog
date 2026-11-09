@@ -44,6 +44,26 @@ dog:
   # Shown when a player right-clicks someone else's dog. Set to '' to turn it off.
   owner-info: '<gray>This is <dog_name><gray>, <owner>''s dog.'
 
+treat:
+  breed:
+    # The treat item. <breed> the breed it gives.
+    name: '<gold><breed> Dog Treat'
+    lore:
+      - '<gray>Give it to your dog to turn'
+      - '<gray>it into a <white><breed></white> wolf.'
+    same: '<gold><dog_name><gold> already is a <white><breed></white> wolf.'
+    used: '<gold><dog_name><gold> is now a <white><breed></white> wolf!'
+  personality:
+    # The treat item. <personality> the personality (sound) it gives.
+    name: '<light_purple><personality> Dog Treat'
+    lore:
+      - '<gray>Give it to your dog to give it'
+      - '<gray>a <white><personality></white> personality.'
+    same: '<gold><dog_name><gold> already has a <white><personality></white> personality.'
+    used: '<gold><dog_name><gold> now has a <white><personality></white> personality!'
+  not-your-dog: '<red>You can only give treats to your own dogs.'
+  disabled: '<red>This treat no longer works on this server.'
+
 teleport:
   no-safe-location: "<red><bold>[<prefix>]</bold> Hello! Looks like you just teleported away from your Pet(s)! They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them..."
 
@@ -101,6 +121,31 @@ command:
     setlevel: "Sets a dog's level"
     dead: 'List of Dogs that have gone to another world'
     revive: 'Resurrects a Dog for a fee'
+    breed: "Shows a Dog's breed, or picks one for Dogs from before breeds existed"
+    personality: "Shows a Dog's personality, or picks one for Dogs from before personalities existed"
+    givetreat: 'Gives a player dog treats'
+  # <options> the breeds or personalities to choose from.
+  breed:
+    info: '<aqua><dog_name><aqua> is a <white><breed></white> wolf.'
+    free-choice: '<gold><dog_name><gold> is from before wolf breeds existed, so you may pick its breed once, for free, with <white>/mydog breed <id> [name]</white>. Options: <white><options>'
+    no-free-choice: "<gold>Only dogs from before wolf breeds existed get a free pick. To change <dog_name><gold>'s breed, give it a breed treat."
+    unknown: '<red>Unknown breed. Options: <white><options>'
+    done: '<gold><dog_name><gold> is now a <white><breed></white> wolf!'
+    free-choice-reminder: '<gold><dog_name><gold> is from before wolf breeds existed. Pick its breed for free with <white>/mydog breed <id> [name]</white>!'
+  personality:
+    info: '<aqua><dog_name><aqua> has a <white><personality></white> personality.'
+    free-choice: '<gold><dog_name><gold> is from before wolf personalities existed, so you may pick one once, for free, with <white>/mydog personality <id> [name]</white>. Options: <white><options>'
+    no-free-choice: "<gold>Only dogs from before personalities existed get a free pick. To change <dog_name><gold>'s personality, give it a personality treat."
+    unknown: '<red>Unknown personality. Options: <white><options>'
+    done: '<gold><dog_name><gold> now has a <white><personality></white> personality!'
+    free-choice-reminder: '<gold><dog_name><gold> is from before wolf personalities existed. Pick one for free with <white>/mydog personality <id> [name]</white>!'
+  givetreat:
+    unknown: '<red>No such treat. Use breed or personality, and a name set up under breeds.treats in config.yml.'
+    # <max> the most treats given at once.
+    invalid-amount: '<red>The amount must be between 1 and <max>.'
+    # <treat> e.g. "Snowy breed", <player> who got it, <amount> how many.
+    done: '<gold>Gave <player> <amount>x <treat> treat.'
+    received: '<gold>You received <amount>x <treat> treat!'
   reload:
     done: '<yellow><plugin>:<aqua> Reloaded the configuration.'
     failed: '<red>Reloading failed, see the console for why. The old configuration is still in use.'

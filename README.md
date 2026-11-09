@@ -24,6 +24,8 @@ ___
 *	Puppies, from breeding two Dogs, become Dogs in MyDog as well.
 *	Nametag and name updates when the Dogs collar gets coloured, or the Dog gets a nametag applied (deny the rename permission for nametag-only).
 *	The ability to add currently existing Tamed Wolves to the MyDog system, and register them as new Dogs (interact with them).
+*	Dog treats change your dog's breed or personality (how it sounds). Each one has its own, expensive, configurable recipe, or can be handed out by admins only, e.g. for shops and auctions.
+*	Dogs from before wolf breeds and personalities existed get to pick theirs once, for free.
 *	Configurable all the way from the sound on LevelUp, the level table and the experience per mob, to every message (written in [MiniMessage](https://docs.advntr.dev/minimessage/format.html), in messages.yml).
 
 ### ToDo Feature-list
@@ -107,6 +109,12 @@ mydog.reload:
   default: false
 mydog.save:
   description: Player can save the configuration(s)
+  default: false
+mydog.breed:
+  description: Player can see their dogs' breed and personality, and pick them for dogs from before those existed
+  default: true
+mydog.givetreat:
+  description: Player can give dog treats to players (also works from the console)
   default: false
 ```
 

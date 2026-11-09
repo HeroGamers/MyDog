@@ -1,14 +1,18 @@
 package dk.fido2603.mydog.config;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
@@ -34,5 +38,53 @@ class BundledConfigTest {
             }
         }
         assertTrue(unknown.isEmpty(), "Not entity types: " + unknown);
+    }
+
+    /** Every bundled treat recipe must be craftable as written. */
+    @Test
+    void everyTreatRecipeIsValid() {
+        List<String> problems = new ArrayList<>();
+        for (TreatKind kind : TreatKind.values()) {
+            ConfigurationSection section = Objects.requireNonNull(
+                    config.getConfigurationSection("breeds.treats." + kind.configSection()));
+            for (String key : section.getKeys(false)) {
+                Set<Character> ingredients = new HashSet<>();
+                ConfigurationSection ingredientSection = Objects.requireNonNull(section.getConfigurationSection(key + ".ingredients"));
+                for (String letter : ingredientSection.getKeys(false)) {
+                    String material = ingredientSection.getString(letter, "");
+                    if (!isMaterial(material)) {
+                        problems.add(key + ": " + material + " is not a material");
+                    }
+                    ingredients.add(letter.charAt(0));
+                }
+                String problem = Settings.shapeProblem(section.getStringList(key + ".shape"), ingredients);
+                if (problem != null) {
+                    problems.add(key + ": " + problem);
+                }
+            }
+        }
+        assertTrue(problems.isEmpty(), "Bad treat recipes: " + problems);
+    }
+
+    /**
+     * Whether Material has a constant with this name. Looking the field up doesn't initialize Material, which (unlike
+     * calling Material.matchMaterial) would need a running server.
+     */
+    private static boolean isMaterial(String name) {
+        try {
+            Material.class.getField(name.toUpperCase(Locale.ROOT));
+            return true;
+        } catch (NoSuchFieldException e) {
+            return false;
+        }
+    }
+
+    /** One treat per breed and personality Minecraft 26.3 has. */
+    @Test
+    void hasATreatForEveryBreedAndPersonality() {
+        assertEquals(List.of("ashen", "black", "chestnut", "pale", "rusty", "snowy", "spotted", "striped", "woods"),
+                config.getConfigurationSection("breeds.treats.breeds").getKeys(false).stream().sorted().toList());
+        assertEquals(List.of("angry", "big", "classic", "cute", "grumpy", "puglin", "sad"),
+                config.getConfigurationSection("breeds.treats.personalities").getKeys(false).stream().sorted().toList());
     }
 }
