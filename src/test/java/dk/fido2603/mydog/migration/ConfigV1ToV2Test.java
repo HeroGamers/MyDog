@@ -89,6 +89,25 @@ class ConfigV1ToV2Test {
     }
 
     @Test
+    void replacesTheUnchangedOldDefaultTable() throws Exception {
+        YamlConfiguration old = oldConfig();
+        old.set("DogSettings.Levels", null);
+        int[][] oldDefault = {{0, 20, 4}, {10, 21, 5}, {100, 22, 6}, {200, 23, 7}, {500, 24, 8},
+                {1000, 26, 11}, {2000, 29, 13}, {3000, 31, 15}, {4000, 33, 17}, {5000, 36, 20}};
+        for (int i = 0; i < oldDefault.length; i++) {
+            old.set("DogSettings.Levels." + (i + 1) + ".Experience", oldDefault[i][0]);
+            old.set("DogSettings.Levels." + (i + 1) + ".Health", (double) oldDefault[i][1]);
+            old.set("DogSettings.Levels." + (i + 1) + ".Damage", (double) oldDefault[i][2]);
+        }
+
+        YamlConfiguration config = new ConfigV1ToV2(dataFolder.toFile(), name -> getClass().getClassLoader().getResourceAsStream(name),
+                Logger.getAnonymousLogger()).migrate(old);
+        // The new default, made for tamed wolves' 40 health
+        assertEquals(40.0, config.getDouble("levels.table.1.health"));
+        assertEquals(72.0, config.getDouble("levels.table.10.health"));
+    }
+
+    @Test
     void dropsTheBuiltInNameListAndTheRemovedHowl() throws Exception {
         YamlConfiguration config = migrate();
         assertTrue(config.getStringList("dogs.names").isEmpty());
