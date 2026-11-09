@@ -19,7 +19,7 @@ public final class PutdownCommand extends SubCommand {
         if (args.size() != 1) {
             throw new UsageException();
         }
-        Dog dog = ownLivingDog((Player) sender, args.getFirst());
+        Dog dog = livingDog((Player) sender, args.getFirst(), Access.OWNER);
         Wolf wolf = services.dogs().wolfOf(dog).orElseThrow(() -> new CommandException("command.dog-not-loaded"));
 
         services.messages().send(sender, "command.putdown.done");
@@ -28,6 +28,6 @@ public final class PutdownCommand extends SubCommand {
 
     @Override
     public List<String> complete(CommandSender sender, List<String> args) {
-        return args.size() == 1 ? livingDogIds(sender) : List.of();
+        return args.size() == 1 ? livingDogIds(sender, false) : List.of();
     }
 }

@@ -54,7 +54,7 @@ public final class CombatListener implements Listener {
         Settings.Dogs config = settings.get().dogs();
         // The player behind the damage, also when it comes from an arrow, trident, ...
         if (event.getDamageSource().getCausingEntity() instanceof Player player) {
-            boolean owner = player.getUniqueId().equals(dog.get().getOwnerId());
+            boolean owner = DogService.isOwnerOrCoOwner(dog.get(), player.getUniqueId());
             if (owner || (config.protectFromOtherPlayers() && !Permissions.has(player, Permissions.HARM_OTHERS))) {
                 event.setCancelled(true);
                 return;

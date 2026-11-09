@@ -55,7 +55,7 @@ public final class TreatListener implements Listener {
         String kind = treat.kind().id();
 
         Optional<Dog> dog = dogService.dogOf(wolf);
-        if (dog.isEmpty() || !dog.get().getOwnerId().equals(player.getUniqueId())) {
+        if (dog.isEmpty() || !DogService.canControl(dog.get(), player)) {
             messages.send(player, "treat.not-your-dog");
             return;
         }

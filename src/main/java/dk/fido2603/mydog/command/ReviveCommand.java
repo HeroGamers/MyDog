@@ -31,9 +31,10 @@ public final class ReviveCommand extends SubCommand {
             throw new UsageException();
         }
         Player player = (Player) sender;
-        Dog dog = services.dogs().find(player.getUniqueId(), parseIdentifier(args.getFirst()))
-                .filter(Dog::isDead)
-                .orElseThrow(() -> new CommandException("command.revive.not-found"));
+        Dog dog = dog(player, args.getFirst(), Access.OWNER);
+        if (!dog.isDead()) {
+            throw new CommandException("command.revive.not-found");
+        }
 
         int price = services.dogs().revivalPrice(dog);
         Settings.Revival revival = services.settings().get().dogs().revival();

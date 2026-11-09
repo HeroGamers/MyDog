@@ -109,6 +109,13 @@ public final class YamlDogRepository implements DogRepository {
                 dog.setAppearance(new Dog.Appearance(collar, section.getString("appearance.variant"),
                         section.getString("appearance.sound-variant")));
             }
+            for (String coOwner : section.getStringList("co-owners")) {
+                try {
+                    dog.addCoOwner(UUID.fromString(coOwner));
+                } catch (IllegalArgumentException e) {
+                    log.warning("Dog " + key + " has an invalid co-owner " + coOwner + ", skipping it.");
+                }
+            }
             if (section.isConfigurationSection("stored")) {
                 dog.setStored(new Dog.Stored(section.getDouble("stored.health"), section.getItemStack("stored.armor")));
             }
@@ -147,6 +154,9 @@ public final class YamlDogRepository implements DogRepository {
             section.set("appearance.collar", appearance.collar() != null ? appearance.collar().name().toLowerCase(Locale.ROOT) : null);
             section.set("appearance.variant", appearance.variant());
             section.set("appearance.sound-variant", appearance.soundVariant());
+        }
+        if (!dog.getCoOwners().isEmpty()) {
+            section.set("co-owners", dog.getCoOwners().stream().map(UUID::toString).toList());
         }
         Dog.Stored stored = dog.getStored();
         if (stored != null) {

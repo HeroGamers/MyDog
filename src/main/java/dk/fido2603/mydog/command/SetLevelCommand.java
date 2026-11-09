@@ -25,7 +25,7 @@ public final class SetLevelCommand extends SubCommand {
         if (!levels.enabled()) {
             throw new CommandException("command.setlevel.levels-disabled");
         }
-        Dog dog = ownLivingDog((Player) sender, args.getFirst());
+        Dog dog = livingDog((Player) sender, args.getFirst(), Access.OWNER);
         LevelTable table = levels.table();
         int level;
         try {
@@ -42,6 +42,6 @@ public final class SetLevelCommand extends SubCommand {
 
     @Override
     public List<String> complete(CommandSender sender, List<String> args) {
-        return args.size() == 1 ? livingDogIds(sender) : List.of();
+        return args.size() == 1 ? livingDogIds(sender, false) : List.of();
     }
 }

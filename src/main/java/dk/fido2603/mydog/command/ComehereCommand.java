@@ -26,7 +26,7 @@ public final class ComehereCommand extends SubCommand {
             throw new UsageException();
         }
         Player player = (Player) sender;
-        for (Dog dog : ownLivingDogs(player, args.getFirst())) {
+        for (Dog dog : livingDogs(player, args.getFirst())) {
             if (dog.isStored()) {
                 services.messages().send(sender, "command.comehere.stored", Messages.dog(dog));
                 continue;
@@ -68,7 +68,7 @@ public final class ComehereCommand extends SubCommand {
         if (args.size() != 1) {
             return List.of();
         }
-        List<String> options = new ArrayList<>(livingDogIds(sender));
+        List<String> options = new ArrayList<>(livingDogIds(sender, true));
         options.add("all");
         return options;
     }

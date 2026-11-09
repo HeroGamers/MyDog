@@ -19,7 +19,7 @@ public final class ReleaseCommand extends SubCommand {
         if (args.size() != 1) {
             throw new UsageException();
         }
-        Dog dog = ownDog((Player) sender, args.getFirst());
+        Dog dog = dog((Player) sender, args.getFirst(), Access.OWNER);
         services.messages().send(sender, "command.release.done", Messages.dog(dog));
         services.dogs().release(dog);
     }

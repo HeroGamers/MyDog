@@ -18,7 +18,7 @@ public final class SetIdCommand extends SubCommand {
         if (args.size() != 2) {
             throw new UsageException();
         }
-        Dog dog = ownDog((Player) sender, args.getFirst());
+        Dog dog = dog((Player) sender, args.getFirst(), Access.OWNER);
         int newId;
         try {
             newId = Integer.parseInt(args.get(1));

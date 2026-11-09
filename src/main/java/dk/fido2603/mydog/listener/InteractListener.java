@@ -61,12 +61,12 @@ public final class InteractListener implements Listener {
             return;
         }
 
-        if (event.getHand() == EquipmentSlot.HAND && !dog.getOwnerId().equals(player.getUniqueId())) {
+        if (event.getHand() == EquipmentSlot.HAND && !DogService.isOwnerOrCoOwner(dog, player.getUniqueId())) {
             messages.send(player, "dog.owner-info", Messages.dog(dog));
         }
 
         DyeColor dye = DyeColors.ofDye(item.getType());
-        if (dye != null && dog.getOwnerId().equals(player.getUniqueId()) && wolf.getCollarColor() != dye) {
+        if (dye != null && DogService.canControl(dog, player) && wolf.getCollarColor() != dye) {
             // Vanilla dyes the collar; MyDog only follows with the name color
             dogService.setCollarColor(dog, dye);
             return;
@@ -101,7 +101,7 @@ public final class InteractListener implements Listener {
             return false;
         }
         // Without this the name tag would rename the wolf the vanilla way, which MyDog's nametag then overwrites
-        if (!settings.get().dogs().allowNametagRename() || !dog.getOwnerId().equals(player.getUniqueId())) {
+        if (!settings.get().dogs().allowNametagRename() || !DogService.canControl(dog, player)) {
             return true;
         }
         dogService.rename(dog, meta.getDisplayName());

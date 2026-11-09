@@ -1,6 +1,7 @@
 package dk.fido2603.mydog.service;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,45 @@ public final class DogService {
 
     public Optional<Dog> find(UUID dogId) {
         return dogs.find(dogId);
+    }
+
+    /** Whether the player is the dog's owner or one of its co-owners. */
+    public static boolean isOwnerOrCoOwner(Dog dog, UUID player) {
+        return dog.getOwnerId().equals(player) || dog.getCoOwners().contains(player);
+    }
+
+    /** Whether the player may look after the dog: its owner, a co-owner, or an admin with mydog.admin.others. */
+    public static boolean canControl(Dog dog, Player player) {
+        return isOwnerOrCoOwner(dog, player.getUniqueId()) || Permissions.has(player, Permissions.ADMIN_OTHERS);
+    }
+
+    /** Living dogs other players have shared with this player, sorted by owner and ID. */
+    public List<Dog> sharedWith(UUID player) {
+        return dogs.all().stream()
+                .filter(dog -> !dog.isDead() && dog.getCoOwners().contains(player))
+                .sorted(Comparator.comparing((Dog dog) -> dog.getOwnerId().toString()).thenComparingInt(Dog::getIdentifier))
+                .toList();
+    }
+
+    /** The UUID of a player who owns dogs, by name (online players first). */
+    public Optional<UUID> ownerByName(String name) {
+        Player online = server.getPlayerExact(name);
+        if (online != null) {
+            return Optional.of(online.getUniqueId());
+        }
+        return dogs.all().stream().map(Dog::getOwnerId).distinct()
+                .filter(id -> name.equalsIgnoreCase(server.getOfflinePlayer(id).getName()))
+                .findFirst();
+    }
+
+    public void share(Dog dog, UUID player) {
+        dog.addCoOwner(player);
+        dogs.markChanged(dog);
+    }
+
+    public void unshare(Dog dog, UUID player) {
+        dog.removeCoOwner(player);
+        dogs.markChanged(dog);
     }
 
     /** The dog for an entity, if the entity is a MyDog dog. */
@@ -395,6 +435,8 @@ public final class DogService {
     /** Hands a dog over to a new owner (after a trade). It gets the new owner's lowest free ID. */
     public void transfer(Dog dog, Player newOwner) {
         dog.setOwnerId(newOwner.getUniqueId());
+        // Co-owners were the old owner's friends
+        dog.clearCoOwners();
         dog.setIdentifier(nextFreeIdentifier(newOwner.getUniqueId()));
         dogs.markChanged(dog);
         wolfOf(dog).ifPresent(wolf -> {
@@ -429,7 +471,7 @@ public final class DogService {
 
     public void pet(Dog dog, Player player) {
         if (!Permissions.has(player, Permissions.PET)
-                || (!player.getUniqueId().equals(dog.getOwnerId()) && !Permissions.has(player, Permissions.PET_OTHERS))) {
+                || (!isOwnerOrCoOwner(dog, player.getUniqueId()) && !Permissions.has(player, Permissions.PET_OTHERS))) {
             return;
         }
         Optional<Wolf> wolf = wolfOf(dog);
@@ -496,9 +538,9 @@ public final class DogService {
     }
 
     /** Brings a dead dog back as a new wolf, sitting at the owner's feet. Payment is up to the caller. */
-    public void revive(Dog dog, Player owner) {
+    public void revive(Dog dog, Player at) {
         dog.setDead(false);
-        spawnWolf(dog, owner, true);
+        spawnWolf(dog, at, true);
     }
 
     // Storing
@@ -511,11 +553,11 @@ public final class DogService {
         wolf.remove();
     }
 
-    /** Brings a stored dog back next to its owner, as it was when it was stored. */
-    public void summon(Dog dog, Player owner) {
+    /** Brings a stored dog back next to the player summoning it, as it was when it was stored. */
+    public void summon(Dog dog, Player at) {
         Dog.Stored stored = dog.getStored();
         dog.setStored(null);
-        Wolf wolf = spawnWolf(dog, owner, false);
+        Wolf wolf = spawnWolf(dog, at, false);
         if (stored == null) {
             return;
         }
@@ -527,11 +569,14 @@ public final class DogService {
         wolf.setHealth(Math.clamp(stored.health(), 1.0, max));
     }
 
-    /** Spawns a new wolf for the dog at the owner, with its look, nametag and stats, and moves the dog to it. */
-    private Wolf spawnWolf(Dog dog, Player owner, boolean sitting) {
-        Wolf wolf = owner.getWorld().spawn(owner.getLocation(), Wolf.class, spawned -> {
+    /**
+     * Spawns a new wolf for the dog next to a player (its owner, a co-owner or an admin), with its look, nametag and
+     * stats, and moves the dog to it. The wolf always belongs to the dog's owner.
+     */
+    private Wolf spawnWolf(Dog dog, Player at, boolean sitting) {
+        Wolf wolf = at.getWorld().spawn(at.getLocation(), Wolf.class, spawned -> {
             spawned.setTamed(true);
-            spawned.setOwner(owner);
+            spawned.setOwner(server.getOfflinePlayer(dog.getOwnerId()));
             spawned.setSitting(sitting);
             applyAppearance(dog, spawned);
         });

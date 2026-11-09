@@ -11,6 +11,7 @@ import org.bukkit.entity.Wolf;
 import dk.fido2603.mydog.config.TreatKind;
 import dk.fido2603.mydog.message.Messages;
 import dk.fido2603.mydog.objects.Dog;
+import dk.fido2603.mydog.service.Permissions;
 
 /**
  * {@code /mydog breed <id> [breed]} and {@code /mydog personality <id> [personality]}: shows a dog's breed or
@@ -42,7 +43,7 @@ public final class LookCommand extends SubCommand {
         if (args.isEmpty() || args.size() > 2) {
             throw new UsageException();
         }
-        Dog dog = ownLivingDog((Player) sender, args.getFirst());
+        Dog dog = livingDog((Player) sender, args.getFirst(), Access.SHARED);
         String prefix = "command." + kind.id() + ".";
         boolean freeChoice = services.dogs().hasFreeChoice(dog, kind);
 
@@ -54,6 +55,10 @@ public final class LookCommand extends SubCommand {
             return;
         }
 
+        // Picking is up to the owner; co-owners can only look
+        if (!dog.getOwnerId().equals(((Player) sender).getUniqueId()) && !Permissions.has(sender, Permissions.ADMIN_OTHERS)) {
+            throw new CommandException("command.owner-only", Messages.dog(dog));
+        }
         if (!freeChoice) {
             throw new CommandException(prefix + "no-free-choice", Messages.dog(dog));
         }
@@ -83,7 +88,7 @@ public final class LookCommand extends SubCommand {
     @Override
     public List<String> complete(CommandSender sender, List<String> args) {
         return switch (args.size()) {
-            case 1 -> livingDogIds(sender);
+            case 1 -> livingDogIds(sender, true);
             case 2 -> names(kind.all());
             default -> List.of();
         };

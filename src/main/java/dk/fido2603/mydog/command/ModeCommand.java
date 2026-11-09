@@ -31,7 +31,7 @@ public final class ModeCommand extends SubCommand {
         if (args.size() != 1) {
             throw new UsageException();
         }
-        List<Dog> dogs = ownLivingDogs((Player) sender, args.getFirst());
+        List<Dog> dogs = livingDogs((Player) sender, args.getFirst());
         if (args.getFirst().equalsIgnoreCase("all")) {
             services.messages().send(sender, "command." + name() + ".all");
         } else {
@@ -47,7 +47,7 @@ public final class ModeCommand extends SubCommand {
         if (args.size() != 1) {
             return List.of();
         }
-        List<String> options = new ArrayList<>(livingDogIds(sender));
+        List<String> options = new ArrayList<>(livingDogIds(sender, true));
         options.add("all");
         return options;
     }
