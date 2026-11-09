@@ -89,7 +89,7 @@ public final class CombatListener implements Listener {
         }
         Settings.Levels levels = settings.get().levels();
         dogService.dogOf(wolf).ifPresent(dog ->
-                dogService.giveExperience(dog, levels.experienceFor(event.getEntityType())));
+                dogService.giveExperience(dog, levels.experienceFor(event.getEntity())));
     }
 
     /** Tells the owner when their dog gets low on health. */
