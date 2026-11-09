@@ -8,6 +8,8 @@
 #   <id>        the dog's ID, as shown in /mydog list
 #   <level>     the dog's level
 #   <owner>     the name of the dog's owner
+#   <breed>     the dog's breed (Pale, Snowy, Woods, ...)
+#   <personality> how the dog sounds (Classic, Big, Cute, Puglin, Angry, Grumpy, Sad)
 # Other placeholders are listed next to the message that has them.
 #
 # A message can also be a list of lines. An empty message ('') is not sent at all.
@@ -147,6 +149,8 @@ command:
     unreachable: '<red><bold>[<prefix>]</bold> Aww bonkers! Seems like your Dog is at a location that cannot be loaded right now!'
   stats:
     name: '<aqua>Name: <dog_name>'
+    # Shown once MyDog has seen the dog's wolf since this was added.
+    breed: '<aqua>Breed: <white><breed> <gray>(<personality>)'
     level: '<aqua>Level: <white><level>'
     # <bar> a progress bar, <current> and <next> experience.
     experience: '<aqua>Experience: <bar> <aqua><bold>[</bold><dark_aqua><current></dark_aqua><bold>/</bold><next><bold>]'
