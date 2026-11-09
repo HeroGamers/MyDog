@@ -20,8 +20,10 @@ public final class ReleaseCommand extends SubCommand {
             throw new UsageException();
         }
         Dog dog = dog((Player) sender, args.getFirst(), Access.OWNER);
+        if (!services.dogs().release(dog, (Player) sender)) {
+            throw new CommandException("command.cancelled");
+        }
         services.messages().send(sender, "command.release.done", Messages.dog(dog));
-        services.dogs().release(dog);
     }
 
     @Override

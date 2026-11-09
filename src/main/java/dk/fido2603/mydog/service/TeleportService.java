@@ -19,6 +19,7 @@ import org.bukkit.entity.Sittable;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Wolf;
 
+import dk.fido2603.mydog.api.event.DogFollowEvent;
 import dk.fido2603.mydog.config.Settings;
 import dk.fido2603.mydog.message.Messages;
 import dk.fido2603.mydog.objects.Dog;
@@ -79,9 +80,14 @@ public final class TeleportService {
             }
 
             debug.log(() -> "Teleporting " + entity.getType() + " " + entity.getUniqueId() + " to " + owner.getName());
-            int index = placed.merge(owner.getUniqueId(), 1, Integer::sum) - 1;
+            Location destination = spread(spot.get(), placed.getOrDefault(owner.getUniqueId(), 0));
+            if (dog.isPresent() && dogService.fire(new DogFollowEvent(MyDogApiService.info(dog.get()), (Wolf) entity, owner,
+                    destination)).isCancelled()) {
+                continue;
+            }
+            placed.merge(owner.getUniqueId(), 1, Integer::sum);
             // Right away, while the entity is still valid: during a chunk unload it is gone a tick later
-            teleport(entity, dog, spread(spot.get(), index));
+            teleport(entity, dog, destination);
         }
     }
 

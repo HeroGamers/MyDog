@@ -27,7 +27,9 @@ public final class RenameCommand extends SubCommand {
         if (name.isEmpty() || name.length() > MAX_NAME_LENGTH) {
             throw new CommandException("command.rename.invalid-length");
         }
-        services.dogs().rename(dog, name);
+        if (!services.dogs().rename(dog, name, (Player) sender)) {
+            throw new CommandException("command.cancelled");
+        }
         services.messages().send(sender, "command.rename.done", Messages.dog(dog));
     }
 

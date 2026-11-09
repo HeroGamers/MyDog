@@ -11,19 +11,33 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import dk.fido2603.mydog.api.event.DogDeathEvent;
+import dk.fido2603.mydog.api.event.DogEvent;
+import dk.fido2603.mydog.api.event.DogExperienceEvent;
+import dk.fido2603.mydog.api.event.DogFollowEvent;
+import dk.fido2603.mydog.api.event.DogLevelChangeEvent;
+import dk.fido2603.mydog.api.event.DogReleaseEvent;
+import dk.fido2603.mydog.api.event.DogRenameEvent;
+import dk.fido2603.mydog.api.event.DogReviveEvent;
+import dk.fido2603.mydog.api.event.DogTameEvent;
+import dk.fido2603.mydog.api.event.DogTradeEvent;
+
 /**
  * The API may only expose Java, Bukkit and its own types. MyDog's internals change between versions, and Adventure is
  * relocated inside the MyDog jar, so other plugins couldn't use either.
  */
 class ApiSurfaceTest {
-    private static final List<Class<?>> API = List.of(MyDogApi.class, DogInfo.class);
+    private static final List<Class<?>> API = List.of(MyDogApi.class, DogInfo.class,
+            DogEvent.class, DogTameEvent.class, DogExperienceEvent.class, DogLevelChangeEvent.class, DogDeathEvent.class,
+            DogReviveEvent.class, DogReleaseEvent.class, DogRenameEvent.class, DogTradeEvent.class, DogFollowEvent.class);
 
     @Test
     void onlyExposesJavaBukkitAndApiTypes() {
         List<String> problems = new ArrayList<>();
         for (Class<?> type : API) {
             for (Method method : type.getMethods()) {
-                if (method.getDeclaringClass() == Object.class || method.getDeclaringClass() == Record.class) {
+                // Only what MyDog declares; inherited Object, Record and Bukkit Event methods aren't its to keep stable
+                if (!method.getDeclaringClass().getPackageName().startsWith(MyDogApi.class.getPackageName())) {
                     continue;
                 }
                 check(problems, type.getSimpleName() + "." + method.getName(), method.getGenericReturnType());

@@ -5,6 +5,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import dk.fido2603.mydog.api.event.DogLevelChangeEvent;
 import dk.fido2603.mydog.config.LevelTable;
 import dk.fido2603.mydog.config.Settings;
 import dk.fido2603.mydog.message.Messages;
@@ -36,7 +37,9 @@ public final class SetLevelCommand extends SubCommand {
         if (level < 1 || level > table.maxLevel()) {
             throw new CommandException("command.setlevel.out-of-range", Messages.text("max", table.maxLevel()));
         }
-        services.dogs().setLevel(dog, level);
+        if (!services.dogs().setLevel(dog, level, DogLevelChangeEvent.Cause.SET)) {
+            throw new CommandException("command.cancelled");
+        }
         services.messages().send(sender, "command.setlevel.done", Messages.dog(dog));
     }
 

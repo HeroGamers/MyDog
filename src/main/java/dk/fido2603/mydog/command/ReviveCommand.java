@@ -38,19 +38,23 @@ public final class ReviveCommand extends SubCommand {
 
         int price = services.dogs().revivalPrice(dog);
         Settings.Revival revival = services.settings().get().dogs().revival();
-        if (revival.usePlayerLevels()) {
-            if (player.getLevel() < price) {
-                throw new CommandException("command.revive.not-enough-levels", Messages.text("missing", price - player.getLevel()));
-            }
-            player.setLevel(player.getLevel() - price);
-        } else {
-            Optional<Economy> economy = Economy.find(services.server());
-            if (economy.isPresent() && price > 0 && !economy.get().withdraw(player, price)) {
-                throw new CommandException("command.revive.not-enough-money");
-            }
+        Optional<Economy> economy = revival.usePlayerLevels() ? Optional.empty() : Economy.find(services.server());
+        // Check first, charge only once the revive went ahead (another plugin may stop it)
+        if (revival.usePlayerLevels() && player.getLevel() < price) {
+            throw new CommandException("command.revive.not-enough-levels", Messages.text("missing", price - player.getLevel()));
+        }
+        if (economy.isPresent() && price > 0 && !economy.get().has(player, price)) {
+            throw new CommandException("command.revive.not-enough-money");
         }
 
-        services.dogs().revive(dog, player);
+        if (!services.dogs().revive(dog, player)) {
+            throw new CommandException("command.cancelled");
+        }
+        if (revival.usePlayerLevels()) {
+            player.setLevel(player.getLevel() - price);
+        } else if (economy.isPresent() && price > 0) {
+            economy.get().withdraw(player, price);
+        }
         services.messages().send(sender, "command.revive.done", Messages.dog(dog));
     }
 
