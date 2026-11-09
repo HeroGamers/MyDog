@@ -61,6 +61,10 @@ public final class InteractListener implements Listener {
             return;
         }
 
+        if (event.getHand() == EquipmentSlot.HAND && !dog.getOwnerId().equals(player.getUniqueId())) {
+            messages.send(player, "dog.owner-info", Messages.dog(dog));
+        }
+
         DyeColor dye = DyeColors.ofDye(item.getType());
         if (dye != null && dog.getOwnerId().equals(player.getUniqueId()) && wolf.getCollarColor() != dye) {
             // Vanilla dyes the collar; MyDog only follows with the name color
