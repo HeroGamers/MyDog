@@ -32,7 +32,7 @@ public final class AttackModeTask implements Runnable {
             boolean searched = false;
 
             for (Dog dog : dogService.aliveDogsOf(player.getUniqueId())) {
-                if (!dog.isAngry()) {
+                if (!dog.isAngry() || dogService.isCalm(dog.getDogId())) {
                     continue;
                 }
                 Wolf wolf = dogService.wolfOf(dog).orElse(null);

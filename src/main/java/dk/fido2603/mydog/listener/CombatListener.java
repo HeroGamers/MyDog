@@ -18,6 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
 
 import dk.fido2603.mydog.config.Settings;
 import dk.fido2603.mydog.message.Messages;
@@ -49,6 +50,14 @@ public final class CombatListener implements Listener {
         if (event.getDamager() instanceof Player player && player.getUniqueId().equals(dog.get().getOwnerId())) {
             event.setCancelled(true);
         } else if (event.getDamager().getType() == EntityType.ARROW && !settings.get().dogs().arrowDamage()) {
+            event.setCancelled(true);
+        }
+    }
+
+    /** Calmed dogs don't pick new targets, whatever the reason (attack mode, defending the owner, ...). */
+    @EventHandler(ignoreCancelled = true)
+    public void onDogTargets(EntityTargetEvent event) {
+        if (event.getTarget() != null && event.getEntity() instanceof Wolf wolf && dogService.isCalm(wolf.getUniqueId())) {
             event.setCancelled(true);
         }
     }

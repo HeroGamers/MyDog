@@ -48,6 +48,8 @@ dogs:
   # Let dogs take damage from being crammed together (too many mobs in one spot). Off by default, since a pack of
   # dogs can easily end up in one spot, e.g. after being teleported or while chasing a mob they can't reach.
   cramming-damage: false
+  # How long /mydog calm keeps dogs from picking a fight, in seconds.
+  calm-seconds: 10
   # Share of the damage a dog deals that it heals back (0.25 = 25%, 0 turns it off).
   lifesteal: 0.25
   low-health-warning:
