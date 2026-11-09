@@ -2,10 +2,8 @@ package dk.fido2603.mydog.service;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -20,7 +18,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Sittable;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Wolf;
-import org.bukkit.plugin.Plugin;
 
 import dk.fido2603.mydog.config.Settings;
 import dk.fido2603.mydog.message.Messages;
@@ -29,20 +26,15 @@ import dk.fido2603.mydog.util.DebugLog;
 
 /** Brings dogs (and optionally other pets) to their owners, onto a safe spot. */
 public final class TeleportService {
-    /** How long (in ticks) an entity is skipped after an experimental teleport, so it isn't moved twice at once. */
-    private static final long IN_FLIGHT_TICKS = 20L * 10L;
     /** How far up and down from the target the search for a safe spot goes. */
     private static final int SEARCH_HEIGHT = 64;
 
-    private final Plugin plugin;
     private final DogService dogService;
     private final Supplier<Settings> settings;
     private final Messages messages;
     private final DebugLog debug;
-    private final Set<UUID> inFlight = new HashSet<>();
 
-    public TeleportService(Plugin plugin, DogService dogService, Supplier<Settings> settings, Messages messages, DebugLog debug) {
-        this.plugin = plugin;
+    public TeleportService(DogService dogService, Supplier<Settings> settings, Messages messages, DebugLog debug) {
         this.dogService = dogService;
         this.settings = settings;
         this.messages = messages;
@@ -58,12 +50,13 @@ public final class TeleportService {
         Settings.Teleport config = settings.get().teleport();
         // A safe spot is searched for once per owner; an empty value means none was found
         Map<UUID, Optional<Location>> safeSpots = new HashMap<>();
+        // How many pets each owner has had placed so far, to spread them around the spot
+        Map<UUID, Integer> placed = new HashMap<>();
 
         for (Entity entity : entities) {
             // Like vanilla, pets on a lead stay put (teleporting them would also break the lead)
             if (!(entity instanceof Tameable pet) || !(entity instanceof Sittable sittable) || sittable.isSitting()
-                    || pet.isLeashed() || !(pet.getOwner() instanceof Player owner) || !owner.isOnline()
-                    || inFlight.contains(entity.getUniqueId())) {
+                    || pet.isLeashed() || !(pet.getOwner() instanceof Player owner) || !owner.isOnline()) {
                 continue;
             }
             Optional<Dog> dog = dogService.dogOf(entity);
@@ -86,15 +79,20 @@ public final class TeleportService {
             }
 
             debug.log(() -> "Teleporting " + entity.getType() + " " + entity.getUniqueId() + " to " + owner.getName());
-            if (config.experimental()) {
-                UUID entityId = entity.getUniqueId();
-                inFlight.add(entityId);
-                plugin.getServer().getScheduler().runTask(plugin, () -> teleport(entity, dog, spot.get()));
-                plugin.getServer().getScheduler().runTaskLater(plugin, () -> inFlight.remove(entityId), IN_FLIGHT_TICKS);
-            } else {
-                teleport(entity, dog, spot.get());
-            }
+            int index = placed.merge(owner.getUniqueId(), 1, Integer::sum) - 1;
+            // Right away, while the entity is still valid: during a chunk unload it is gone a tick later
+            teleport(entity, dog, spread(spot.get(), index));
         }
+    }
+
+    /** Spots around the safe spot, so a pack doesn't land in a single block (and get crammed). */
+    private static final int[][] SPREAD = {{0, 0}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
+
+    /** The {@code index}th spot around the safe spot that is also safe, falling back to the safe spot itself. */
+    private static Location spread(Location spot, int index) {
+        int[] offset = SPREAD[index % SPREAD.length];
+        Location candidate = spot.clone().add(offset[0], 0, offset[1]);
+        return isSafe(candidate) ? candidate : spot;
     }
 
     private void teleport(Entity entity, Optional<Dog> dog, Location location) {

@@ -30,7 +30,6 @@ public final class ConfigV1ToV2 implements Migration {
             Map.entry("Settings.InstantSaveConfig", "saving.instant"),
             Map.entry("Settings.AutomaticTeleportation", "teleport.enabled"),
             Map.entry("Settings.TeleportAllTameables", "teleport.all-tameables"),
-            Map.entry("Settings.EnableExperimentalTeleport", "teleport.experimental"),
             Map.entry("Settings.PlayerDistanceCheck", "teleport.distance-check.enabled"),
             Map.entry("Settings.ExpandedSearch", "teleport.expanded-search"),
             Map.entry("DogSettings.TeleportOnWorldChange", "teleport.on-world-change"),
