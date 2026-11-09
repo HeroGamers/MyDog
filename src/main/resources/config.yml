@@ -88,10 +88,14 @@ levels:
     8: {experience: 3000, health: 62, damage: 15}
     9: {experience: 4000, health: 66, damage: 17}
     10: {experience: 5000, health: 72, damage: 20}
-  # Experience a dog gets for each kill. Mobs that are not listed give nothing.
+  # Experience a dog gets for each kill.
   # Keys are entity types, see https://minecraft.wiki/w/Java_Edition_data_values#Entities
   experience-per-kill:
+    # Mobs that are not listed below (including mobs added to Minecraft later) give this much; 0 gives nothing.
+    # Players only give experience through their own entry and player-kill-experience.
+    default: 2
     allay: 5
+    armadillo: 5
     axolotl: 5
     bat: 5
     bee: 5
@@ -113,11 +117,15 @@ levels:
     snow_golem: 5
     spider: 5
     squid: 5
+    sulfur_cube: 5
     tropical_fish: 5
     turtle: 5
     zombie: 5
+    bogged: 8
     cow: 8
     mooshroom: 8
+    nautilus: 8
+    parched: 8
     pig: 8
     sheep: 8
     stray: 8
@@ -125,7 +133,9 @@ levels:
     wandering_trader: 8
     wolf: 8
     camel: 20
+    camel_husk: 20
     cave_spider: 20
+    copper_golem: 20
     creeper: 20
     dolphin: 20
     donkey: 20
@@ -147,8 +157,11 @@ levels:
     witch: 20
     wither_skeleton: 20
     zombie_horse: 20
+    zombie_nautilus: 20
     zombie_villager: 20
     zombified_piglin: 20
+    breeze: 40
+    creaking: 40
     enderman: 40
     endermite: 40
     guardian: 40

@@ -11,7 +11,9 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Mob;
 
 /**
  * Everything in config.yml, read and checked once per (re)load. Bad values are logged and replaced with a default.
@@ -33,14 +35,22 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
     public record Revival(boolean enabled, int pricePerLevel, boolean usePlayerLevels) {}
 
     public record Levels(boolean enabled, Sound levelUpSound, boolean playerKillExperience, LevelTable table,
-                         Map<EntityType, Integer> experiencePerKill) {
+                         Map<EntityType, Integer> experiencePerKill, int defaultExperience) {
 
-        /** Experience for killing this entity type, or 0. */
-        public int experienceFor(EntityType type) {
-            if (type == EntityType.PLAYER && !playerKillExperience) {
-                return 0;
+        /**
+         * Experience for killing this entity: its entry in the table, or the default for other mobs. Players only
+         * count through their own entry, and entities that aren't mobs (armor stands, mannequins) give nothing.
+         */
+        public int experienceFor(Entity entity) {
+            EntityType type = entity.getType();
+            if (type == EntityType.PLAYER) {
+                return playerKillExperience ? experiencePerKill.getOrDefault(type, 0) : 0;
             }
-            return experiencePerKill.getOrDefault(type, 0);
+            Integer experience = experiencePerKill.get(type);
+            if (experience != null) {
+                return experience;
+            }
+            return entity instanceof Mob ? defaultExperience : 0;
         }
     }
 
@@ -82,7 +92,8 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 sound(log, config.getString("levels.level-up-sound", "")),
                 config.getBoolean("levels.player-kill-experience"),
                 levelTable(log, config),
-                experiencePerKill(log, config.getConfigurationSection("levels.experience-per-kill")));
+                experiencePerKill(log, config.getConfigurationSection("levels.experience-per-kill")),
+                Math.max(0, config.getInt("levels.experience-per-kill.default")));
 
         return new Settings(config.getBoolean("debug"), saving, teleport, dogs, levels);
     }
@@ -158,6 +169,9 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
             return experience;
         }
         for (String key : section.getKeys(false)) {
+            if (key.equals("default")) {
+                continue;
+            }
             EntityType type = Registry.ENTITY_TYPE.get(NamespacedKey.minecraft(key.toLowerCase(Locale.ROOT)));
             if (type == null) {
                 log.warning("Unknown entity type '" + key + "' in levels.experience-per-kill, skipping it.");
