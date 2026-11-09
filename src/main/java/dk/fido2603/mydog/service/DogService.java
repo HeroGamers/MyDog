@@ -291,7 +291,10 @@ public final class DogService {
         dog.setOwnerId(newOwner.getUniqueId());
         dog.setIdentifier(nextFreeIdentifier(newOwner.getUniqueId()));
         dogs.markChanged(dog);
-        wolfOf(dog).ifPresent(wolf -> wolf.setOwner(newOwner));
+        wolfOf(dog).ifPresent(wolf -> {
+            wolf.setOwner(newOwner);
+            applyNametag(dog, wolf);
+        });
     }
 
     /** Lets a dog go: the wolf becomes wild again and MyDog forgets about it. */
