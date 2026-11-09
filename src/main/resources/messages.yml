@@ -1,0 +1,191 @@
+# MyDog messages, written in MiniMessage: https://docs.advntr.dev/minimessage/format.html
+#
+# Placeholders that work in every message:
+#   <prefix>    the chat prefix below
+#   <plugin>    the plugin name and version
+# Messages about a dog also have:
+#   <dog_name>  the dog's name, in its collar color
+#   <id>        the dog's ID, as shown in /mydog list
+#   <level>     the dog's level
+# Other placeholders are listed next to the message that has them.
+#
+# A message can also be a list of lines. An empty message ('') is not sent at all.
+
+# Used by MyDog to upgrade this file. Do not change it.
+messages-version: 1
+
+prefix: MyDog
+
+nametag:
+  # The name shown above dogs when levels are shown. <mode> is one of the two modes below.
+  with-level: '<dog_name><gray> [<gold><level></gold>]</gray><mode>'
+  # The name shown when levels are turned off or hidden.
+  plain: '<dog_name>'
+  attack-mode: '<gray>[<red>⚔</red>]'
+  defend-mode: '<gray>[<green>⛨</green>]'
+
+tame:
+  new-dog: '<gold><bold>[<prefix>]</bold> Congratulations with your new dog, <dog_name>!'
+  limit-reached: '<red><bold>[<prefix>]</bold> Taming failed! Looks like you have reached your limit of dogs! You can maybe set some dead dogs free, or revive some?'
+
+dog:
+  level-up: '<dark_purple><bold>[<prefix>]</bold> Your dog, <dog_name>, just leveled up to <light_purple>Level <level></light_purple>!'
+  # <time> how long the dog lived. <level_text> is dog.died-level, or nothing when levels are off.
+  died: '<red><bold>[<prefix>]</bold> Your dog, <dog_name>, just passed away... <dog_name> lived for <time><level_text>.'
+  died-level: ', and got to <dark_red>Level <level></dark_red>'
+  # <health> the dog's health left.
+  low-health: '<gold><bold>[<prefix>]</bold> <dog_name> has low health! <gray>(<red><health></red>)'
+  petting: "<gold>Who's a good doggo?! <dog_name> is!"
+  petting-splash: '<dog_name><gold> splashes water all over you!'
+
+teleport:
+  no-safe-location: "<red><bold>[<prefix>]</bold> Hello! Looks like you just teleported away from your Pet(s)! They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them..."
+
+time:
+  minute: '1 minute'
+  minutes: '<amount> minutes'
+  hour: '1 hour'
+  hours: '<amount> hours'
+  day: '1 day'
+  days: '<amount> days'
+  # How two or three parts are joined, e.g. "2 days, 3 hours and 5 minutes".
+  separator: ', '
+  last-separator: ' and '
+
+command:
+  header: '<yellow>---------------- <plugin> ----------------'
+  unknown: '<red>Not a MyDog command! Check /mydog help'
+  # <usage> the right way to use the command.
+  usage: '<red>Usage: <usage>'
+  no-permission: "<red>You don't have permission to do that."
+  player-only: '<red>Only players can use this command.'
+  invalid-id: '<red><bold>[<prefix>]</bold> Please enter a valid ID! Check /mydog list'
+  dog-not-found: '<red><bold>[<prefix>]</bold> Could not find a Dog with that ID! Check /mydog list'
+  dog-not-loaded: '<red><bold>[<prefix>]</bold> Aww bonkers! Seems like your Dog cannot be found... Is it loaded?'
+  # <owned> how many dogs the player owns. <dogs> is "dog" or "dogs".
+  info:
+    - '<yellow>---------------- <plugin> ----------------'
+    - '<aqua>By HeroGamers (Fido2603)'
+    - ''
+    - '<aqua>You currently own <white><owned></white> <dogs>!'
+    - ''
+    - '<aqua>Use <white>/mydog help</white> for a list of commands!'
+  info-dog: 'dog'
+  info-dogs: 'dogs'
+  help:
+    # <usage> the command, <description> what it does.
+    entry: '<aqua><usage><white> - <description>'
+    help: 'This command'
+    reload: 'Reloads the MyDog configuration'
+    save: 'Saves all dog data to disk'
+    list: 'View a list with your current Dogs'
+    putdown: 'Kills a dog you own'
+    release: 'Set one of your Dogs free!'
+    comehere: 'Forces your Dog to teleport to your location'
+    sit: 'Tells your dog(s) to sit and keep their position(s)'
+    stand: 'Tells your dog(s) to stand up and roam free'
+    attack: 'Tells your dog(s) to attack any mobs nearby'
+    defend: 'Tells your dog(s) to defend you'
+    trade: 'Send a trade request to another player'
+    tradeaccept: 'Accept a trade'
+    tradedecline: 'Decline a trade'
+    stats: 'Gets stats and other info about a Dog you own'
+    rename: 'Renames a Dog you own'
+    setid: 'Assigns a custom ID to a Dog you own'
+    setlevel: "Sets a dog's level"
+    dead: 'List of Dogs that have gone to another world'
+    revive: 'Resurrects a Dog for a fee'
+  reload:
+    done: '<yellow><plugin>:<aqua> Reloaded the configuration.'
+    failed: '<red>Reloading failed, see the console for why. The old configuration is still in use.'
+  save:
+    done: '<yellow><plugin>:<aqua> Saved all dog data.'
+  list:
+    # <health> is list.health, or nothing when the dog is not loaded.
+    entry: '<aqua>#<id><white> - <dog_name><health>'
+    # <current> and <max> health.
+    health: ' <blue>(HP: <current>/<max>)'
+    empty: "<aqua>You don't have any dogs yet. Tame a wolf with a bone!"
+  dead:
+    # <price> the revival price.
+    entry: '<aqua>#<id><white> - <dog_name><white> LVL <level> <green>$<price>'
+    entry-levels: '<aqua>#<id><white> - <dog_name><white> LVL <level> <green><price> levels'
+    empty: "<aqua>None of your dogs have passed away."
+  rename:
+    invalid-length: '<red><bold>[<prefix>]</bold> Please choose a name between 1 and 16 characters for your Dog!'
+    done: '<aqua><bold>[<prefix>]</bold> From now on, I will call you <dog_name>!'
+  setid:
+    invalid: '<red><bold>[<prefix>]</bold> Your Dog''s ID has to be a whole number above 0!'
+    done: '<aqua><bold>[<prefix>]</bold> New Dog ID successfully set!'
+  setlevel:
+    # <max> the highest level in the level table.
+    out-of-range: '<gold>The level must be between 1 and <max>!'
+    done: '<gold><dog_name> is now <aqua>Level <level></aqua>.'
+    levels-disabled: '<gold>Levels are turned off on this server.'
+  putdown:
+    done: "<aqua><bold>[<prefix>]</bold> I'm sorry my friend..."
+  release:
+    done: '<aqua><bold>[<prefix>]</bold> It was great having you here, <dog_name>...'
+  sit:
+    all: '<aqua><bold>[<prefix>]</bold> Sit, my dogs!'
+    one: '<aqua><bold>[<prefix>]</bold> Sit, <dog_name>!'
+  stand:
+    all: '<aqua><bold>[<prefix>]</bold> Stand, my dogs!'
+    one: '<aqua><bold>[<prefix>]</bold> Stand, <dog_name>!'
+  attack:
+    all: '<aqua><bold>[<prefix>]</bold> Attack, my dogs!'
+    one: '<aqua><bold>[<prefix>]</bold> Attack, <dog_name>!'
+  defend:
+    all: '<aqua><bold>[<prefix>]</bold> Defend me, my dogs!'
+    one: '<aqua><bold>[<prefix>]</bold> Defend me, <dog_name>!'
+  comehere:
+    done: '<gold><bold>[<prefix>]</bold> Come here! Good doggo, <dog_name>!'
+    unreachable: '<red><bold>[<prefix>]</bold> Aww bonkers! Seems like your Dog is at a location that cannot be loaded right now!'
+  stats:
+    name: '<aqua>Name: <dog_name>'
+    level: '<aqua>Level: <white><level>'
+    # <bar> a progress bar, <current> and <next> experience.
+    experience: '<aqua>Experience: <bar> <aqua><bold>[</bold><dark_aqua><current></dark_aqua><bold>/</bold><next><bold>]'
+    # <bar> a progress bar, <current> and <max> health.
+    health: '<aqua>Health: <bar> <aqua><bold>[</bold><dark_aqua><current></dark_aqua><bold>/</bold><max><bold>]'
+    # <damage> the dog's attack damage.
+    damage: '<aqua>Damage: <white><damage> HP'
+    # <world>, <x>, <y> and <z> where the dog was last seen.
+    last-seen: '<aqua>Last Seen at: <dark_aqua>World: <white><world> <dark_aqua>X: <white><x> <dark_aqua>Y: <white><y> <dark_aqua>Z: <white><z>'
+  revive:
+    not-found: "<red>You don't have a dead dog with that ID."
+    not-enough-money: "<red>You don't have enough funds to resurrect the dog."
+    # <missing> how many more levels the player needs.
+    not-enough-levels: "<red>You don't have enough power to resurrect the dog. You need <gold><missing></gold> more levels!"
+    done: '<green>Your dog has been resurrected.'
+  trade:
+    player-not-found: '<red><bold>[<prefix>]</bold> Could not find a player with that name!'
+    self: '<red><bold>[<prefix>]</bold> You cannot send a trade request to yourself!'
+    invalid-price: '<red><bold>[<prefix>]</bold> Please enter a valid price!'
+    dead-dog: '<gold>You cannot trade dead dogs!'
+    no-economy: '<gold>No economy provider found, you cannot trade dogs for cash!'
+    receiver-cannot-afford: "<gold>It doesn't look like the receiver will be able to.. afford that.."
+    receiver-has-pending: '<gold>The receiver already has a trade pending!'
+    receiver-no-permission: "<gold>The receiver doesn't have permissions to trade!"
+    receiver-limit: '<gold>The receiver has reached their dog limit!'
+    # <sender> the player offering the dog, <price> the price.
+    request:
+      - '<gold>You have received a dog trade request from <aqua><sender></aqua>!'
+      - '<aqua><sender></aqua> is offering <dog_name><gold><level_text> for <aqua><price></aqua>!'
+      - ''
+      - '<gold>Accept the trade request with <aqua>/mydog tradeaccept'
+      - '<gold>Decline the trade request with <aqua>/mydog tradedecline'
+      - '<gold>Request expires in 30 seconds!'
+    request-level: ' (<aqua>Level <level></aqua>)'
+    request-free: 'free'
+    sent: '<gold>Trade request successfully sent!'
+    expired: '<gold>Dog trade expired!'
+    expired-sender: "<gold>Recipient didn't answer to dog trade!"
+    no-pending: "<gold>You don't have any pending trades!"
+    cannot-afford: "<gold>You don't have enough money to trade for that dog!"
+    limit: '<gold>You cannot own any more dogs!'
+    dog-missing: '<gold>The dog you are trying to accept cannot be found! Is it dead?'
+    accepted: '<gold>You successfully accepted the trade request!'
+    accepted-sender: '<gold>Dog trade request got accepted by recipient!'
+    denied: '<gold>You successfully denied the trade request!'
+    denied-sender: '<gold>Dog trade request got denied by recipient!'

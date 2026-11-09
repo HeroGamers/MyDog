@@ -1,0 +1,169 @@
+# MyDog configuration
+#
+# Messages live in messages.yml. Run "/mydog reload" after editing either file.
+
+# Used by MyDog to upgrade this file. Do not change it.
+config-version: 2
+
+# Log extra information to the console.
+debug: false
+
+saving:
+  # Write dogs.yml after every change instead of on a timer.
+  instant: false
+  # How often (in minutes) changed dog data is written to dogs.yml.
+  autosave-minutes: 3
+
+teleport:
+  # Bring dogs along when their owner teleports, or when the chunk a dog is in unloads.
+  # Sitting dogs always stay where they are.
+  enabled: true
+  # Also bring dogs along to other worlds.
+  on-world-change: true
+  # Apply teleporting to every tamed, sittable pet (cats, parrots, ...), not just MyDog dogs.
+  all-tameables: false
+  # Teleport one tick later and in batches, which can help on busy servers.
+  experimental: false
+  # When the owner is not standing somewhere safe, also search the blocks next to them
+  # (not just straight up and down) for a safe spot.
+  expanded-search: false
+  distance-check:
+    # Every 10 seconds, bring dogs that have wandered off back to their owner.
+    enabled: true
+    # How far away (in blocks) a dog has to be before it is brought back.
+    max-distance: 30
+
+dogs:
+  # Give newly tamed dogs a random collar color.
+  random-collar-color: true
+  # Names given to new dogs. Leave empty to use the built-in list of 500+ names.
+  names: []
+  nametag:
+    # Only show the nametag when a player looks at the dog.
+    only-on-hover: false
+    # Show the dog's level and attack/defend mode in the nametag (needs levels.enabled).
+    show-level: true
+  # Let owners rename their dog with a name tag.
+  allow-nametag-rename: true
+  # Let arrows hurt dogs.
+  arrow-damage: false
+  # Share of the damage a dog deals that it heals back (0.25 = 25%, 0 turns it off).
+  lifesteal: 0.25
+  low-health-warning:
+    # Warn the owner when their dog gets low on health.
+    enabled: true
+    # Warn below this share of the dog's max health (0.25 = 25%).
+    threshold: 0.25
+    # Minimum time between two warnings for the same dog, in milliseconds.
+    cooldown-millis: 1000
+  revival:
+    # Keep dead dogs so they can be revived with "/mydog revive". When off, dead dogs are deleted.
+    enabled: true
+    # Revival cost per level of the dog.
+    price-per-level: 200
+    # Pay with experience levels instead of money (money needs Vault and an economy plugin).
+    use-player-levels: false
+
+levels:
+  # Let dogs gain experience and level up by killing mobs.
+  enabled: true
+  # Sound played to the owner on level-up. Takes a sound key, see
+  # https://minecraft.wiki/w/Sounds.json#Sound_events
+  level-up-sound: entity.wolf.ambient
+  # Let dogs gain experience from killing players.
+  player-kill-experience: true
+  # Experience needed for each level, and the max health and attack damage it gives.
+  # Health is in half hearts (20 = 10 hearts).
+  table:
+    1: {experience: 0, health: 20, damage: 4}
+    2: {experience: 10, health: 21, damage: 5}
+    3: {experience: 100, health: 22, damage: 6}
+    4: {experience: 200, health: 23, damage: 7}
+    5: {experience: 500, health: 24, damage: 8}
+    6: {experience: 1000, health: 26, damage: 11}
+    7: {experience: 2000, health: 29, damage: 13}
+    8: {experience: 3000, health: 31, damage: 15}
+    9: {experience: 4000, health: 33, damage: 17}
+    10: {experience: 5000, health: 36, damage: 20}
+  # Experience a dog gets for each kill. Mobs that are not listed give nothing.
+  # Keys are entity types, see https://minecraft.wiki/w/Java_Edition_data_values#Entities
+  experience-per-kill:
+    allay: 5
+    axolotl: 5
+    bat: 5
+    bee: 5
+    cat: 5
+    chicken: 5
+    cod: 5
+    fox: 5
+    frog: 5
+    glow_squid: 5
+    ocelot: 5
+    parrot: 5
+    pufferfish: 5
+    rabbit: 5
+    salmon: 5
+    shulker: 5
+    silverfish: 5
+    skeleton: 5
+    slime: 5
+    snow_golem: 5
+    spider: 5
+    squid: 5
+    tropical_fish: 5
+    turtle: 5
+    zombie: 5
+    cow: 8
+    mooshroom: 8
+    pig: 8
+    sheep: 8
+    stray: 8
+    villager: 8
+    wandering_trader: 8
+    wolf: 8
+    camel: 20
+    cave_spider: 20
+    creeper: 20
+    dolphin: 20
+    donkey: 20
+    drowned: 20
+    goat: 20
+    horse: 20
+    husk: 20
+    llama: 20
+    mule: 20
+    panda: 20
+    piglin: 20
+    polar_bear: 20
+    skeleton_horse: 20
+    sniffer: 20
+    strider: 20
+    trader_llama: 20
+    vex: 20
+    vindicator: 20
+    witch: 20
+    wither_skeleton: 20
+    zombie_horse: 20
+    zombie_villager: 20
+    zombified_piglin: 20
+    enderman: 40
+    endermite: 40
+    guardian: 40
+    magma_cube: 40
+    phantom: 40
+    piglin_brute: 40
+    pillager: 40
+    zoglin: 40
+    blaze: 60
+    evoker: 60
+    ghast: 60
+    hoglin: 60
+    illusioner: 60
+    iron_golem: 70
+    player: 70
+    ravager: 70
+    elder_guardian: 90
+    giant: 90
+    ender_dragon: 200
+    warden: 200
+    wither: 200
