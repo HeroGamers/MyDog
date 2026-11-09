@@ -18,8 +18,10 @@ import dk.fido2603.mydog.command.ComehereCommand;
 import dk.fido2603.mydog.command.CommandRouter;
 import dk.fido2603.mydog.command.CommandServices;
 import dk.fido2603.mydog.command.DeadCommand;
+import dk.fido2603.mydog.command.GiveTreatCommand;
 import dk.fido2603.mydog.command.HelpCommand;
 import dk.fido2603.mydog.command.ListCommand;
+import dk.fido2603.mydog.command.LookCommand;
 import dk.fido2603.mydog.command.ModeCommand;
 import dk.fido2603.mydog.command.PutdownCommand;
 import dk.fido2603.mydog.command.ReleaseCommand;
@@ -38,6 +40,7 @@ import dk.fido2603.mydog.config.Settings;
 import dk.fido2603.mydog.listener.CombatListener;
 import dk.fido2603.mydog.listener.InteractListener;
 import dk.fido2603.mydog.listener.TamingListener;
+import dk.fido2603.mydog.listener.TreatListener;
 import dk.fido2603.mydog.listener.WorldListener;
 import dk.fido2603.mydog.message.Messages;
 import dk.fido2603.mydog.migration.ConfigV1ToV2;
@@ -47,6 +50,7 @@ import dk.fido2603.mydog.service.DogService;
 import dk.fido2603.mydog.service.Effects;
 import dk.fido2603.mydog.service.TeleportService;
 import dk.fido2603.mydog.service.TradeService;
+import dk.fido2603.mydog.service.TreatService;
 import dk.fido2603.mydog.storage.YamlDogRepository;
 import dk.fido2603.mydog.task.AttackModeTask;
 import dk.fido2603.mydog.task.DistanceTask;
@@ -61,12 +65,14 @@ public final class MyDog extends JavaPlugin {
     public static final int CONFIG_VERSION = 2;
     private static final int BSTATS_ID = 18606;
     /** Tables the admin may shorten; missing entries in them are not filled in from the defaults. */
-    private static final List<String> FREE_FORM_SECTIONS = List.of("levels.table.", "levels.experience-per-kill.");
+    private static final List<String> FREE_FORM_SECTIONS = List.of("levels.table.", "levels.experience-per-kill.",
+            "breeds.treats.breeds.", "breeds.treats.personalities.");
 
     private volatile Settings settings;
     private Messages messages;
     private YamlDogRepository dogs;
     private DogService dogService;
+    private TreatService treatService;
     private Metrics metrics;
     private int minutesSinceSave;
 
@@ -92,12 +98,15 @@ public final class MyDog extends JavaPlugin {
         dogService = new DogService(getServer(), dogs, currentSettings, messages, new Effects(this), debug);
         TradeService tradeService = new TradeService(this, dogService, messages);
         TeleportService teleportService = new TeleportService(this, dogService, currentSettings, messages, debug);
+        treatService = new TreatService(this, messages, currentSettings);
+        treatService.registerRecipes();
 
         for (Listener listener : List.of(
                 new TamingListener(this, dogService, messages, currentSettings),
                 new InteractListener(dogService, messages, currentSettings),
                 new CombatListener(getServer(), dogService, messages, currentSettings),
-                new WorldListener(this, dogService, teleportService, currentSettings))) {
+                new WorldListener(this, dogService, teleportService, currentSettings),
+                new TreatListener(this, dogService, treatService, messages))) {
             getServer().getPluginManager().registerEvents(listener, this);
         }
 
@@ -134,6 +143,9 @@ public final class MyDog extends JavaPlugin {
         router.register(new SetLevelCommand(services));
         router.register(new DeadCommand(services));
         router.register(new ReviveCommand(services));
+        router.register(LookCommand.breed(services));
+        router.register(LookCommand.personality(services));
+        router.register(new GiveTreatCommand(services, treatService));
 
         PluginCommand command = getCommand("mydog");
         if (command != null) {
@@ -175,6 +187,7 @@ public final class MyDog extends JavaPlugin {
             getLogger().severe("Reload failed: " + e.getMessage());
             return false;
         }
+        treatService.registerRecipes();
         for (Dog dog : List.copyOf(dogs.all())) {
             dogService.updateWolf(dog);
         }

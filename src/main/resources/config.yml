@@ -67,6 +67,42 @@ dogs:
     # Pay with experience levels instead of money (money needs Vault and an economy plugin).
     use-player-levels: false
 
+breeds:
+  # Wolves tamed before breeds existed (Minecraft 1.20.5) all became Pale, and wolves from before personalities
+  # (sound variants, 1.21.5) all sound Classic. Owners of such dogs may pick a breed and a personality once, for
+  # free, with /mydog breed and /mydog personality. Set the dates to when your server updated, if that was later.
+  free-choice:
+    enabled: true
+    # Dogs born before this date that are still Pale may pick a breed.
+    breed-cutoff: '2024-04-23'
+    # Dogs born before this date that still sound Classic may pick a personality.
+    personality-cutoff: '2025-03-25'
+  # Dog treats change the breed or personality of the dog they're used on (right-click your dog with one).
+  # Admins can also hand them out with /mydog givetreat, e.g. for shops, auctions or crates.
+  treats:
+    enabled: true
+    # A recipe per breed and per personality: 3 rows of 3 ingredient letters (a space is an empty slot), and what
+    # each letter stands for. Set craftable to false to only hand the treat out with /mydog givetreat; remove an
+    # entry to have no treat for it at all.
+    breeds:
+      pale: {craftable: true, shape: [DSD, SBS, DSD], ingredients: {D: diamond, S: spruce_sapling, B: bone}}
+      woods: {craftable: true, shape: [DSD, SBS, DSD], ingredients: {D: diamond, S: oak_sapling, B: bone}}
+      ashen: {craftable: true, shape: [DSD, SBS, DSD], ingredients: {D: diamond, S: charcoal, B: bone}}
+      black: {craftable: true, shape: [DSD, SBS, DSD], ingredients: {D: diamond, S: podzol, B: bone}}
+      chestnut: {craftable: true, shape: [DSD, SBS, DSD], ingredients: {D: diamond, S: mossy_cobblestone, B: bone}}
+      rusty: {craftable: true, shape: [DSD, SBS, DSD], ingredients: {D: diamond, S: cocoa_beans, B: bone}}
+      spotted: {craftable: true, shape: [DSD, SBS, DSD], ingredients: {D: diamond, S: acacia_sapling, B: bone}}
+      striped: {craftable: true, shape: [DSD, SBS, DSD], ingredients: {D: diamond, S: terracotta, B: bone}}
+      snowy: {craftable: true, shape: [DSD, SBS, DSD], ingredients: {D: diamond, S: snow_block, B: bone}}
+    personalities:
+      classic: {craftable: true, shape: [GSG, SBS, GSG], ingredients: {G: gold_block, S: note_block, B: bone}}
+      big: {craftable: true, shape: [GSG, SBS, GSG], ingredients: {G: gold_block, S: bone_block, B: bone}}
+      cute: {craftable: true, shape: [GSG, SBS, GSG], ingredients: {G: gold_block, S: pink_petals, B: bone}}
+      puglin: {craftable: true, shape: [GSG, SBS, GSG], ingredients: {G: gold_block, S: porkchop, B: bone}}
+      angry: {craftable: true, shape: [GSG, SBS, GSG], ingredients: {G: gold_block, S: blaze_powder, B: bone}}
+      grumpy: {craftable: true, shape: [GSG, SBS, GSG], ingredients: {G: gold_block, S: rotten_flesh, B: bone}}
+      sad: {craftable: true, shape: [GSG, SBS, GSG], ingredients: {G: gold_block, S: ghast_tear, B: bone}}
+
 levels:
   # Let dogs gain experience and level up by killing mobs.
   enabled: true

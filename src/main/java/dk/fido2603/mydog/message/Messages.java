@@ -119,7 +119,7 @@ public final class Messages {
     }
 
     /** A readable name for a registry key: "minecraft:snowy" becomes "Snowy", "minecraft:some_thing" "Some Thing". */
-    static String displayName(String key) {
+    public static String displayName(String key) {
         if (key == null || key.isEmpty()) {
             return "?";
         }

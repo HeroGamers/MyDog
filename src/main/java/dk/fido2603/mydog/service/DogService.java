@@ -13,7 +13,6 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.DyeColor;
 import org.bukkit.EntityEffect;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.Server;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
@@ -28,6 +27,7 @@ import org.bukkit.inventory.ItemStack;
 import dk.fido2603.mydog.config.DefaultDogNames;
 import dk.fido2603.mydog.config.LevelTable;
 import dk.fido2603.mydog.config.Settings;
+import dk.fido2603.mydog.config.TreatKind;
 import dk.fido2603.mydog.message.Messages;
 import dk.fido2603.mydog.objects.Dog;
 import dk.fido2603.mydog.storage.DogRepository;
@@ -203,17 +203,51 @@ public final class DogService {
         if (appearance.collar() != null) {
             wolf.setCollarColor(appearance.collar());
         }
-        NamespacedKey variantKey = appearance.variant() != null ? NamespacedKey.fromString(appearance.variant()) : null;
-        Wolf.Variant variant = variantKey != null ? Registry.WOLF_VARIANT.get(variantKey) : null;
-        if (variant != null) {
-            wolf.setVariant(variant);
+        for (TreatKind kind : TreatKind.values()) {
+            NamespacedKey key = current(dog, kind);
+            if (key != null) {
+                kind.apply(wolf, key);
+            }
         }
-        NamespacedKey soundKey = appearance.soundVariant() != null ? NamespacedKey.fromString(appearance.soundVariant()) : null;
-        Registry<Wolf.SoundVariant> soundVariants = server.getRegistry(Wolf.SoundVariant.class);
-        Wolf.SoundVariant soundVariant = soundKey != null && soundVariants != null ? soundVariants.get(soundKey) : null;
-        if (soundVariant != null) {
-            wolf.setSoundVariant(soundVariant);
+    }
+
+    // Breeds and personalities
+
+    /**
+     * Whether the dog may pick a breed (or personality) for free: it was born before Minecraft had them, still has
+     * the look every old wolf got (Pale / Classic), and its owner hasn't used the choice yet.
+     */
+    public boolean hasFreeChoice(Dog dog, TreatKind kind) {
+        Settings.Breeds breeds = settings.get().breeds();
+        Dog.Appearance appearance = dog.getAppearance();
+        if (!breeds.freeChoice() || appearance == null || dog.hasUsedFreeChoice(kind)) {
+            return false;
         }
+        Instant cutoff = kind == TreatKind.BREED ? breeds.breedCutoff() : breeds.personalityCutoff();
+        String current = kind == TreatKind.BREED ? appearance.variant() : appearance.soundVariant();
+        return dog.getBirthday().isBefore(cutoff) && kind.legacyDefault().toString().equals(current);
+    }
+
+    /** The dog's breed or personality as last seen, or null if MyDog hasn't seen its wolf yet. */
+    public static NamespacedKey current(Dog dog, TreatKind kind) {
+        Dog.Appearance appearance = dog.getAppearance();
+        String key = appearance == null ? null : kind == TreatKind.BREED ? appearance.variant() : appearance.soundVariant();
+        return key == null ? null : NamespacedKey.fromString(key);
+    }
+
+    /** Gives the dog's wolf a new breed or personality. Returns false if it doesn't exist on this server. */
+    public boolean changeLook(Dog dog, Wolf wolf, TreatKind kind, NamespacedKey key) {
+        if (!kind.apply(wolf, key)) {
+            return false;
+        }
+        rememberAppearance(dog, wolf, wolf.getCollarColor());
+        effects.levelUp(wolf);
+        return true;
+    }
+
+    public void useFreeChoice(Dog dog, TreatKind kind) {
+        dog.setFreeChoiceUsed(kind);
+        dogs.markChanged(dog);
     }
 
     /** The wolf armor the wolf is wearing, if any. */

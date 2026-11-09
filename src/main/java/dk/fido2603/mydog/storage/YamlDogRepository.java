@@ -27,6 +27,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import dk.fido2603.mydog.config.TreatKind;
 import dk.fido2603.mydog.migration.DogsV1ToV2;
 import dk.fido2603.mydog.migration.VersionedYaml;
 import dk.fido2603.mydog.objects.Dog;
@@ -108,6 +109,12 @@ public final class YamlDogRepository implements DogRepository {
                 dog.setAppearance(new Dog.Appearance(collar, section.getString("appearance.variant"),
                         section.getString("appearance.sound-variant")));
             }
+            for (String used : section.getStringList("free-choice-used")) {
+                TreatKind kind = TreatKind.byId(used);
+                if (kind != null) {
+                    dog.setFreeChoiceUsed(kind);
+                }
+            }
             return dog;
         } catch (IllegalArgumentException | NullPointerException e) {
             log.warning("Skipping dog " + key + " in dogs.yml: " + e.getMessage());
@@ -137,6 +144,15 @@ public final class YamlDogRepository implements DogRepository {
             section.set("appearance.collar", appearance.collar() != null ? appearance.collar().name().toLowerCase(Locale.ROOT) : null);
             section.set("appearance.variant", appearance.variant());
             section.set("appearance.sound-variant", appearance.soundVariant());
+        }
+        List<String> freeChoicesUsed = new ArrayList<>();
+        for (TreatKind kind : TreatKind.values()) {
+            if (dog.hasUsedFreeChoice(kind)) {
+                freeChoicesUsed.add(kind.id());
+            }
+        }
+        if (!freeChoicesUsed.isEmpty()) {
+            section.set("free-choice-used", freeChoicesUsed);
         }
     }
 

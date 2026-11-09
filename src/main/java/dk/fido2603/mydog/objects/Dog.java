@@ -1,6 +1,8 @@
 package dk.fido2603.mydog.objects;
 
 import java.time.Instant;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.UUID;
 
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -9,6 +11,8 @@ import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
+
+import dk.fido2603.mydog.config.TreatKind;
 
 /**
  * A dog's saved data. This is a plain data object: changing it does not touch the wolf entity or save anything.
@@ -42,6 +46,7 @@ public final class Dog {
     private LastSeen lastSeen;
     /** The wolf's looks, kept so a revived dog looks like it did. Null until the wolf has been seen. */
     private Appearance appearance;
+    private final Set<TreatKind> freeChoicesUsed = EnumSet.noneOf(TreatKind.class);
 
     /**
      * How the wolf looks and sounds. Variants are stored by key (e.g. {@code minecraft:snowy}).
@@ -114,6 +119,15 @@ public final class Dog {
 
     public Appearance getAppearance() {
         return appearance;
+    }
+
+    /** Whether the owner has used the free breed or personality choice that old dogs get. */
+    public boolean hasUsedFreeChoice(TreatKind kind) {
+        return freeChoicesUsed.contains(kind);
+    }
+
+    public void setFreeChoiceUsed(TreatKind kind) {
+        freeChoicesUsed.add(kind);
     }
 
     public void setAppearance(Appearance appearance) {

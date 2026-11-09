@@ -1,12 +1,21 @@
 package dk.fido2603.mydog.config;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
@@ -18,7 +27,25 @@ import org.bukkit.entity.Mob;
 /**
  * Everything in config.yml, read and checked once per (re)load. Bad values are logged and replaced with a default.
  */
-public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dogs, Levels levels) {
+public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dogs, Breeds breeds, Levels levels) {
+
+    /**
+     * Free breed/personality choices for dogs from before those existed, and dog treats.
+     *
+     * @param breedCutoff       dogs born before this that are still Pale may pick a breed for free
+     * @param personalityCutoff dogs born before this that still sound Classic may pick a personality for free
+     */
+    public record Breeds(boolean freeChoice, Instant breedCutoff, Instant personalityCutoff, boolean treats,
+                         List<TreatRecipe> recipes) {
+
+        public Optional<TreatRecipe> recipe(TreatKind kind, NamespacedKey variant) {
+            return recipes.stream().filter(r -> r.kind() == kind && r.variant().equals(variant)).findFirst();
+        }
+    }
+
+    /** A configured dog treat. {@code shape} and {@code ingredients} are only used when it is craftable. */
+    public record TreatRecipe(TreatKind kind, NamespacedKey variant, boolean craftable, List<String> shape,
+                              Map<Character, Material> ingredients) {}
 
     public record Saving(boolean instant, int autosaveMinutes) {}
 
@@ -95,7 +122,7 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 experiencePerKill(log, config.getConfigurationSection("levels.experience-per-kill")),
                 Math.max(0, config.getInt("levels.experience-per-kill.default")));
 
-        return new Settings(config.getBoolean("debug"), saving, teleport, dogs, levels);
+        return new Settings(config.getBoolean("debug"), saving, teleport, dogs, breeds(log, config), levels);
     }
 
     private static int atLeast(Logger log, ConfigurationSection config, String path, int min) {
@@ -180,5 +207,93 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
             experience.put(type, Math.max(0, section.getInt(key)));
         }
         return experience;
+    }
+
+    private static Breeds breeds(Logger log, ConfigurationSection config) {
+        List<TreatRecipe> recipes = new ArrayList<>();
+        for (TreatKind kind : TreatKind.values()) {
+            String path = "breeds.treats." + kind.configSection();
+            ConfigurationSection section = config.getConfigurationSection(path);
+            if (section == null) {
+                continue;
+            }
+            for (String key : section.getKeys(false)) {
+                NamespacedKey variant = TreatKind.parseKey(key);
+                ConfigurationSection entry = section.getConfigurationSection(key);
+                if (variant == null || entry == null || !kind.exists(variant)) {
+                    log.warning("Skipping " + path + "." + key + ": not a " + kind.id() + " this server knows.");
+                    continue;
+                }
+                TreatRecipe recipe = recipe(log, path + "." + key, kind, variant, entry);
+                recipes.add(recipe);
+            }
+        }
+        return new Breeds(
+                config.getBoolean("breeds.free-choice.enabled"),
+                date(log, config, "breeds.free-choice.breed-cutoff"),
+                date(log, config, "breeds.free-choice.personality-cutoff"),
+                config.getBoolean("breeds.treats.enabled"),
+                List.copyOf(recipes));
+    }
+
+    /** A treat recipe. A craftable recipe that doesn't add up is logged and turned into a non-craftable treat. */
+    private static TreatRecipe recipe(Logger log, String path, TreatKind kind, NamespacedKey variant, ConfigurationSection entry) {
+        boolean craftable = entry.getBoolean("craftable", true);
+        List<String> shape = entry.getStringList("shape");
+        Map<Character, Material> ingredients = new LinkedHashMap<>();
+        ConfigurationSection ingredientSection = entry.getConfigurationSection("ingredients");
+        if (ingredientSection != null) {
+            for (String letter : ingredientSection.getKeys(false)) {
+                Material material = Material.matchMaterial(ingredientSection.getString(letter, ""));
+                if (letter.length() != 1 || material == null || !material.isItem()) {
+                    log.warning(path + ": ingredient " + letter + " should be one letter and an item, e.g. D: diamond.");
+                    craftable = false;
+                    continue;
+                }
+                ingredients.put(letter.charAt(0), material);
+            }
+        }
+        if (craftable) {
+            String problem = shapeProblem(shape, ingredients.keySet());
+            if (problem != null) {
+                log.warning(path + ": " + problem + " The treat can't be crafted until this is fixed.");
+                craftable = false;
+            }
+        }
+        return new TreatRecipe(kind, variant, craftable, List.copyOf(shape), Map.copyOf(ingredients));
+    }
+
+    /** Why a shape can't be a crafting recipe, or null if it can. */
+    static String shapeProblem(List<String> shape, Set<Character> ingredients) {
+        if (shape.isEmpty() || shape.size() > 3) {
+            return "the shape needs 1 to 3 rows.";
+        }
+        int width = shape.getFirst().length();
+        boolean hasIngredient = false;
+        for (String row : shape) {
+            if (row.isEmpty() || row.length() > 3 || row.length() != width) {
+                return "every row of the shape needs the same length, 1 to 3 letters.";
+            }
+            for (char c : row.toCharArray()) {
+                if (c == ' ') {
+                    continue;
+                }
+                if (!ingredients.contains(c)) {
+                    return "the shape uses " + c + ", which isn't one of the ingredients.";
+                }
+                hasIngredient = true;
+            }
+        }
+        return hasIngredient ? null : "the shape has no ingredients.";
+    }
+
+    private static Instant date(Logger log, ConfigurationSection config, String path) {
+        String value = config.getString(path, "");
+        try {
+            return LocalDate.parse(value).atStartOfDay(ZoneId.systemDefault()).toInstant();
+        } catch (DateTimeParseException e) {
+            log.warning(path + " must be a date like 2024-04-23, got '" + value + "'. No dogs get a free choice from it.");
+            return Instant.EPOCH;
+        }
     }
 }
