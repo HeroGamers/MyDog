@@ -17,6 +17,7 @@
     <properties>
         <github.repo>HeroGamers/MyDog</github.repo>
         <paperAPIVersion>26.3.build.246-stable</paperAPIVersion>
+        <adventureVersion>5.2.0</adventureVersion>
         <maven.compiler.release>25</maven.compiler.release>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
@@ -67,23 +68,23 @@
         <dependency>
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
-            <version>3.0.2</version>
+            <version>3.2.1</version>
             <scope>compile</scope>
         </dependency>
-        <!-- junit 5, unit tests -->
+        <!-- MiniMessage and the legacy serializer. Spigot has no Adventure, so it is shaded and relocated
+             (Paper's own copy is left alone). Messages are rendered to legacy text, which both platforms accept. -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.9.2</version>
-            <scope>test</scope>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-minimessage</artifactId>
+            <version>${adventureVersion}</version>
+            <scope>compile</scope>
         </dependency>
-        <!-- apache commons lang -->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.commons</groupId>-->
-<!--            <artifactId>commons-lang3</artifactId>-->
-<!--            <version>3.12.0</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-serializer-legacy</artifactId>
+            <version>${adventureVersion}</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <packaging>jar</packaging>
@@ -91,12 +92,20 @@
         <defaultGoal>clean package</defaultGoal>
         <finalName>${project.name}-${project.version}</finalName>
         <resources>
+            <!-- Only plugin.yml needs ${project.version}; the other files are left untouched -->
             <resource>
                 <filtering>true</filtering>
                 <directory>${project.basedir}/src/main/resources</directory>
                 <includes>
-                    <include>*.yml</include>
+                    <include>plugin.yml</include>
                 </includes>
+            </resource>
+            <resource>
+                <filtering>false</filtering>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <excludes>
+                    <exclude>plugin.yml</exclude>
+                </excludes>
             </resource>
         </resources>
         <plugins>
@@ -107,11 +116,21 @@
                 <configuration>
                     <!-- Avoid generating dependency-reduced-pom which can cause issues in some builds -->
                     <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <artifactSet>
+                        <excludes>
+                            <!-- Annotation-only dependencies of Adventure -->
+                            <exclude>org.jetbrains:annotations</exclude>
+                            <exclude>org.jspecify:jspecify</exclude>
+                        </excludes>
+                    </artifactSet>
                     <relocations>
-                        <!-- Relocate bStats to our own package -->
                         <relocation>
                             <pattern>org.bstats</pattern>
-                            <shadedPattern>${project.groupId}.${project.artifactId}.utils</shadedPattern>
+                            <shadedPattern>${project.groupId}.${project.artifactId}.libs.bstats</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>net.kyori</pattern>
+                            <shadedPattern>${project.groupId}.${project.artifactId}.libs.kyori</shadedPattern>
                         </relocation>
                     </relocations>
                     <!-- Exclude signature files and duplicate MANIFESTs, and merge the plugin's manifest entries -->
@@ -123,6 +142,8 @@
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
                                 <exclude>META-INF/MANIFEST.MF</exclude>
+                                <exclude>module-info.class</exclude>
+                                <exclude>META-INF/versions/*/module-info.class</exclude>
                             </excludes>
                         </filter>
                     </filters>
