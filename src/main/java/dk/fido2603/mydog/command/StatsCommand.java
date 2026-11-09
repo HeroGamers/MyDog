@@ -40,6 +40,9 @@ public final class StatsCommand extends SubCommand {
 
         messages.send(sender, "command.header");
         messages.send(sender, "command.stats.name", Messages.dog(dog));
+        if (dog.getAppearance() != null) {
+            messages.send(sender, "command.stats.breed", Messages.dog(dog));
+        }
 
         Settings.Levels levels = services.settings().get().levels();
         if (levels.enabled()) {

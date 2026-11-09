@@ -113,7 +113,24 @@ public final class Messages {
                 Placeholder.unparsed("id", Integer.toString(dog.getIdentifier())),
                 Placeholder.unparsed("level", Integer.toString(dog.getLevel())),
                 // Only looked up when a message actually uses <owner>
-                TagResolver.resolver("owner", (arguments, context) -> Tag.selfClosingInserting(Component.text(ownerName(dog)))));
+                TagResolver.resolver("owner", (arguments, context) -> Tag.selfClosingInserting(Component.text(ownerName(dog)))),
+                Placeholder.unparsed("breed", dog.getAppearance() != null ? displayName(dog.getAppearance().variant()) : "?"),
+                Placeholder.unparsed("personality", dog.getAppearance() != null ? displayName(dog.getAppearance().soundVariant()) : "?"));
+    }
+
+    /** A readable name for a registry key: "minecraft:snowy" becomes "Snowy", "minecraft:some_thing" "Some Thing". */
+    static String displayName(String key) {
+        if (key == null || key.isEmpty()) {
+            return "?";
+        }
+        String path = key.substring(key.indexOf(':') + 1);
+        StringBuilder name = new StringBuilder();
+        for (String word : path.split("_")) {
+            if (!word.isEmpty()) {
+                name.append(name.isEmpty() ? "" : " ").append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+            }
+        }
+        return name.toString();
     }
 
     private static String ownerName(Dog dog) {
