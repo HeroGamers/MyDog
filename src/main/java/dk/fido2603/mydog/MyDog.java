@@ -14,6 +14,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import dk.fido2603.mydog.command.CalmCommand;
 import dk.fido2603.mydog.command.ComehereCommand;
 import dk.fido2603.mydog.command.CommandRouter;
 import dk.fido2603.mydog.command.CommandServices;
@@ -134,6 +135,7 @@ public final class MyDog extends JavaPlugin {
         router.register(SitCommand.stand(services));
         router.register(ModeCommand.attack(services));
         router.register(ModeCommand.defend(services));
+        router.register(new CalmCommand(services));
         router.register(new TradeCommand(services));
         router.register(new TradeAcceptCommand(services));
         router.register(new TradeDeclineCommand(services));

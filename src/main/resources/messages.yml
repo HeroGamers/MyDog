@@ -112,6 +112,7 @@ command:
     stand: 'Tells your dog(s) to stand up and roam free'
     attack: 'Tells your dog(s) to attack any mobs nearby'
     defend: 'Tells your dog(s) to defend you'
+    calm: 'Makes your dog(s) stop fighting and leave everything alone for a moment'
     trade: 'Send a trade request to another player'
     tradeaccept: 'Accept a trade'
     tradedecline: 'Decline a trade'
@@ -189,6 +190,10 @@ command:
   defend:
     all: '<aqua><bold>[<prefix>]</bold> Defend me, my dogs!'
     one: '<aqua><bold>[<prefix>]</bold> Defend me, <dog_name>!'
+  # <seconds> how long the dogs stay calm.
+  calm:
+    all: '<aqua><bold>[<prefix>]</bold> Easy, my dogs! <gray>(calm for <seconds>s)'
+    one: '<aqua><bold>[<prefix>]</bold> Easy, <dog_name>! <gray>(calm for <seconds>s)'
   comehere:
     done: '<gold><bold>[<prefix>]</bold> Come here! Good doggo, <dog_name>!'
     unreachable: '<red><bold>[<prefix>]</bold> Aww bonkers! Seems like your Dog is at a location that cannot be loaded right now!'

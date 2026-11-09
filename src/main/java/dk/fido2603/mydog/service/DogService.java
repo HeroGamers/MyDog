@@ -1,7 +1,9 @@
 package dk.fido2603.mydog.service;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -49,6 +51,8 @@ public final class DogService {
     private final Messages messages;
     private final Effects effects;
     private final DebugLog debug;
+    /** Calmed dogs, until when (epoch millis). Kept in memory only. */
+    private final Map<UUID, Long> calmUntil = new HashMap<>();
 
     public DogService(Server server, DogRepository dogs, Supplier<Settings> settings, Messages messages, Effects effects,
                       DebugLog debug) {
@@ -209,6 +213,29 @@ public final class DogService {
                 kind.apply(wolf, key);
             }
         }
+    }
+
+    // Calming
+
+    /** Makes the dog drop its target and ignore new ones for {@code dogs.calm-seconds}. */
+    public void calm(Dog dog) {
+        calmUntil.put(dog.getDogId(), System.currentTimeMillis() + settings.get().dogs().calmSeconds() * 1000L);
+        wolfOf(dog).ifPresent(wolf -> {
+            wolf.setTarget(null);
+            wolf.setAngry(false);
+        });
+    }
+
+    public boolean isCalm(UUID dogId) {
+        Long until = calmUntil.get(dogId);
+        if (until == null) {
+            return false;
+        }
+        if (until < System.currentTimeMillis()) {
+            calmUntil.remove(dogId);
+            return false;
+        }
+        return true;
     }
 
     // Breeds and personalities

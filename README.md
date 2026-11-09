@@ -83,6 +83,9 @@ mydog.setid:
 mydog.togglemode:
   description: Player can toggle dogs between attack and defend mode
   default: true
+mydog.calm:
+  description: Player can calm their dogs down
+  default: true
 mydog.pet:
   description: Player can pet their dogs
   default: true

@@ -38,6 +38,7 @@ permissions:
       mydog.revive: true
       mydog.sit: true
       mydog.togglemode: true
+      mydog.calm: true
       mydog.pet: true
       mydog.pet.others: true
       mydog.trade: true
@@ -75,6 +76,9 @@ permissions:
     default: true
   mydog.togglemode:
     description: Player can toggle dogs between attack and defend mode
+    default: true
+  mydog.calm:
+    description: Player can calm their dogs down
     default: true
   mydog.pet:
     description: Player can pet their dogs
