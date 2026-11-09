@@ -54,7 +54,7 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
 
     public record Dogs(boolean randomCollarColor, List<String> names, boolean nametagOnlyOnHover,
                        boolean nametagShowLevel, boolean allowNametagRename, boolean arrowDamage, boolean crammingDamage,
-                       int calmSeconds, double lifesteal,
+                       boolean protectFromOtherPlayers, boolean invulnerable, int calmSeconds, double lifesteal,
                        LowHealthWarning lowHealthWarning, Revival revival) {}
 
     public record LowHealthWarning(boolean enabled, double threshold, long cooldownMillis) {}
@@ -103,6 +103,8 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 config.getBoolean("dogs.allow-nametag-rename"),
                 config.getBoolean("dogs.arrow-damage"),
                 config.getBoolean("dogs.cramming-damage"),
+                config.getBoolean("dogs.protection.from-other-players"),
+                config.getBoolean("dogs.protection.invulnerable"),
                 atLeast(log, config, "dogs.calm-seconds", 0),
                 share(log, config, "dogs.lifesteal"),
                 new LowHealthWarning(
