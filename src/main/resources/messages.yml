@@ -154,6 +154,8 @@ command:
     health: '<aqua>Health: <bar> <aqua><bold>[</bold><dark_aqua><current></dark_aqua><bold>/</bold><max><bold>]'
     # <damage> the dog's attack damage.
     damage: '<aqua>Damage: <white><damage> HP'
+    # Only shown when the dog wears wolf armor. <bar> a progress bar, <durability> and <max> durability left.
+    armor: '<aqua>Armor: <bar> <aqua><bold>[</bold><dark_aqua><durability></dark_aqua><bold>/</bold><max><bold>]'
     # <world>, <x>, <y> and <z> where the dog was last seen.
     last-seen: '<aqua>Last Seen at: <dark_aqua>World: <white><world> <dark_aqua>X: <white><x> <dark_aqua>Y: <white><y> <dark_aqua>Z: <white><z>'
   revive:
