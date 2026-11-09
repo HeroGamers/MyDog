@@ -7,6 +7,7 @@
 #   <dog_name>  the dog's name, in its collar color
 #   <id>        the dog's ID, as shown in /mydog list
 #   <level>     the dog's level
+#   <owner>     the name of the dog's owner
 # Other placeholders are listed next to the message that has them.
 #
 # A message can also be a list of lines. An empty message ('') is not sent at all.
@@ -18,6 +19,7 @@ prefix: MyDog
 
 nametag:
   # The name shown above dogs when levels are shown. <mode> is one of the two modes below.
+  # Add <owner> to show whose dog it is, e.g. '<dog_name><gray> [<gold><level></gold>] [<owner>]</gray><mode>'
   with-level: '<dog_name><gray> [<gold><level></gold>]</gray><mode>'
   # The name shown when levels are turned off or hidden.
   plain: '<dog_name>'

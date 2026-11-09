@@ -11,10 +11,12 @@ import java.util.List;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.Tag;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -104,12 +106,19 @@ public final class Messages {
         return LEGACY.serialize(component);
     }
 
-    /** {@code <dog_name>}, {@code <id>} and {@code <level>} for a dog. */
+    /** {@code <dog_name>}, {@code <id>}, {@code <level>} and {@code <owner>} for a dog. */
     public static TagResolver dog(Dog dog) {
         return TagResolver.resolver(
                 Placeholder.component("dog_name", dogName(dog)),
                 Placeholder.unparsed("id", Integer.toString(dog.getIdentifier())),
-                Placeholder.unparsed("level", Integer.toString(dog.getLevel())));
+                Placeholder.unparsed("level", Integer.toString(dog.getLevel())),
+                // Only looked up when a message actually uses <owner>
+                TagResolver.resolver("owner", (arguments, context) -> Tag.selfClosingInserting(Component.text(ownerName(dog)))));
+    }
+
+    private static String ownerName(Dog dog) {
+        String name = Bukkit.getOfflinePlayer(dog.getOwnerId()).getName();
+        return name != null ? name : "?";
     }
 
     public static Component dogName(Dog dog) {
