@@ -35,7 +35,7 @@ public final class ListCommand extends SubCommand {
             Component health = services.dogs().wolfOf(dog).map(wolf -> messages.component("command.list.health",
                             Messages.text("current", format.format(wolf.getHealth())),
                             Messages.text("max", format.format(maxHealth(wolf)))))
-                    .orElse(Component.empty());
+                    .orElse(dog.isStored() ? messages.component("command.list.stored") : Component.empty());
             messages.send(sender, "command.list.entry", Messages.dog(dog), Messages.component("health", health));
         }
     }

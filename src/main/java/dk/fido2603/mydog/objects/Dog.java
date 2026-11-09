@@ -11,6 +11,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
+import org.bukkit.inventory.ItemStack;
 
 import dk.fido2603.mydog.config.TreatKind;
 
@@ -47,6 +48,10 @@ public final class Dog {
     /** The wolf's looks, kept so a revived dog looks like it did. Null until the wolf has been seen. */
     private Appearance appearance;
     private final Set<TreatKind> freeChoicesUsed = EnumSet.noneOf(TreatKind.class);
+    private Stored stored;
+
+    /** A stored dog's health and the wolf armor it wore (or null). */
+    public record Stored(double health, ItemStack armor) {}
 
     /**
      * How the wolf looks and sounds. Variants are stored by key (e.g. {@code minecraft:snowy}).
@@ -119,6 +124,20 @@ public final class Dog {
 
     public Appearance getAppearance() {
         return appearance;
+    }
+
+    /** Whether the dog has been put away with /mydog store; its wolf doesn't exist until it is summoned. */
+    public boolean isStored() {
+        return stored != null;
+    }
+
+    /** What a stored dog had on it, or null when it isn't stored. */
+    public Stored getStored() {
+        return stored;
+    }
+
+    public void setStored(Stored stored) {
+        this.stored = stored;
     }
 
     /** Whether the owner has used the free breed or personality choice that old dogs get. */

@@ -113,6 +113,8 @@ command:
     attack: 'Tells your dog(s) to attack any mobs nearby'
     defend: 'Tells your dog(s) to defend you'
     calm: 'Makes your dog(s) stop fighting and leave everything alone for a moment'
+    store: 'Puts your dog(s) away until you summon them'
+    summon: 'Brings stored dog(s) back to you'
     trade: 'Send a trade request to another player'
     tradeaccept: 'Accept a trade'
     tradedecline: 'Decline a trade'
@@ -158,6 +160,8 @@ command:
     # <current> and <max> health.
     health: ' <blue>(HP: <current>/<max>)'
     empty: "<aqua>You don't have any dogs yet. Tame a wolf with a bone!"
+    # Shown instead of the health for stored dogs.
+    stored: ' <gray>(stored)'
   dead:
     # <price> the revival price.
     entry: '<aqua>#<id><white> - <dog_name><white> LVL <level> <green>$<price>'
@@ -190,6 +194,18 @@ command:
   defend:
     all: '<aqua><bold>[<prefix>]</bold> Defend me, my dogs!'
     one: '<aqua><bold>[<prefix>]</bold> Defend me, <dog_name>!'
+  # <count> how many dogs were stored or summoned.
+  store:
+    one: '<aqua><bold>[<prefix>]</bold> <dog_name><aqua> is stored away safely.'
+    all: '<aqua><bold>[<prefix>]</bold> Stored <count> dogs away safely.'
+    not-loaded: '<red><bold>[<prefix>]</bold> <dog_name><red> has to be nearby to be stored.'
+    already: '<red><bold>[<prefix>]</bold> That dog is already stored.'
+    none: '<red><bold>[<prefix>]</bold> You have no dogs to store.'
+  summon:
+    one: '<aqua><bold>[<prefix>]</bold> Welcome back, <dog_name><aqua>!'
+    all: '<aqua><bold>[<prefix>]</bold> Summoned <count> dogs.'
+    already: "<red><bold>[<prefix>]</bold> That dog isn't stored."
+    none: "<red><bold>[<prefix>]</bold> You don't have any stored dogs."
   # <seconds> how long the dogs stay calm.
   calm:
     all: '<aqua><bold>[<prefix>]</bold> Easy, my dogs! <gray>(calm for <seconds>s)'
@@ -197,6 +213,7 @@ command:
   comehere:
     done: '<gold><bold>[<prefix>]</bold> Come here! Good doggo, <dog_name>!'
     unreachable: '<red><bold>[<prefix>]</bold> Aww bonkers! Seems like your Dog is at a location that cannot be loaded right now!'
+    stored: '<red><bold>[<prefix>]</bold> <dog_name><red> is stored. Bring it back with <white>/mydog summon <id></white>.'
   stats:
     name: '<aqua>Name: <dog_name>'
     # Shown once MyDog has seen the dog's wolf since this was added.

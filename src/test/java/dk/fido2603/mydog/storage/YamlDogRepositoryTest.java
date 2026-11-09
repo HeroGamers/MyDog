@@ -38,6 +38,7 @@ class YamlDogRepositoryTest {
         Dog dog = new Dog(dogId, ownerId, 2, "Fido", NamedTextColor.DARK_RED, 4, 250, born, true, false,
                 new Dog.LastSeen("world", 1.5, 64, -3));
         dog.setAppearance(new Dog.Appearance(DyeColor.LIGHT_BLUE, "minecraft:snowy", "minecraft:cute"));
+        dog.setStored(new Dog.Stored(31.5, null));
         Dog noAppearance = new Dog(UUID.randomUUID(), ownerId, 1, "Rex", NamedTextColor.WHITE, 1, 0, born, false, true, null);
 
         YamlDogRepository first = repository(file);
@@ -57,10 +58,12 @@ class YamlDogRepositoryTest {
         assertTrue(loaded.isAngry());
         assertEquals(new Dog.LastSeen("world", 1.5, 64, -3), loaded.getLastSeen());
         assertEquals(new Dog.Appearance(DyeColor.LIGHT_BLUE, "minecraft:snowy", "minecraft:cute"), loaded.getAppearance());
+        assertEquals(new Dog.Stored(31.5, null), loaded.getStored());
 
         Dog loadedRex = second.findByOwnerAndIdentifier(ownerId, 1).orElseThrow();
         assertTrue(loadedRex.isDead());
         assertNull(loadedRex.getAppearance());
         assertNull(loadedRex.getLastSeen());
+        assertNull(loadedRex.getStored());
     }
 }

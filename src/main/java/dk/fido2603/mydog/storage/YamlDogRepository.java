@@ -109,6 +109,9 @@ public final class YamlDogRepository implements DogRepository {
                 dog.setAppearance(new Dog.Appearance(collar, section.getString("appearance.variant"),
                         section.getString("appearance.sound-variant")));
             }
+            if (section.isConfigurationSection("stored")) {
+                dog.setStored(new Dog.Stored(section.getDouble("stored.health"), section.getItemStack("stored.armor")));
+            }
             for (String used : section.getStringList("free-choice-used")) {
                 TreatKind kind = TreatKind.byId(used);
                 if (kind != null) {
@@ -144,6 +147,11 @@ public final class YamlDogRepository implements DogRepository {
             section.set("appearance.collar", appearance.collar() != null ? appearance.collar().name().toLowerCase(Locale.ROOT) : null);
             section.set("appearance.variant", appearance.variant());
             section.set("appearance.sound-variant", appearance.soundVariant());
+        }
+        Dog.Stored stored = dog.getStored();
+        if (stored != null) {
+            section.set("stored.health", stored.health());
+            section.set("stored.armor", stored.armor());
         }
         List<String> freeChoicesUsed = new ArrayList<>();
         for (TreatKind kind : TreatKind.values()) {
