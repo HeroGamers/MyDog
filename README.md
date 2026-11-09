@@ -1,7 +1,7 @@
 <h1 align="center">MyDog</h1>
 <div align="center">
 
-[![Maven Test](https://github.com/HeroGamers/MyDog/actions/workflows/maven-test.yml/badge.svg)](https://github.com/HeroGamers/MyDog/actions/workflows/maven-test.yml)
+[![Build](https://github.com/HeroGamers/MyDog/actions/workflows/build.yml/badge.svg)](https://github.com/HeroGamers/MyDog/actions/workflows/build.yml)
 </div>
 
 Tamed wolves but at least 10x better.
@@ -14,7 +14,7 @@ ___
 </div>
 
 ## Main Plugin Features
-*	Dogs teleport upon chunk-unloading, on player-teleport as well as if the player is more than 200 blocks away from their dog, so that the Dogs can always follow their owner. Requires the Dog to not sit (all other Tameables can also be set to teleport on chunk-unload and player-teleportation (not distance) in the config).
+*	Dogs teleport upon chunk-unloading, on player-teleport as well as if the player is more than 30 blocks (configurable) away from their dog, so that the Dogs can always follow their owner. Requires the Dog to not sit (all other Tameables can also be set to teleport on chunk-unload and player-teleportation (not distance) in the config).
 *	500+ unique randomly generated dog names.
 *	Dogs can gain experience and level up by killing mobs.
 *	Configurable option for gaining XP from killing players.
@@ -24,12 +24,20 @@ ___
 *	Puppies, from breeding two Dogs, become Dogs in MyDog as well.
 *	Nametag and name updates when the Dogs collar gets coloured, or the Dog gets a nametag applied (deny the rename permission for nametag-only).
 *	The ability to add currently existing Tamed Wolves to the MyDog system, and register them as new Dogs (interact with them).
-*	Configurable all the way from the sound on LevelUp to the messages displayed (excluding error messages for now...)
+*	Configurable all the way from the sound on LevelUp, the level table and the experience per mob, to every message (written in [MiniMessage](https://docs.advntr.dev/minimessage/format.html), in messages.yml).
 
 ### ToDo Feature-list
 To view the list of features, please visit the [project page](https://github.com/users/HeroGamers/projects/1).
 
 For new feature requests, please open a GitHub Issue.
+
+## Requirements
+*	A Spigot or Paper server on Minecraft 26.1 or newer, running Java 25.
+*	Optional: [Vault](https://www.spigotmc.org/resources/vault.34315/) and an economy plugin, for trading dogs for money and paying for revivals.
+
+## Upgrading from 0.2.x
+MyDog upgrades `config.yml` and `dogs.yml` by itself on the first start, and keeps the old files as `config.yml.v1.bak` and `dogs.yml.v1.bak`.
+Messages now live in `messages.yml` and use [MiniMessage](https://docs.advntr.dev/minimessage/format.html) instead of `&` color codes; any messages you had changed are converted and moved there.
 
 ## Resources
 *	Resource page on [Spigot](https://www.spigotmc.org/resources/mydog.70260/).
