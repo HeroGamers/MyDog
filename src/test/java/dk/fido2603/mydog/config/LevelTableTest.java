@@ -3,7 +3,9 @@ package dk.fido2603.mydog.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Map;
+import java.util.Set;
 
+import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.Test;
 
 class LevelTableTest {
@@ -35,6 +37,24 @@ class LevelTableTest {
     @Test
     void levelsMissingFromTheTableUseTheOneBelow() {
         assertEquals(3, table.get(7).level());
+    }
+
+    @Test
+    void effectsCarryOverToHigherLevels() {
+        NamespacedKey speed = NamespacedKey.minecraft("speed");
+        NamespacedKey regeneration = NamespacedKey.minecraft("regeneration");
+        LevelTable withEffects = new LevelTable(Map.of(
+                1, new LevelTable.Level(1, 0, 40, 4),
+                2, new LevelTable.Level(2, 10, 42, 5, null, Map.of(speed, 1)),
+                3, new LevelTable.Level(3, 100, 44, 6, null, Map.of(speed, 2, regeneration, 1)),
+                4, new LevelTable.Level(4, 200, 46, 7, null, Map.of(speed, 0))));
+
+        assertEquals(Map.of(), withEffects.effectsAt(1));
+        assertEquals(Map.of(speed, 1), withEffects.effectsAt(2));
+        assertEquals(Map.of(speed, 2, regeneration, 1), withEffects.effectsAt(3));
+        // :0 takes speed away again, regeneration carries over
+        assertEquals(Map.of(regeneration, 1), withEffects.effectsAt(4));
+        assertEquals(Set.of(speed, regeneration), withEffects.allEffects());
     }
 
     @Test

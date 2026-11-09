@@ -193,7 +193,8 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                         levelSection.getInt("experience"),
                         levelSection.getDouble("health"),
                         levelSection.getDouble("damage"),
-                        levelSection.isSet("player-damage") ? levelSection.getDouble("player-damage") : null));
+                        levelSection.isSet("player-damage") ? levelSection.getDouble("player-damage") : null,
+                        effects(log, "levels.table." + key + ".effects", levelSection.getStringList("effects"))));
             }
         }
 
@@ -228,6 +229,30 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
             experience.put(type, Math.max(0, section.getInt(key)));
         }
         return experience;
+    }
+
+    /** Effects written as "speed:2" (Speed II), or just "speed" for level I. */
+    private static Map<NamespacedKey, Integer> effects(Logger log, String path, List<String> entries) {
+        Map<NamespacedKey, Integer> effects = new HashMap<>();
+        for (String entry : entries) {
+            String[] parts = entry.split(":");
+            // Also accept a namespaced key: minecraft:speed:2
+            String name = parts.length == 3 ? parts[0] + ":" + parts[1] : parts[0];
+            String level = parts.length == 1 ? "1" : parts[parts.length - 1];
+            NamespacedKey key = NamespacedKey.fromString(name.toLowerCase(Locale.ROOT));
+            int amplifier;
+            try {
+                amplifier = Integer.parseInt(level);
+            } catch (NumberFormatException e) {
+                amplifier = -1;
+            }
+            if (key == null || amplifier < 0 || Registry.EFFECT.get(key) == null) {
+                log.warning("Skipping '" + entry + "' in " + path + ": write effects like speed:2 (Speed II).");
+                continue;
+            }
+            effects.put(key, amplifier);
+        }
+        return effects;
     }
 
     private static Set<EntityType> entityTypes(Logger log, ConfigurationSection config, String path) {

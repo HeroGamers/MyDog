@@ -133,6 +133,9 @@ levels:
   # Health is in half hearts (40 = 20 hearts, what a vanilla tamed wolf has). Vanilla wolves deal 4 damage.
   # Add player-damage to a level to make its dogs deal a different amount of damage to players, e.g.
   #   10: {experience: 5000, health: 72, damage: 20, player-damage: 6}
+  # Add effects to give dogs potion effects from that level up, e.g. effects: [speed:1, regeneration:2] for Speed I and
+  # Regeneration II. A higher level can raise an effect, or remove it with :0. See
+  # https://minecraft.wiki/w/Effect#Effect_list for the names.
   table:
     1: {experience: 0, health: 40, damage: 4}
     2: {experience: 10, health: 42, damage: 5}
