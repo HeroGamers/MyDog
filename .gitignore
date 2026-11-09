@@ -46,3 +46,6 @@ mydog.iml
 # Maven build
 /target/
 /.mvn/
+
+# direnv (nix develop)
+.direnv/
