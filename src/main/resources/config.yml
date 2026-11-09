@@ -65,6 +65,13 @@ dogs:
     threshold: 0.25
     # Minimum time between two warnings for the same dog, in milliseconds.
     cooldown-millis: 1000
+  auto-feed:
+    # Hurt dogs near their owner eat wolf food (meat, rotten flesh first) from the owner's inventory, every 5 seconds.
+    enabled: false
+    # Eat when below this share of max health (0.5 = 50%).
+    below: 0.5
+    # How close (in blocks) the dog has to be to its owner.
+    range: 16
   revival:
     # Keep dead dogs so they can be revived with "/mydog revive". When off, dead dogs are deleted.
     enabled: true
