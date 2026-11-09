@@ -65,6 +65,24 @@ public final class CombatListener implements Listener {
         }
     }
 
+    /** Levels can deal a different amount of damage to players, so packs of strong dogs don't rule PvP. */
+    @EventHandler(ignoreCancelled = true)
+    public void onDogHitsPlayer(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Player) || !(event.getDamager() instanceof Wolf wolf)) {
+            return;
+        }
+        Settings.Levels levels = settings.get().levels();
+        if (!levels.enabled()) {
+            return;
+        }
+        dogService.dogOf(wolf).ifPresent(dog -> {
+            Double playerDamage = levels.table().get(dog.getLevel()).playerDamage();
+            if (playerDamage != null) {
+                event.setDamage(playerDamage);
+            }
+        });
+    }
+
     /** Invulnerable dogs only die from /kill and falling out of the world. */
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onInvulnerableDogDamaged(EntityDamageEvent event) {

@@ -174,7 +174,8 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 levels.put(level, new LevelTable.Level(level,
                         levelSection.getInt("experience"),
                         levelSection.getDouble("health"),
-                        levelSection.getDouble("damage")));
+                        levelSection.getDouble("damage"),
+                        levelSection.isSet("player-damage") ? levelSection.getDouble("player-damage") : null));
             }
         }
 

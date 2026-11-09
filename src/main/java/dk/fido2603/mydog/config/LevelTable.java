@@ -14,10 +14,20 @@ public final class LevelTable {
     /** Dogs never deal less damage than this, whatever the table says. */
     private static final double MIN_DAMAGE = 1.0;
 
-    public record Level(int level, int experience, double health, double damage) {
+    /**
+     * @param playerDamage damage dealt to players instead of {@code damage}, or null to use {@code damage}
+     */
+    public record Level(int level, int experience, double health, double damage, Double playerDamage) {
         public Level {
             health = Math.max(health, MIN_HEALTH);
             damage = Math.max(damage, MIN_DAMAGE);
+            if (playerDamage != null) {
+                playerDamage = Math.max(playerDamage, 0.0);
+            }
+        }
+
+        public Level(int level, int experience, double health, double damage) {
+            this(level, experience, health, damage, null);
         }
     }
 

@@ -119,6 +119,8 @@ levels:
   player-kill-experience: true
   # Experience needed for each level, and the max health and attack damage it gives.
   # Health is in half hearts (40 = 20 hearts, what a vanilla tamed wolf has). Vanilla wolves deal 4 damage.
+  # Add player-damage to a level to make its dogs deal a different amount of damage to players, e.g.
+  #   10: {experience: 5000, health: 72, damage: 20, player-damage: 6}
   table:
     1: {experience: 0, health: 40, damage: 4}
     2: {experience: 10, health: 42, damage: 5}
