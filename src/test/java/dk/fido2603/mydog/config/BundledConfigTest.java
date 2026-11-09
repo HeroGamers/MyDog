@@ -40,6 +40,21 @@ class BundledConfigTest {
         assertTrue(unknown.isEmpty(), "Not entity types: " + unknown);
     }
 
+    @Test
+    void attackModeListsAreEntityTypes() {
+        List<String> unknown = new ArrayList<>();
+        for (String path : List.of("attack-mode.targets", "attack-mode.ignore")) {
+            for (String name : config.getStringList(path)) {
+                try {
+                    EntityType.valueOf(name.toUpperCase(Locale.ROOT));
+                } catch (IllegalArgumentException e) {
+                    unknown.add(path + ": " + name);
+                }
+            }
+        }
+        assertTrue(unknown.isEmpty(), "Not entity types: " + unknown);
+    }
+
     /** Every bundled treat recipe must be craftable as written. */
     @Test
     void everyTreatRecipeIsValid() {

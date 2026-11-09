@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,7 +28,17 @@ import org.bukkit.entity.Mob;
 /**
  * Everything in config.yml, read and checked once per (re)load. Bad values are logged and replaced with a default.
  */
-public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dogs, Breeds breeds, Levels levels) {
+public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dogs, AttackMode attackMode, Breeds breeds,
+                       Levels levels) {
+
+    /**
+     * What dogs in attack mode go after.
+     *
+     * @param onlyListed       only the mobs in {@code targets}, instead of every hostile mob
+     * @param defendOwnerFirst mobs attacking the owner come first, whether listed or not
+     */
+    public record AttackMode(boolean onlyListed, Set<EntityType> targets, Set<EntityType> ignore,
+                             boolean defendOwnerFirst, boolean ignoreMythicMobs) {}
 
     /**
      * Free breed/personality choices for dogs from before those existed, and dog treats.
@@ -124,7 +135,14 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 experiencePerKill(log, config.getConfigurationSection("levels.experience-per-kill")),
                 Math.max(0, config.getInt("levels.experience-per-kill.default")));
 
-        return new Settings(config.getBoolean("debug"), saving, teleport, dogs, breeds(log, config), levels);
+        AttackMode attackMode = new AttackMode(
+                "list".equalsIgnoreCase(config.getString("attack-mode.target", "monsters")),
+                entityTypes(log, config, "attack-mode.targets"),
+                entityTypes(log, config, "attack-mode.ignore"),
+                config.getBoolean("attack-mode.defend-owner-first"),
+                config.getBoolean("attack-mode.ignore-mythic-mobs"));
+
+        return new Settings(config.getBoolean("debug"), saving, teleport, dogs, attackMode, breeds(log, config), levels);
     }
 
     private static int atLeast(Logger log, ConfigurationSection config, String path, int min) {
@@ -210,6 +228,19 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
             experience.put(type, Math.max(0, section.getInt(key)));
         }
         return experience;
+    }
+
+    private static Set<EntityType> entityTypes(Logger log, ConfigurationSection config, String path) {
+        Set<EntityType> types = EnumSet.noneOf(EntityType.class);
+        for (String name : config.getStringList(path)) {
+            EntityType type = Registry.ENTITY_TYPE.get(NamespacedKey.minecraft(name.toLowerCase(Locale.ROOT)));
+            if (type == null) {
+                log.warning("Unknown entity type '" + name + "' in " + path + ", skipping it.");
+            } else {
+                types.add(type);
+            }
+        }
+        return types;
     }
 
     private static Breeds breeds(Logger log, ConfigurationSection config) {

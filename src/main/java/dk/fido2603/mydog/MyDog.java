@@ -49,6 +49,7 @@ import dk.fido2603.mydog.migration.VersionedYaml;
 import dk.fido2603.mydog.objects.Dog;
 import dk.fido2603.mydog.service.DogService;
 import dk.fido2603.mydog.service.Effects;
+import dk.fido2603.mydog.service.PluginMobs;
 import dk.fido2603.mydog.service.TeleportService;
 import dk.fido2603.mydog.service.TradeService;
 import dk.fido2603.mydog.service.TreatService;
@@ -96,7 +97,8 @@ public final class MyDog extends JavaPlugin {
 
         Supplier<Settings> currentSettings = this::settings;
         DebugLog debug = new DebugLog(getLogger(), () -> settings.debug());
-        dogService = new DogService(getServer(), dogs, currentSettings, messages, new Effects(this), debug);
+        PluginMobs pluginMobs = new PluginMobs(getServer(), getLogger());
+        dogService = new DogService(getServer(), dogs, currentSettings, messages, new Effects(this), debug, pluginMobs);
         TradeService tradeService = new TradeService(this, dogService, messages);
         TeleportService teleportService = new TeleportService(dogService, currentSettings, messages, debug);
         treatService = new TreatService(this, messages, currentSettings);
@@ -116,7 +118,7 @@ public final class MyDog extends JavaPlugin {
         getServer().getScheduler().runTaskTimer(this,
                 new DistanceTask(getServer(), dogService, teleportService, currentSettings), 20L * 60L, DistanceTask.PERIOD_TICKS);
         getServer().getScheduler().runTaskTimer(this,
-                new AttackModeTask(getServer(), dogService), 20L * 30L, AttackModeTask.PERIOD_TICKS);
+                new AttackModeTask(getServer(), dogService, pluginMobs, currentSettings), 20L * 30L, AttackModeTask.PERIOD_TICKS);
         getServer().getScheduler().runTaskTimer(this, this::autosave, 20L * 60L, 20L * 60L);
 
         metrics = new Metrics(this, BSTATS_ID);
