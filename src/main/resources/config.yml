@@ -22,8 +22,6 @@ teleport:
   on-world-change: true
   # Apply teleporting to every tamed, sittable pet (cats, parrots, ...), not just MyDog dogs.
   all-tameables: false
-  # Teleport one tick later and in batches, which can help on busy servers.
-  experimental: false
   # When the owner is not standing somewhere safe, also search the blocks next to them
   # (not just straight up and down) for a safe spot.
   expanded-search: false

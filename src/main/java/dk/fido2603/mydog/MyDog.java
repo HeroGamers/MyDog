@@ -97,7 +97,7 @@ public final class MyDog extends JavaPlugin {
         DebugLog debug = new DebugLog(getLogger(), () -> settings.debug());
         dogService = new DogService(getServer(), dogs, currentSettings, messages, new Effects(this), debug);
         TradeService tradeService = new TradeService(this, dogService, messages);
-        TeleportService teleportService = new TeleportService(this, dogService, currentSettings, messages, debug);
+        TeleportService teleportService = new TeleportService(dogService, currentSettings, messages, debug);
         treatService = new TreatService(this, messages, currentSettings);
         treatService.registerRecipes();
 

@@ -49,7 +49,7 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
 
     public record Saving(boolean instant, int autosaveMinutes) {}
 
-    public record Teleport(boolean enabled, boolean onWorldChange, boolean allTameables, boolean experimental,
+    public record Teleport(boolean enabled, boolean onWorldChange, boolean allTameables,
                            boolean expandedSearch, boolean distanceCheck, double maxDistance) {}
 
     public record Dogs(boolean randomCollarColor, List<String> names, boolean nametagOnlyOnHover,
@@ -91,7 +91,6 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 config.getBoolean("teleport.enabled"),
                 config.getBoolean("teleport.on-world-change"),
                 config.getBoolean("teleport.all-tameables"),
-                config.getBoolean("teleport.experimental"),
                 config.getBoolean("teleport.expanded-search"),
                 config.getBoolean("teleport.distance-check.enabled"),
                 Math.max(1.0, config.getDouble("teleport.distance-check.max-distance")));
