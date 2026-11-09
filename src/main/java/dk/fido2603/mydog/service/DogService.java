@@ -15,6 +15,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.DyeColor;
 import org.bukkit.EntityEffect;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.Server;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
@@ -25,6 +26,8 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import dk.fido2603.mydog.config.DefaultDogNames;
 import dk.fido2603.mydog.config.LevelTable;
@@ -192,6 +195,31 @@ public final class DogService {
         AttributeInstance damage = wolf.getAttribute(Attribute.ATTACK_DAMAGE);
         if (damage != null) {
             damage.setBaseValue(stats.damage());
+        }
+        applyEffects(dog, wolf, levels.table());
+    }
+
+    /**
+     * Gives the wolf the potion effects of its level, permanently and without particles. Permanent effects it no
+     * longer qualifies for are taken off; effects from potions run out as usual.
+     */
+    private static void applyEffects(Dog dog, Wolf wolf, LevelTable table) {
+        Map<NamespacedKey, Integer> wanted = table.effectsAt(dog.getLevel());
+        for (NamespacedKey key : table.allEffects()) {
+            PotionEffectType type = Registry.EFFECT.get(key);
+            if (type == null) {
+                continue;
+            }
+            PotionEffect current = wolf.getPotionEffect(type);
+            Integer level = wanted.get(key);
+            if (level == null) {
+                if (current != null && current.isInfinite()) {
+                    wolf.removePotionEffect(type);
+                }
+            } else if (current == null || !current.isInfinite() || current.getAmplifier() != level - 1) {
+                wolf.removePotionEffect(type);
+                wolf.addPotionEffect(new PotionEffect(type, PotionEffect.INFINITE_DURATION, level - 1, true, false, false));
+            }
         }
     }
 
