@@ -27,6 +27,10 @@ public final class ComehereCommand extends SubCommand {
         }
         Player player = (Player) sender;
         for (Dog dog : ownLivingDogs(player, args.getFirst())) {
+            if (dog.isStored()) {
+                services.messages().send(sender, "command.comehere.stored", Messages.dog(dog));
+                continue;
+            }
             Optional<Wolf> wolf = services.dogs().wolfOf(dog).or(() -> loadWolf(dog));
             if (wolf.isEmpty()) {
                 services.messages().send(sender, dog.getLastSeen() == null ? "command.dog-not-loaded" : "command.comehere.unreachable");

@@ -86,6 +86,9 @@ mydog.togglemode:
 mydog.calm:
   description: Player can calm their dogs down
   default: true
+mydog.store:
+  description: Player can store their dogs away and summon them again
+  default: true
 mydog.harm.others:
   description: Player can hurt other players' dogs, even when dogs.protection.from-other-players is on
   default: false

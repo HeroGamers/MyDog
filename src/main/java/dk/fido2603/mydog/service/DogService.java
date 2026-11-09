@@ -417,6 +417,13 @@ public final class DogService {
             wolf.setSitting(false);
             wolf.setTamed(false);
         });
+        // A stored dog's armor goes back to its owner
+        Player owner = server.getPlayer(dog.getOwnerId());
+        if (dog.isStored() && dog.getStored().armor() != null && owner != null) {
+            for (ItemStack leftover : owner.getInventory().addItem(dog.getStored().armor()).values()) {
+                owner.getWorld().dropItemNaturally(owner.getLocation(), leftover);
+            }
+        }
         dogs.delete(dog.getDogId());
     }
 
@@ -490,16 +497,48 @@ public final class DogService {
 
     /** Brings a dead dog back as a new wolf, sitting at the owner's feet. Payment is up to the caller. */
     public void revive(Dog dog, Player owner) {
+        dog.setDead(false);
+        spawnWolf(dog, owner, true);
+    }
+
+    // Storing
+
+    /** Puts the dog away: its wolf is removed, and its health and armor are kept for when it is summoned. */
+    public void store(Dog dog, Wolf wolf) {
+        dog.setStored(new Dog.Stored(wolf.getHealth(), armorOf(wolf).map(ItemStack::clone).orElse(null)));
+        dog.setLastSeen(Dog.LastSeen.of(wolf.getLocation()));
+        dogs.markChanged(dog);
+        wolf.remove();
+    }
+
+    /** Brings a stored dog back next to its owner, as it was when it was stored. */
+    public void summon(Dog dog, Player owner) {
+        Dog.Stored stored = dog.getStored();
+        dog.setStored(null);
+        Wolf wolf = spawnWolf(dog, owner, false);
+        if (stored == null) {
+            return;
+        }
+        if (stored.armor() != null) {
+            wolf.getEquipment().setItem(EquipmentSlot.BODY, stored.armor());
+        }
+        AttributeInstance maxHealth = wolf.getAttribute(Attribute.MAX_HEALTH);
+        double max = maxHealth != null ? maxHealth.getValue() : stored.health();
+        wolf.setHealth(Math.clamp(stored.health(), 1.0, max));
+    }
+
+    /** Spawns a new wolf for the dog at the owner, with its look, nametag and stats, and moves the dog to it. */
+    private Wolf spawnWolf(Dog dog, Player owner, boolean sitting) {
         Wolf wolf = owner.getWorld().spawn(owner.getLocation(), Wolf.class, spawned -> {
             spawned.setTamed(true);
             spawned.setOwner(owner);
-            spawned.setSitting(true);
+            spawned.setSitting(sitting);
             applyAppearance(dog, spawned);
         });
         dogs.changeDogId(dog, wolf.getUniqueId());
-        dog.setDead(false);
         dog.setLastSeen(Dog.LastSeen.of(wolf.getLocation()));
         dogs.markChanged(dog);
         updateWolf(dog, wolf);
+        return wolf;
     }
 }

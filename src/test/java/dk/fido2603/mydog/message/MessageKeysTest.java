@@ -26,7 +26,9 @@ class MessageKeysTest {
     private static final List<String> DYNAMIC_KEYS = List.of(
             "command.sit.all", "command.sit.one", "command.stand.all", "command.stand.one",
             "command.attack.all", "command.attack.one", "command.defend.all", "command.defend.one",
-            "command.help.calm",
+            "command.help.calm", "command.help.store", "command.help.summon",
+            "command.store.one", "command.store.all", "command.store.already", "command.store.none",
+            "command.summon.one", "command.summon.all", "command.summon.already", "command.summon.none",
             "command.help.help", "command.help.reload", "command.help.save", "command.help.list",
             "command.help.putdown", "command.help.release", "command.help.comehere", "command.help.sit",
             "command.help.stand", "command.help.attack", "command.help.defend", "command.help.trade",
