@@ -49,6 +49,24 @@ public final class LevelTable {
         this.levels = Collections.unmodifiableNavigableMap(new TreeMap<>(levels));
     }
 
+    /**
+     * Builds levels 1 to {@code maxLevel} with health and damage spread evenly between min and max, and the
+     * experience for each level following {@code curve}: 1 makes every level the same step, higher values make the
+     * first levels quick and the last ones much harder.
+     */
+    public static LevelTable scaled(int maxLevel, int maxExperience, double curve, double minHealth, double maxHealth,
+                                    double minDamage, double maxDamage) {
+        Map<Integer, Level> levels = new HashMap<>();
+        for (int level = 1; level <= maxLevel; level++) {
+            double t = maxLevel == 1 ? 0.0 : (level - 1) / (double) (maxLevel - 1);
+            int experience = (int) Math.round(maxExperience * Math.pow(t, curve));
+            double health = Math.round(minHealth + (maxHealth - minHealth) * t);
+            double damage = Math.round((minDamage + (maxDamage - minDamage) * t) * 10.0) / 10.0;
+            levels.put(level, new Level(level, experience, health, damage));
+        }
+        return new LevelTable(levels);
+    }
+
     public int minLevel() {
         return levels.firstKey();
     }
