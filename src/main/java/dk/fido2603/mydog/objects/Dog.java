@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import net.kyori.adventure.text.format.NamedTextColor;
 
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -39,6 +40,14 @@ public final class Dog {
     private boolean angry;
     private boolean dead;
     private LastSeen lastSeen;
+    /** The wolf's looks, kept so a revived dog looks like it did. Null until the wolf has been seen. */
+    private Appearance appearance;
+
+    /**
+     * How the wolf looks and sounds. Variants are stored by key (e.g. {@code minecraft:snowy}).
+     * Any part may be null when it isn't known.
+     */
+    public record Appearance(DyeColor collar, String variant, String soundVariant) {}
 
     public Dog(UUID dogId, UUID ownerId, int identifier, String name, NamedTextColor color, int level, int experience,
                Instant birthday, boolean angry, boolean dead, LastSeen lastSeen) {
@@ -101,6 +110,14 @@ public final class Dog {
 
     public LastSeen getLastSeen() {
         return lastSeen;
+    }
+
+    public Appearance getAppearance() {
+        return appearance;
+    }
+
+    public void setAppearance(Appearance appearance) {
+        this.appearance = appearance;
     }
 
     /** Use {@link dk.fido2603.mydog.storage.DogRepository#changeDogId} instead; the repository is keyed by this. */

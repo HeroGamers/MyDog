@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import net.kyori.adventure.text.format.NamedTextColor;
 
+import org.bukkit.DyeColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -94,9 +95,20 @@ public final class YamlDogRepository implements DogRepository {
                             section.getDouble("last-seen.y"), section.getDouble("last-seen.z"))
                     : null;
 
-            return new Dog(dogId, ownerId, section.getInt("id"), section.getString("name", ""), color,
+            Dog dog = new Dog(dogId, ownerId, section.getInt("id"), section.getString("name", ""), color,
                     Math.max(1, section.getInt("level", 1)), section.getInt("experience"), born,
                     section.getBoolean("attack-mode"), section.getBoolean("dead"), lastSeen);
+            if (section.isConfigurationSection("appearance")) {
+                DyeColor collar;
+                try {
+                    collar = DyeColor.valueOf(section.getString("appearance.collar", "").toUpperCase(Locale.ROOT));
+                } catch (IllegalArgumentException e) {
+                    collar = null;
+                }
+                dog.setAppearance(new Dog.Appearance(collar, section.getString("appearance.variant"),
+                        section.getString("appearance.sound-variant")));
+            }
+            return dog;
         } catch (IllegalArgumentException | NullPointerException e) {
             log.warning("Skipping dog " + key + " in dogs.yml: " + e.getMessage());
             return null;
@@ -119,6 +131,12 @@ public final class YamlDogRepository implements DogRepository {
             section.set("last-seen.x", lastSeen.x());
             section.set("last-seen.y", lastSeen.y());
             section.set("last-seen.z", lastSeen.z());
+        }
+        Dog.Appearance appearance = dog.getAppearance();
+        if (appearance != null) {
+            section.set("appearance.collar", appearance.collar() != null ? appearance.collar().name().toLowerCase(Locale.ROOT) : null);
+            section.set("appearance.variant", appearance.variant());
+            section.set("appearance.sound-variant", appearance.soundVariant());
         }
     }
 
