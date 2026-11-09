@@ -24,12 +24,20 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import dk.fido2603.mydog.api.event.DogDeathEvent;
+import dk.fido2603.mydog.api.event.DogExperienceEvent;
+import dk.fido2603.mydog.api.event.DogLevelChangeEvent;
+import dk.fido2603.mydog.api.event.DogReleaseEvent;
+import dk.fido2603.mydog.api.event.DogRenameEvent;
+import dk.fido2603.mydog.api.event.DogReviveEvent;
+import dk.fido2603.mydog.api.event.DogTameEvent;
 import dk.fido2603.mydog.config.DefaultDogNames;
 import dk.fido2603.mydog.config.LevelTable;
 import dk.fido2603.mydog.config.Settings;
@@ -168,8 +176,13 @@ public final class DogService {
     /**
      * Turns a tamed wolf into a dog. A wolf that already has a name or a non-default collar (when importing wolves
      * that were tamed before MyDog) keeps them.
+     * Empty if another plugin cancelled it ({@link DogTameEvent}).
      */
-    public Dog register(Wolf wolf, Player owner, String existingName, DyeColor existingCollar) {
+    public Optional<Dog> register(Wolf wolf, Player owner, String existingName, DyeColor existingCollar,
+                                  DogTameEvent.Cause cause) {
+        if (fire(new DogTameEvent(wolf, owner, cause)).isCancelled()) {
+            return Optional.empty();
+        }
         Settings.Dogs config = settings.get().dogs();
         if (existingCollar == null && config.randomCollarColor()) {
             wolf.setCollarColor(DyeColors.random());
@@ -182,7 +195,7 @@ public final class DogService {
         dogs.markChanged(dog);
         updateWolf(dog, wolf);
         debug.log(() -> "New dog " + dog.getDogName() + " (" + dog.getDogId() + ") for " + owner.getName());
-        return dog;
+        return Optional.of(dog);
     }
 
     public String randomName() {
@@ -388,10 +401,17 @@ public final class DogService {
 
     // Changes players make
 
-    public void rename(Dog dog, String name) {
-        dog.setDogName(cleanName(name));
+    /** Renames the dog. {@code by} is the player doing it, or null. Returns false if another plugin stopped it. */
+    public boolean rename(Dog dog, String name, Player by) {
+        DogRenameEvent event = fire(new DogRenameEvent(MyDogApiService.info(dog), cleanName(name), by));
+        String newName = event.getNewName() == null ? "" : cleanName(event.getNewName());
+        if (event.isCancelled() || newName.isEmpty()) {
+            return false;
+        }
+        dog.setDogName(newName);
         dogs.markChanged(dog);
         updateWolf(dog);
+        return true;
     }
 
     public void setCollarColor(Dog dog, DyeColor color) {
@@ -447,7 +467,10 @@ public final class DogService {
 
     /** Lets a dog go: the wolf becomes wild again and MyDog forgets about it. */
     @SuppressWarnings("deprecation") // see applyNametag
-    public void release(Dog dog) {
+    public boolean release(Dog dog, Player by) {
+        if (fire(new DogReleaseEvent(MyDogApiService.info(dog), by)).isCancelled()) {
+            return false;
+        }
         wolfOf(dog).ifPresent(wolf -> {
             // Only tamed wolves wear armor, so it comes off before the wolf goes wild
             armorOf(wolf).ifPresent(armor -> {
@@ -467,6 +490,7 @@ public final class DogService {
             }
         }
         dogs.delete(dog.getDogId());
+        return true;
     }
 
     public void pet(Dog dog, Player player) {
@@ -491,41 +515,51 @@ public final class DogService {
 
     // Levels
 
-    public void giveExperience(Dog dog, int experience) {
+    /** Gives the dog experience. {@code killed} is what it killed to earn it, or null. */
+    public void giveExperience(Dog dog, int experience, Entity killed) {
         Settings.Levels levels = settings.get().levels();
         if (!levels.enabled() || experience <= 0) {
             return;
         }
-        dog.setExperience(dog.getExperience() + experience);
+        DogExperienceEvent event = fire(new DogExperienceEvent(MyDogApiService.info(dog), experience, killed));
+        int gained = event.getAmount();
+        if (event.isCancelled() || gained <= 0) {
+            return;
+        }
+        dog.setExperience(dog.getExperience() + gained);
         int newLevel = levels.table().levelFor(dog.getExperience(), dog.getLevel());
         dogs.markChanged(dog);
-        debug.log(() -> dog.getDogName() + " got " + experience + " experience, now " + dog.getExperience());
+        debug.log(() -> dog.getDogName() + " got " + gained + " experience, now " + dog.getExperience());
 
         if (newLevel > dog.getLevel()) {
-            setLevel(dog, newLevel);
+            setLevel(dog, newLevel, DogLevelChangeEvent.Cause.EXPERIENCE);
         }
     }
 
-    /** Sets the level, updates the wolf's stats and tells the owner. */
-    public void setLevel(Dog dog, int level) {
+    /** Sets the level, updates the wolf's stats and tells the owner. Returns false if another plugin stopped it. */
+    public boolean setLevel(Dog dog, int level, DogLevelChangeEvent.Cause cause) {
+        if (fire(new DogLevelChangeEvent(MyDogApiService.info(dog), dog.getLevel(), level, cause)).isCancelled()) {
+            return false;
+        }
         dog.setLevel(level);
         dogs.markChanged(dog);
         updateWolf(dog);
 
         Player owner = server.getPlayer(dog.getOwnerId());
-        if (owner == null) {
-            return;
+        if (owner != null) {
+            messages.send(owner, "dog.level-up", Messages.dog(dog));
+            wolfOf(dog).ifPresent(effects::levelUp);
+            owner.playSound(owner.getLocation(), settings.get().levels().levelUpSound(), 3.0F, 1.0F);
         }
-        messages.send(owner, "dog.level-up", Messages.dog(dog));
-        wolfOf(dog).ifPresent(effects::levelUp);
-        owner.playSound(owner.getLocation(), settings.get().levels().levelUpSound(), 3.0F, 1.0F);
+        return true;
     }
 
     // Death and revival
 
-    /** Called when a dog's wolf dies. Keeps the dog as dead when revival is on, otherwise deletes it. */
-    public void died(Dog dog) {
-        if (settings.get().dogs().revival().enabled()) {
+    /** Called when a dog's wolf dies. Keeps the dog as dead when it can be revived, otherwise deletes it. */
+    public void died(Dog dog, Wolf wolf) {
+        DogDeathEvent event = fire(new DogDeathEvent(MyDogApiService.info(dog), wolf, settings.get().dogs().revival().enabled()));
+        if (event.isRevivable()) {
             dog.setDead(true);
             dogs.markChanged(dog);
         } else {
@@ -537,10 +571,23 @@ public final class DogService {
         return dog.getLevel() * settings.get().dogs().revival().pricePerLevel();
     }
 
-    /** Brings a dead dog back as a new wolf, sitting at the owner's feet. Payment is up to the caller. */
-    public void revive(Dog dog, Player at) {
+    /**
+     * Brings a dead dog back as a new wolf, sitting at the player's feet. Payment is up to the caller, after this
+     * returned true; false means another plugin stopped it.
+     */
+    public boolean revive(Dog dog, Player at) {
+        if (fire(new DogReviveEvent(MyDogApiService.info(dog), at)).isCancelled()) {
+            return false;
+        }
         dog.setDead(false);
         spawnWolf(dog, at, true);
+        return true;
+    }
+
+    /** Calls an event and returns it, to read what listeners did with it. */
+    <T extends Event> T fire(T event) {
+        server.getPluginManager().callEvent(event);
+        return event;
     }
 
     // Storing

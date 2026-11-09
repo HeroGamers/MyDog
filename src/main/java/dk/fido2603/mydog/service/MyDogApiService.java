@@ -10,6 +10,7 @@ import org.bukkit.entity.Wolf;
 
 import dk.fido2603.mydog.api.DogInfo;
 import dk.fido2603.mydog.api.MyDogApi;
+import dk.fido2603.mydog.api.event.DogLevelChangeEvent;
 import dk.fido2603.mydog.config.LevelTable;
 import dk.fido2603.mydog.config.Settings;
 import dk.fido2603.mydog.config.TreatKind;
@@ -74,7 +75,7 @@ public final class MyDogApiService implements MyDogApi {
         if (dog.isEmpty() || !settings.get().levels().enabled() || experience <= 0) {
             return false;
         }
-        dogs.giveExperience(dog.get(), experience);
+        dogs.giveExperience(dog.get(), experience, null);
         return true;
     }
 
@@ -86,8 +87,7 @@ public final class MyDogApiService implements MyDogApi {
         if (dog.isEmpty() || !levels.enabled() || level < table.minLevel() || level > table.maxLevel()) {
             return false;
         }
-        dogs.setLevel(dog.get(), level);
-        return true;
+        return dogs.setLevel(dog.get(), level, DogLevelChangeEvent.Cause.SET);
     }
 
     @Override
@@ -96,7 +96,6 @@ public final class MyDogApiService implements MyDogApi {
         if (dog.isEmpty() || name == null || DogService.cleanName(name).isEmpty()) {
             return false;
         }
-        dogs.rename(dog.get(), name);
-        return true;
+        return dogs.rename(dog.get(), name, null);
     }
 }

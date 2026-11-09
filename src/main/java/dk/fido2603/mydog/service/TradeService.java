@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import dk.fido2603.mydog.api.event.DogTradeEvent;
 import dk.fido2603.mydog.message.Messages;
 import dk.fido2603.mydog.objects.Dog;
 
@@ -18,7 +19,7 @@ public final class TradeService {
 
     public record Trade(UUID dogId, UUID sellerId, double price, BukkitTask expiry) {}
 
-    public enum AcceptResult { ACCEPTED, NO_TRADE, DOG_MISSING, NO_ECONOMY, CANNOT_AFFORD, LIMIT }
+    public enum AcceptResult { ACCEPTED, NO_TRADE, DOG_MISSING, NO_ECONOMY, CANNOT_AFFORD, LIMIT, CANCELLED }
 
     private final Plugin plugin;
     private final DogService dogService;
@@ -68,6 +69,9 @@ public final class TradeService {
         }
         if (!dogService.canOwnMore(buyer)) {
             return AcceptResult.LIMIT;
+        }
+        if (dogService.fire(new DogTradeEvent(MyDogApiService.info(dog.get()), trade.sellerId(), buyer, trade.price())).isCancelled()) {
+            return AcceptResult.CANCELLED;
         }
 
         if (trade.price() > 0.0) {

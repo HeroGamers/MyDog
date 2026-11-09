@@ -16,6 +16,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import dk.fido2603.mydog.api.event.DogTameEvent;
 import dk.fido2603.mydog.config.Settings;
 import dk.fido2603.mydog.message.Messages;
 import dk.fido2603.mydog.objects.Dog;
@@ -90,8 +91,8 @@ public final class InteractListener implements Listener {
         }
         // A red collar is the default, so treat it as "no collar color chosen"
         DyeColor collar = wolf.getCollarColor() == DyeColor.RED ? null : wolf.getCollarColor();
-        Dog dog = dogService.register(wolf, player, wolf.getCustomName(), collar);
-        messages.send(player, "tame.new-dog", Messages.dog(dog));
+        dogService.register(wolf, player, wolf.getCustomName(), collar, DogTameEvent.Cause.EXISTING_WOLF)
+                .ifPresent(dog -> messages.send(player, "tame.new-dog", Messages.dog(dog)));
     }
 
     @SuppressWarnings("deprecation") // ItemMeta#getDisplayName(): the String version is the one Spigot has
@@ -104,8 +105,9 @@ public final class InteractListener implements Listener {
         if (!settings.get().dogs().allowNametagRename() || !DogService.canControl(dog, player)) {
             return true;
         }
-        dogService.rename(dog, meta.getDisplayName());
-        consumeOne(item, player);
+        if (dogService.rename(dog, meta.getDisplayName(), player)) {
+            consumeOne(item, player);
+        }
         return true;
     }
 

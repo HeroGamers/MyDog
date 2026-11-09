@@ -87,6 +87,8 @@ command:
   usage: '<red>Usage: <usage>'
   no-permission: "<red>You don't have permission to do that."
   player-only: '<red>Only players can use this command.'
+  # Another plugin stopped the action (through MyDog's API events).
+  cancelled: '<red>Another plugin stopped that.'
   invalid-id: '<red><bold>[<prefix>]</bold> Please enter a valid ID! Check /mydog list'
   dog-not-found: '<red><bold>[<prefix>]</bold> Could not find a Dog with that ID! Check /mydog list'
   dog-not-loaded: '<red><bold>[<prefix>]</bold> Aww bonkers! Seems like your Dog cannot be found... Is it loaded?'

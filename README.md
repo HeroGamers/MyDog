@@ -52,7 +52,7 @@ if (provider != null) {
 }
 ```
 
-It can look up dogs (`DogInfo` snapshots), give them experience, set their level and rename them. Only the `dk.fido2603.mydog.api` package is meant to stay stable between versions; the old `MyDogAPI` class still works, but is deprecated.
+It can look up dogs (`DogInfo` snapshots), give them experience, set their level and rename them. Events in `dk.fido2603.mydog.api.event` let you react to dogs being tamed, gaining experience, changing level, dying, being revived, released, renamed or traded, and following their owner; all but the death event can be cancelled. Only the `dk.fido2603.mydog.api` package is meant to stay stable between versions; the old `MyDogAPI` class still works, but is deprecated.
 
 ## Resources
 *	Resource page on [Spigot](https://www.spigotmc.org/resources/mydog.70260/).

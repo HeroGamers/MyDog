@@ -53,14 +53,16 @@ public interface MyDogApi {
     /**
      * Sets a dog's level, updating its health and damage. The owner gets the level-up message.
      *
-     * @return false if there is no such living dog, levels are turned off, or the level is outside the level table
+     * @return false if there is no such living dog, levels are turned off, the level is outside the level table, or a
+     * {@link dk.fido2603.mydog.api.event.DogLevelChangeEvent} listener cancelled it
      */
     boolean setLevel(UUID dogId, int level);
 
     /**
      * Renames a dog. Color codes are removed.
      *
-     * @return false if there is no such dog, or the name is empty
+     * @return false if there is no such dog, the name is empty, or a {@link dk.fido2603.mydog.api.event.DogRenameEvent}
+     * listener cancelled it
      */
     boolean rename(UUID dogId, String name);
 }

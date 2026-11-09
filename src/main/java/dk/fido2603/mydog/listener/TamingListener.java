@@ -17,6 +17,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.plugin.Plugin;
 
+import dk.fido2603.mydog.api.event.DogTameEvent;
 import dk.fido2603.mydog.config.Settings;
 import dk.fido2603.mydog.message.Messages;
 import dk.fido2603.mydog.objects.Dog;
@@ -49,7 +50,7 @@ public final class TamingListener implements Listener {
             event.setCancelled(true);
             return;
         }
-        registerLater(wolf, owner);
+        registerLater(wolf, owner, DogTameEvent.Cause.TAMED);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -59,19 +60,20 @@ public final class TamingListener implements Listener {
         }
         Player owner = puppy.getOwner() instanceof Player puppyOwner ? puppyOwner : breeder;
         if (dogService.canOwnMore(owner)) {
-            registerLater(puppy, owner);
+            registerLater(puppy, owner, DogTameEvent.Cause.BRED);
         }
     }
 
-    private void registerLater(Wolf wolf, Player owner) {
+    private void registerLater(Wolf wolf, Player owner, DogTameEvent.Cause cause) {
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (!wolf.isValid() || !wolf.isTamed() || dogService.dogOf(wolf).isPresent() || !dogService.canBecomeDog(wolf)) {
                 return;
             }
-            Dog dog = dogService.register(wolf, owner, null, null);
-            if (owner.isOnline()) {
-                messages.send(owner, "tame.new-dog", Messages.dog(dog));
-            }
+            dogService.register(wolf, owner, null, null, cause).ifPresent(dog -> {
+                if (owner.isOnline()) {
+                    messages.send(owner, "tame.new-dog", Messages.dog(dog));
+                }
+            });
         }, REGISTER_DELAY_TICKS);
     }
 
@@ -92,6 +94,6 @@ public final class TamingListener implements Listener {
             messages.send(owner, "dog.died", Messages.dog(dog),
                     Messages.component("time", lifetime), Messages.component("level_text", levelText));
         }
-        dogService.died(dog);
+        dogService.died(dog, (Wolf) event.getEntity());
     }
 }

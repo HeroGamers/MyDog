@@ -32,6 +32,7 @@ public final class TradeAcceptCommand extends SubCommand {
             case NO_ECONOMY -> throw new CommandException("command.trade.no-economy");
             case CANNOT_AFFORD -> throw new CommandException("command.trade.cannot-afford");
             case LIMIT -> throw new CommandException("command.trade.limit");
+            case CANCELLED -> throw new CommandException("command.cancelled");
         }
     }
 }
