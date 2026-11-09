@@ -39,6 +39,7 @@ permissions:
       mydog.sit: true
       mydog.togglemode: true
       mydog.calm: true
+      mydog.harm.others: true
       mydog.pet: true
       mydog.pet.others: true
       mydog.trade: true
@@ -80,6 +81,9 @@ permissions:
   mydog.calm:
     description: Player can calm their dogs down
     default: true
+  mydog.harm.others:
+    description: Player can hurt other players' dogs, even when dogs.protection.from-other-players is on
+    default: false
   mydog.pet:
     description: Player can pet their dogs
     default: true

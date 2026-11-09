@@ -24,6 +24,7 @@ import dk.fido2603.mydog.config.Settings;
 import dk.fido2603.mydog.message.Messages;
 import dk.fido2603.mydog.objects.Dog;
 import dk.fido2603.mydog.service.DogService;
+import dk.fido2603.mydog.service.Permissions;
 
 /** Damage to and from dogs: protection, lifesteal, experience for kills and low-health warnings. */
 public final class CombatListener implements Listener {
@@ -40,16 +41,36 @@ public final class CombatListener implements Listener {
         this.settings = settings;
     }
 
-    /** Owners can't hurt their own dog, and arrows can be turned off. */
+    /**
+     * Owners can't hurt their own dog. With protection on, other players can't either (unless they have
+     * mydog.harm.others), and arrows can be turned off.
+     */
     @EventHandler(ignoreCancelled = true)
     public void onDogDamagedByEntity(EntityDamageByEntityEvent event) {
         Optional<Dog> dog = dogService.dogOf(event.getEntity());
         if (dog.isEmpty()) {
             return;
         }
-        if (event.getDamager() instanceof Player player && player.getUniqueId().equals(dog.get().getOwnerId())) {
+        Settings.Dogs config = settings.get().dogs();
+        // The player behind the damage, also when it comes from an arrow, trident, ...
+        if (event.getDamageSource().getCausingEntity() instanceof Player player) {
+            boolean owner = player.getUniqueId().equals(dog.get().getOwnerId());
+            if (owner || (config.protectFromOtherPlayers() && !Permissions.has(player, Permissions.HARM_OTHERS))) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+        if (event.getDamager().getType() == EntityType.ARROW && !config.arrowDamage()) {
             event.setCancelled(true);
-        } else if (event.getDamager().getType() == EntityType.ARROW && !settings.get().dogs().arrowDamage()) {
+        }
+    }
+
+    /** Invulnerable dogs only die from /kill and falling out of the world. */
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onInvulnerableDogDamaged(EntityDamageEvent event) {
+        EntityDamageEvent.DamageCause cause = event.getCause();
+        if (settings.get().dogs().invulnerable() && cause != EntityDamageEvent.DamageCause.KILL
+                && cause != EntityDamageEvent.DamageCause.VOID && dogService.dogOf(event.getEntity()).isPresent()) {
             event.setCancelled(true);
         }
     }

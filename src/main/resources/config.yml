@@ -48,6 +48,12 @@ dogs:
   # Let dogs take damage from being crammed together (too many mobs in one spot). Off by default, since a pack of
   # dogs can easily end up in one spot, e.g. after being teleported or while chasing a mob they can't reach.
   cramming-damage: false
+  protection:
+    # Stop other players from hurting your dogs (owners can never hurt their own dogs). Players with the
+    # mydog.harm.others permission still can.
+    from-other-players: false
+    # Dogs can't be hurt at all, except by /kill and falling out of the world.
+    invulnerable: false
   # How long /mydog calm keeps dogs from picking a fight, in seconds.
   calm-seconds: 10
   # Share of the damage a dog deals that it heals back (0.25 = 25%, 0 turns it off).
