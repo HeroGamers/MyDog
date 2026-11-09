@@ -85,6 +85,13 @@
             <version>${adventureVersion}</version>
             <scope>compile</scope>
         </dependency>
+        <!-- Tests (for the parts that don't need a running server) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>6.1.3</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <packaging>jar</packaging>
