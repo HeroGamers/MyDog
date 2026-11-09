@@ -34,7 +34,7 @@ public class ParticleUtils {
                 if (loc.getWorld() == null) {
                     this.cancel();
                 }
-                loc.getWorld().spawnParticle(Particle.REDSTONE, loc, 1, dustOptions);
+                loc.getWorld().spawnParticle(Particle.DUST, loc, 1, dustOptions);
                 loc.subtract(x, y, z);
 
                 if (t > Math.PI * 8) {
@@ -60,7 +60,7 @@ public class ParticleUtils {
                 if (loc.getWorld() == null) {
                     this.cancel();
                 }
-                loc.getWorld().spawnParticle(Particle.REDSTONE, loc, 1, dustOptions);
+                loc.getWorld().spawnParticle(Particle.DUST, loc, 1, dustOptions);
                 loc.subtract(x, y, z);
 
                 if (t > Math.PI * 8) {

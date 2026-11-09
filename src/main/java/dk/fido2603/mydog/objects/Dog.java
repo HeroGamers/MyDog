@@ -540,7 +540,7 @@ public class Dog {
             health = 5D;
         }
 
-        AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        AttributeInstance wolfMaxHealth = wolf.getAttribute(Attribute.MAX_HEALTH);
         if (wolfMaxHealth == null) {
             return false;
         }
@@ -618,7 +618,7 @@ public class Dog {
             damage = 1.0D;
         }
 
-        AttributeInstance wolfDamage = wolf.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+        AttributeInstance wolfDamage = wolf.getAttribute(Attribute.ATTACK_DAMAGE);
         if (wolfDamage == null) {
             return false;
         }

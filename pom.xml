@@ -16,11 +16,8 @@
 
     <properties>
         <github.repo>HeroGamers/MyDog</github.repo>
-        <bukkitAPIVersion>1.20.1-R0.1-SNAPSHOT</bukkitAPIVersion>
-        <jdk.version>8</jdk.version>
-        <maven.compiler.source>${jdk.version}</maven.compiler.source>
-        <maven.compiler.release>${jdk.version}</maven.compiler.release>
-        <maven.compiler.target>${jdk.version}</maven.compiler.target>
+        <paperAPIVersion>26.3.build.246-stable</paperAPIVersion>
+        <maven.compiler.release>25</maven.compiler.release>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
@@ -34,31 +31,37 @@
     </scm>
 
     <repositories>
-        <!-- Spigot Repo for Spigot and Bukkit -->
+        <!-- PaperMC repo for the Paper API -->
         <repository>
-            <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
-        <!-- Vault repo for Vault -->
+        <!-- JitPack for VaultAPI -->
         <repository>
-            <id>vault-repo</id>
-            <url>https://nexus.hc.to/content/repositories/pub_releases</url>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
         </repository>
     </repositories>
     <dependencies>
-        <!-- Spigot -->
+        <!-- Paper API -->
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>${bukkitAPIVersion}</version>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>${paperAPIVersion}</version>
             <scope>provided</scope>
         </dependency>
         <!-- VaultAPI -->
         <dependency>
-            <groupId>net.milkbowl.vault</groupId>
+            <groupId>com.github.MilkBowl</groupId>
             <artifactId>VaultAPI</artifactId>
-            <version>1.7</version>
+            <version>1.7.1</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- bStats Bukkit for Plugin Statistics -->
         <dependency>
@@ -100,7 +103,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.4</version>
+                <version>3.6.2</version>
                 <configuration>
                     <!-- Avoid generating dependency-reduced-pom which can cause issues in some builds -->
                     <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -144,7 +147,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.0</version>
+                <version>3.5.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -6,6 +6,7 @@ import java.util.*;
 import dk.fido2603.mydog.MyDog;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
+import org.bukkit.Registry;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -385,12 +386,11 @@ public class DogManager {
             owner.sendMessage(ChatColor.translateAlternateColorCodes('&', levelupString));
 
             MyDog.getParticleUtils().newLevelUpParticle(plugin.getServer().getEntity(dog.getDogId()));
-            Sound sound;
-            if (plugin.levelUpSound == null) {
-                plugin.logDebug("Couldn't load the levelup sound, took Howl!");
-                sound = Sound.ENTITY_WOLF_HOWL;
-            } else {
-                sound = Sound.valueOf(plugin.levelUpSound);
+            // Accepts both legacy names (ENTITY_WOLF_AMBIENT) and keys (entity.wolf.ambient)
+            Sound sound = plugin.levelUpSound == null ? null : Registry.SOUNDS.match(plugin.levelUpSound);
+            if (sound == null) {
+                plugin.logDebug("Couldn't load the levelup sound '" + plugin.levelUpSound + "', using the wolf bark!");
+                sound = Sound.ENTITY_WOLF_AMBIENT;
             }
 
             owner.playSound(owner.getLocation(), sound, 3.0F, 1.0F);
