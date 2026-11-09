@@ -66,9 +66,12 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
     public record Dogs(boolean randomCollarColor, List<String> names, boolean nametagOnlyOnHover,
                        boolean nametagShowLevel, boolean allowNametagRename, boolean arrowDamage, boolean crammingDamage,
                        boolean protectFromOtherPlayers, boolean invulnerable, int calmSeconds, double lifesteal,
-                       LowHealthWarning lowHealthWarning, Revival revival) {}
+                       LowHealthWarning lowHealthWarning, Revival revival, AutoFeed autoFeed) {}
 
     public record LowHealthWarning(boolean enabled, double threshold, long cooldownMillis) {}
+
+    /** Hurt dogs eat wolf food from their owner's inventory when their health is below {@code below} (a share). */
+    public record AutoFeed(boolean enabled, double below, double range) {}
 
     public record Revival(boolean enabled, int pricePerLevel, boolean usePlayerLevels) {}
 
@@ -125,7 +128,11 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 new Revival(
                         config.getBoolean("dogs.revival.enabled"),
                         atLeast(log, config, "dogs.revival.price-per-level", 0),
-                        config.getBoolean("dogs.revival.use-player-levels")));
+                        config.getBoolean("dogs.revival.use-player-levels")),
+                new AutoFeed(
+                        config.getBoolean("dogs.auto-feed.enabled"),
+                        share(log, config, "dogs.auto-feed.below"),
+                        Math.max(1.0, config.getDouble("dogs.auto-feed.range"))));
 
         Levels levels = new Levels(
                 config.getBoolean("levels.enabled"),

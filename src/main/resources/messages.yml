@@ -41,6 +41,8 @@ dog:
   low-health: '<gold><bold>[<prefix>]</bold> <dog_name> has low health! <gray>(<red><health></red>)'
   petting: "<gold>Who's a good doggo?! <dog_name> is!"
   petting-splash: '<dog_name><gold> splashes water all over you!'
+  # A dog ate from its owner's inventory (dogs.auto-feed). <food> what it ate. Set to '' to turn it off.
+  auto-fed: '<gray><dog_name><gray> ate some <food> from your inventory.'
   # Shown when a player right-clicks someone else's dog. Set to '' to turn it off.
   owner-info: '<gray>This is <dog_name><gray>, <owner>''s dog.'
 

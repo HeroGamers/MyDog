@@ -57,6 +57,7 @@ import dk.fido2603.mydog.service.TreatService;
 import dk.fido2603.mydog.storage.YamlDogRepository;
 import dk.fido2603.mydog.task.AttackModeTask;
 import dk.fido2603.mydog.task.DistanceTask;
+import dk.fido2603.mydog.task.FeedTask;
 import dk.fido2603.mydog.util.AtomicFiles;
 import dk.fido2603.mydog.util.DebugLog;
 
@@ -120,6 +121,8 @@ public final class MyDog extends JavaPlugin {
                 new DistanceTask(getServer(), dogService, teleportService, currentSettings), 20L * 60L, DistanceTask.PERIOD_TICKS);
         getServer().getScheduler().runTaskTimer(this,
                 new AttackModeTask(getServer(), dogService, pluginMobs, currentSettings), 20L * 30L, AttackModeTask.PERIOD_TICKS);
+        getServer().getScheduler().runTaskTimer(this,
+                new FeedTask(getServer(), dogService, messages, currentSettings), FeedTask.PERIOD_TICKS, FeedTask.PERIOD_TICKS);
         getServer().getScheduler().runTaskTimer(this, this::autosave, 20L * 60L, 20L * 60L);
 
         metrics = new Metrics(this, BSTATS_ID);
