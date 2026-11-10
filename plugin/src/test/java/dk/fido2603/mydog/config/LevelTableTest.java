@@ -74,4 +74,11 @@ class LevelTableTest {
         assertEquals(5.0, weak.get(1).health());
         assertEquals(1.0, weak.get(1).damage());
     }
+
+    @Test
+    void armorProficiencyIsAPercentage() {
+        assertEquals(0.0, new LevelTable.Level(1, 0, 40, 4).armorProficiency());
+        assertEquals(100.0, new LevelTable.Level(1, 0, 40, 4, null, Map.of(), 150).armorProficiency());
+        assertEquals(0.0, new LevelTable.Level(1, 0, 40, 4, null, Map.of(), -10).armorProficiency());
+    }
 }

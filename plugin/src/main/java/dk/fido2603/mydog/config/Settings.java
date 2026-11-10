@@ -236,7 +236,8 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                         levelSection.getDouble("health"),
                         levelSection.getDouble("damage"),
                         levelSection.isSet("player-damage") ? levelSection.getDouble("player-damage") : null,
-                        effects(log, "levels.table." + key + ".effects", levelSection.getStringList("effects"))));
+                        effects(log, "levels.table." + key + ".effects", levelSection.getStringList("effects")),
+                        levelSection.getDouble("armor-proficiency")));
             }
         }
 

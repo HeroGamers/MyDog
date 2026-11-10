@@ -1,6 +1,7 @@
 package dk.fido2603.mydog.listener;
 
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
 
 import org.bukkit.entity.Player;
@@ -14,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.tag.DamageTypeTags;
 
 import dk.fido2603.mydog.config.Settings;
 import dk.fido2603.mydog.message.Messages;
@@ -35,6 +37,35 @@ public final class ArmorListener implements Listener {
         this.dogService = dogService;
         this.messages = messages;
         this.settings = settings;
+    }
+
+    /**
+     * Armor proficiency: wolf armor takes the whole hit (rounded up) as wear instead of the dog, so a dog at a level
+     * with armor proficiency gets a smaller hit. It is rounded at random, so small hits are spared on average too.
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onArmoredDogHurt(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Wolf wolf) || DogService.armorOf(wolf).isEmpty()
+                || DamageTypeTags.BYPASSES_WOLF_ARMOR.isTagged(event.getDamageSource().getDamageType())) {
+            return;
+        }
+        Settings current = settings.get();
+        Optional<Dog> dog = current.levels().enabled() && !current.dogs().armor().unbreakable()
+                ? dogService.dogOf(wolf)
+                : Optional.empty();
+        if (dog.isEmpty()) {
+            return;
+        }
+        double proficiency = current.levels().table().get(dog.get().getLevel()).armorProficiency();
+        if (proficiency <= 0.0) {
+            return;
+        }
+        int wear = (int) Math.ceil(event.getDamage());
+        double kept = wear * (1.0 - proficiency / 100.0);
+        int reduced = (int) Math.floor(kept) + (ThreadLocalRandom.current().nextDouble() < kept - Math.floor(kept) ? 1 : 0);
+        if (reduced < wear) {
+            event.setDamage(reduced);
+        }
     }
 
     /** Runs before the damage is dealt, so an unbreakable flag is in place before the armor would lose durability. */
