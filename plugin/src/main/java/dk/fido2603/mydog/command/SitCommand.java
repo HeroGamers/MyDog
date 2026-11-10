@@ -32,13 +32,20 @@ public final class SitCommand extends SubCommand {
             throw new UsageException();
         }
         List<Dog> dogs = livingDogs((Player) sender, args.getFirst());
-        if (args.getFirst().equalsIgnoreCase("all")) {
+        boolean all = args.getFirst().equalsIgnoreCase("all");
+        if (!all && services.dogs().wolfOf(dogs.getFirst()).isEmpty()) {
+            throw new CommandException("command.sit.not-loaded", Messages.dog(dogs.getFirst()));
+        }
+        if (all) {
             services.messages().send(sender, "command." + name() + ".all");
         } else {
             services.messages().send(sender, "command." + name() + ".one", Messages.dog(dogs.getFirst()));
         }
         for (Dog dog : dogs) {
-            services.dogs().sit(dog, sit);
+            // A dog that isn't loaded can't hear you, so it keeps sitting or standing
+            if (!services.dogs().sit(dog, sit)) {
+                services.messages().send(sender, "command.sit.not-loaded", Messages.dog(dog));
+            }
         }
     }
 

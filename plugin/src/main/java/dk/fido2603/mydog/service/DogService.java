@@ -430,11 +430,14 @@ public final class DogService {
         wolfOf(dog).ifPresent(wolf -> applyNametag(dog, wolf));
     }
 
-    public void sit(Dog dog, boolean sit) {
-        wolfOf(dog).ifPresent(wolf -> {
-            wolf.setSitting(sit);
-            updateLastSeen(dog, wolf);
+    /** Makes the dog sit or stand. Returns false if its wolf isn't loaded, so it can't. */
+    public boolean sit(Dog dog, boolean sit) {
+        Optional<Wolf> wolf = wolfOf(dog);
+        wolf.ifPresent(w -> {
+            w.setSitting(sit);
+            updateLastSeen(dog, w);
         });
+        return wolf.isPresent();
     }
 
     /**
