@@ -198,6 +198,8 @@ command:
   sit:
     all: '<aqua><bold>[<prefix>]</bold> Sit, my dogs!'
     one: '<aqua><bold>[<prefix>]</bold> Sit, <dog_name>!'
+    # The dog is too far away (not loaded) to sit or stand. Also used by stand.
+    not-loaded: '<red><bold>[<prefix>]</bold> <dog_name><red> is too far away to hear you. Call it with <white>/mydog comehere <id></white>.'
   stand:
     all: '<aqua><bold>[<prefix>]</bold> Stand, my dogs!'
     one: '<aqua><bold>[<prefix>]</bold> Stand, <dog_name>!'
