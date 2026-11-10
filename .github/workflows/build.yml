@@ -32,6 +32,10 @@ jobs:
             api/target/mydog-api-*.jar
           if-no-files-found: error
 
+      # MyDog has to run on Spigot, so it may not use Paper-only API
+      - name: Compile against the Spigot API
+        run: mvn -B -Pspigot -pl plugin -am clean compile
+
   # Pushing a tag like v0.3.0 publishes a GitHub release with the jar attached.
   # The tag (without the "v") has to match <version> in pom.xml. JitPack builds the API from the same tag.
   release:

@@ -353,6 +353,11 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
             if (section == null) {
                 continue;
             }
+            if (!kind.supported()) {
+                log.info("This server software can't change wolf " + kind.configSection() + " (that needs Paper), so "
+                        + path + " is skipped.");
+                continue;
+            }
             for (String key : section.getKeys(false)) {
                 NamespacedKey variant = TreatKind.parseKey(key);
                 ConfigurationSection entry = section.getConfigurationSection(key);
