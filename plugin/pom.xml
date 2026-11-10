@@ -17,13 +17,6 @@
             <artifactId>mydog-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- Paper API -->
-        <dependency>
-            <groupId>io.papermc.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>${paperAPIVersion}</version>
-            <scope>provided</scope>
-        </dependency>
         <!-- VaultAPI -->
         <dependency>
             <groupId>com.github.MilkBowl</groupId>
@@ -59,6 +52,36 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
+
+    <!-- The Bukkit API to compile against. Paper by default; -Pspigot compiles against Spigot instead, to catch
+         Paper-only API (MyDog has to run on Spigot). CI does both. -->
+    <profiles>
+        <profile>
+            <id>paper</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>io.papermc.paper</groupId>
+                    <artifactId>paper-api</artifactId>
+                    <version>${paperAPIVersion}</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>spigot</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.spigotmc</groupId>
+                    <artifactId>spigot-api</artifactId>
+                    <version>${spigotAPIVersion}</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 
     <build>
         <finalName>${project.name}-${project.version}</finalName>

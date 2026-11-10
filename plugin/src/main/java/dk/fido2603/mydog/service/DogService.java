@@ -335,8 +335,11 @@ public final class DogService {
 
     /** Saves how the wolf looks, so it can be revived looking the same. */
     private void rememberAppearance(Dog dog, Wolf wolf, DyeColor collar) {
-        Dog.Appearance appearance = new Dog.Appearance(collar, wolf.getVariant().getKey().toString(),
-                wolf.getSoundVariant().getKey().toString());
+        // Without personalities (Spigot), keep the one saved before, e.g. on Paper
+        NamespacedKey personality = TreatKind.PERSONALITY.of(wolf);
+        String soundVariant = personality != null ? personality.toString()
+                : dog.getAppearance() != null ? dog.getAppearance().soundVariant() : null;
+        Dog.Appearance appearance = new Dog.Appearance(collar, TreatKind.BREED.of(wolf).toString(), soundVariant);
         if (!appearance.equals(dog.getAppearance())) {
             dog.setAppearance(appearance);
             dogs.markChanged(dog);
@@ -392,7 +395,7 @@ public final class DogService {
     public boolean hasFreeChoice(Dog dog, TreatKind kind) {
         Settings.Breeds breeds = settings.get().breeds();
         Dog.Appearance appearance = dog.getAppearance();
-        if (!breeds.freeChoice() || appearance == null || dog.hasUsedFreeChoice(kind)) {
+        if (!breeds.freeChoice() || !kind.supported() || appearance == null || dog.hasUsedFreeChoice(kind)) {
             return false;
         }
         Instant cutoff = kind == TreatKind.BREED ? breeds.breedCutoff() : breeds.personalityCutoff();
