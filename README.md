@@ -2,6 +2,11 @@
 <div align="center">
 
 [![Build](https://github.com/HeroGamers/MyDog/actions/workflows/build.yml/badge.svg)](https://github.com/HeroGamers/MyDog/actions/workflows/build.yml)
+[![Spigot](https://img.shields.io/spiget/downloads/70260?label=Spigot&logo=spigotmc)](https://www.spigotmc.org/resources/mydog.70260/)
+[![Bukkit](https://img.shields.io/curseforge/dt/336223?label=Bukkit)](https://dev.bukkit.org/projects/mydog)
+[![Modrinth](https://img.shields.io/modrinth/dt/mydog?label=Modrinth&logo=modrinth)](https://modrinth.com/plugin/mydog)
+[![Hangar](https://img.shields.io/hangar/dt/MyDog?label=Hangar)](https://hangar.papermc.io/Hero/MyDog)
+[![bStats](https://img.shields.io/bstats/servers/18606?label=Servers)](https://bstats.org/plugin/bukkit/MyDog/18606)
 </div>
 
 Tamed wolves but at least 10x better.
@@ -75,6 +80,8 @@ It can look up dogs (`DogInfo` snapshots), give them experience, set their level
 ## Resources
 *	Resource page on [Spigot](https://www.spigotmc.org/resources/mydog.70260/).
 *	Project page on [Bukkit](https://dev.bukkit.org/projects/mydog).
+*	Project page on [Modrinth](https://modrinth.com/plugin/mydog).
+*	Project page on [Hangar](https://hangar.papermc.io/Hero/MyDog).
 
 ## Permissions
 ```YAML
