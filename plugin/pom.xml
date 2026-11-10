@@ -3,7 +3,7 @@
     <parent>
         <groupId>dk.fido2603</groupId>
         <artifactId>mydog-parent</artifactId>
-        <version>0.2.3-SNAPSHOT</version>
+        <version>0.3.0</version>
     </parent>
     <artifactId>mydog</artifactId>
     <name>MyDog</name>
