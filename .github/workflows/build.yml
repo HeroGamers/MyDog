@@ -27,11 +27,13 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: MyDog-${{ github.sha }}
-          path: target/MyDog-*.jar
+          path: |
+            plugin/target/MyDog-*.jar
+            api/target/mydog-api-*.jar
           if-no-files-found: error
 
   # Pushing a tag like v0.3.0 publishes a GitHub release with the jar attached.
-  # The tag (without the "v") has to match <version> in pom.xml.
+  # The tag (without the "v") has to match <version> in pom.xml. JitPack builds the API from the same tag.
   release:
     if: startsWith(github.ref, 'refs/tags/')
     needs: build
@@ -61,4 +63,4 @@ jobs:
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" target/MyDog-*.jar --title "$GITHUB_REF_NAME" --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" plugin/target/MyDog-*.jar api/target/mydog-api-*.jar --title "$GITHUB_REF_NAME" --generate-notes
