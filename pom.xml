@@ -1,11 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>dk.fido2603</groupId>
-    <artifactId>mydog</artifactId>
+    <artifactId>mydog-parent</artifactId>
     <version>0.2.3-SNAPSHOT</version>
-    <name>MyDog</name>
+    <packaging>pom</packaging>
+    <name>MyDog (parent)</name>
     <description>Tamed wolves but at least 10x better!</description>
     <url>https://github.com/${github.repo}</url>
+
+    <modules>
+        <!-- The API other plugins compile against (dk.fido2603.mydog.api) -->
+        <module>api</module>
+        <!-- The plugin itself, with the API bundled -->
+        <module>plugin</module>
+    </modules>
 
     <licenses>
         <license>
@@ -16,8 +24,11 @@
 
     <properties>
         <github.repo>HeroGamers/MyDog</github.repo>
+        <!-- The oldest Spigot MyDog supports; the API is compiled against it, so it can only use what Spigot has -->
+        <spigotAPIVersion>26.1-R0.1-SNAPSHOT</spigotAPIVersion>
         <paperAPIVersion>26.3.build.246-stable</paperAPIVersion>
         <adventureVersion>5.2.0</adventureVersion>
+        <junitVersion>6.1.3</junitVersion>
         <maven.compiler.release>25</maven.compiler.release>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
@@ -28,10 +39,15 @@
         <url>git@github.com:${github.repo}.git</url>
         <connection>scm:git:${project.scm.url}</connection>
         <developerConnection>scm:git:${project.scm.url}</developerConnection>
-      <tag>HEAD</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <repositories>
+        <!-- Spigot API, for the API module -->
+        <repository>
+            <id>spigotmc</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
         <!-- PaperMC repo for the Paper API -->
         <repository>
             <id>papermc</id>
@@ -43,140 +59,49 @@
             <url>https://jitpack.io</url>
         </repository>
     </repositories>
+
     <dependencies>
-        <!-- Paper API -->
-        <dependency>
-            <groupId>io.papermc.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>${paperAPIVersion}</version>
-            <scope>provided</scope>
-        </dependency>
-        <!-- VaultAPI -->
-        <dependency>
-            <groupId>com.github.MilkBowl</groupId>
-            <artifactId>VaultAPI</artifactId>
-            <version>1.7.1</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- bStats Bukkit for Plugin Statistics -->
-        <dependency>
-            <groupId>org.bstats</groupId>
-            <artifactId>bstats-bukkit</artifactId>
-            <version>3.2.1</version>
-            <scope>compile</scope>
-        </dependency>
-        <!-- MiniMessage and the legacy serializer. Spigot has no Adventure, so it is shaded and relocated
-             (Paper's own copy is left alone). Messages are rendered to legacy text, which both platforms accept. -->
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-minimessage</artifactId>
-            <version>${adventureVersion}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.kyori</groupId>
-            <artifactId>adventure-text-serializer-legacy</artifactId>
-            <version>${adventureVersion}</version>
-            <scope>compile</scope>
-        </dependency>
         <!-- Tests (for the parts that don't need a running server) -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>6.1.3</version>
+            <version>${junitVersion}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
-    <packaging>jar</packaging>
     <build>
         <defaultGoal>clean package</defaultGoal>
-        <finalName>${project.name}-${project.version}</finalName>
-        <resources>
-            <!-- Only plugin.yml needs ${project.version}; the other files are left untouched -->
-            <resource>
-                <filtering>true</filtering>
-                <directory>${project.basedir}/src/main/resources</directory>
-                <includes>
-                    <include>plugin.yml</include>
-                </includes>
-            </resource>
-            <resource>
-                <filtering>false</filtering>
-                <directory>${project.basedir}/src/main/resources</directory>
-                <excludes>
-                    <exclude>plugin.yml</exclude>
-                </excludes>
-            </resource>
-        </resources>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.15.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.5.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.6.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.4.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.12.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.2</version>
-                <configuration>
-                    <!-- Avoid generating dependency-reduced-pom which can cause issues in some builds -->
-                    <createDependencyReducedPom>false</createDependencyReducedPom>
-                    <artifactSet>
-                        <excludes>
-                            <!-- Annotation-only dependencies of Adventure -->
-                            <exclude>org.jetbrains:annotations</exclude>
-                            <exclude>org.jspecify:jspecify</exclude>
-                        </excludes>
-                    </artifactSet>
-                    <relocations>
-                        <relocation>
-                            <pattern>org.bstats</pattern>
-                            <shadedPattern>${project.groupId}.${project.artifactId}.libs.bstats</shadedPattern>
-                        </relocation>
-                        <relocation>
-                            <pattern>net.kyori</pattern>
-                            <shadedPattern>${project.groupId}.${project.artifactId}.libs.kyori</shadedPattern>
-                        </relocation>
-                    </relocations>
-                    <!-- Exclude signature files and duplicate MANIFESTs, and merge the plugin's manifest entries -->
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>META-INF/*.SF</exclude>
-                                <exclude>META-INF/*.DSA</exclude>
-                                <exclude>META-INF/*.RSA</exclude>
-                                <exclude>META-INF/MANIFEST.MF</exclude>
-                                <exclude>module-info.class</exclude>
-                                <exclude>META-INF/versions/*/module-info.class</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
-                    <transformers>
-                        <!-- Merge plugin/manufacturer entries into the final manifest -->
-                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>${project.groupId}.${project.artifactId}.MyDog</mainClass>
-                        </transformer>
-                        <!-- Merge service provider files if any -->
-                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                    </transformers>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.2</version>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
@@ -187,12 +112,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/${github.repo}</url>
-        </repository>
-    </distributionManagement>
 </project>

@@ -44,7 +44,7 @@ dependency-reduced-pom.xml
 mydog.iml
 
 # Maven build
-/target/
+target/
 /.mvn/
 
 # direnv (nix develop)

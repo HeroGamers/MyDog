@@ -42,6 +42,22 @@ MyDog upgrades `config.yml` and `dogs.yml` by itself on the first start, and kee
 Messages now live in `messages.yml` and use [MiniMessage](https://docs.advntr.dev/minimessage/format.html) instead of `&` color codes; any messages you had changed are converted and moved there.
 
 ## API for other plugins
+The API is published through [JitPack](https://jitpack.io/#HeroGamers/MyDog). In your `pom.xml`:
+
+```xml
+<repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+</repository>
+
+<dependency>
+    <groupId>com.github.HeroGamers.MyDog</groupId>
+    <artifactId>mydog-api</artifactId>
+    <version>v0.3.0</version> <!-- a release tag -->
+    <scope>provided</scope>
+</dependency>
+```
+
 MyDog registers a `MyDogApi` in Bukkit's services manager. Add `softdepend: [MyDog]` to your plugin.yml, then:
 
 ```java
