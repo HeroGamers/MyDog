@@ -141,6 +141,20 @@ breeds:
       grumpy: {craftable: true, shape: [GSG, SBS, GSG], ingredients: {G: gold_block, S: rotten_flesh, B: bone}}
       sad: {craftable: true, shape: [GSG, SBS, GSG], ingredients: {G: gold_block, S: ghast_tear, B: bone}}
 
+boosts:
+  # Stat treats permanently raise one of a dog's stats by per-treat, up to max in total, on top of what its level
+  # gives (right-click your dog with one). Health and damage are in points (2 health = 1 heart); speed is in percent.
+  # Like other treats they can be crafted, or handed out with /mydog givetreat <player> boost <stat>. Set
+  # craftable to false to only hand them out; remove a stat to have no treat for it.
+  # The default caps are about what survival gear gives a player: +11 damage is a Netherite sword with Sharpness V,
+  # and +40 health is roughly what full Netherite armor with Protection IV is worth. Raise them on servers where
+  # players get much stronger (e.g. with mcMMO).
+  enabled: true
+  treats:
+    health: {per-treat: 4, max: 40, craftable: true, shape: [DSD, SBS, DSD], ingredients: {D: diamond, S: glistering_melon_slice, B: bone}}
+    damage: {per-treat: 1, max: 11, craftable: true, shape: [DSD, SBS, DSD], ingredients: {D: diamond, S: blaze_rod, B: bone}}
+    speed: {per-treat: 2, max: 20, craftable: true, shape: [DSD, SBS, DSD], ingredients: {D: diamond, S: sugar, B: bone}}
+
 levels:
   # Let dogs gain experience and level up by killing mobs.
   enabled: true

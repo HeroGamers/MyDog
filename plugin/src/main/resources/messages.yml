@@ -66,8 +66,23 @@ treat:
       - '<gray>a <white><personality></white> personality.'
     same: '<gold><dog_name><gold> already has a <white><personality></white> personality.'
     used: '<gold><dog_name><gold> now has a <white><personality></white> personality!'
+  boost:
+    # The stat treat item. <stat> the stat, <amount> what one treat adds, <max> the most it can add in total.
+    name: '<green><stat> Treat'
+    lore:
+      - '<gray>Permanently gives your dog'
+      - '<white><amount> <stat></white><gray>, up to <white><max></white><gray>.'
+    # <total> the dog's boost to this stat now.
+    used: '<green><dog_name><green> got <white><amount> <stat></white><green>! <gray>(<total> of <max>)'
+    maxed: "<gold><dog_name><gold>'s <stat> can't go any higher with treats <gray>(<max>)<gold>."
   not-your-dog: '<red>You can only give treats to your own dogs.'
   disabled: '<red>This treat no longer works on this server.'
+
+# The stats that stat treats raise, as shown to players.
+boost:
+  health: health
+  damage: damage
+  speed: speed
 
 teleport:
   no-safe-location: "<red><bold>[<prefix>]</bold> Hello! Looks like you just teleported away from your Pet(s)! They can sadly not find a safe place to stay, so they are staying behind for now :( They will be waiting for you where you left them..."
@@ -250,6 +265,9 @@ command:
     name: '<aqua>Name: <dog_name>'
     # Shown once MyDog has seen the dog's wolf since this was added.
     breed: '<aqua>Breed: <white><breed> <gray>(<personality>)'
+    # The stats raised by treats. <boosts> lists each boosted stat as command.stats.boost (<amount> <stat>).
+    boosts: '<aqua>Boosts: <white><boosts>'
+    boost: '<amount> <stat>'
     level: '<aqua>Level: <white><level>'
     # <bar> a progress bar, <current> and <next> experience.
     experience: '<aqua>Experience: <bar> <aqua><bold>[</bold><dark_aqua><current></dark_aqua><bold>/</bold><next><bold>]'

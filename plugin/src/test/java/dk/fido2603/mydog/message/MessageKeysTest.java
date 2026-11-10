@@ -41,7 +41,8 @@ class MessageKeysTest {
             "command.personality.info", "command.personality.free-choice", "command.personality.no-free-choice",
             "command.personality.unknown", "command.personality.done", "command.personality.free-choice-reminder",
             "treat.breed.name", "treat.breed.lore", "treat.breed.same", "treat.breed.used",
-            "treat.personality.name", "treat.personality.lore", "treat.personality.same", "treat.personality.used");
+            "treat.personality.name", "treat.personality.lore", "treat.personality.same", "treat.personality.used",
+            "treat.boost.name", "treat.boost.lore", "boost.health", "boost.damage", "boost.speed");
 
     @Test
     void everyUsedKeyExists() throws IOException {

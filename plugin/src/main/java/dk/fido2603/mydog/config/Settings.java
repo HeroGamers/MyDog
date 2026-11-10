@@ -29,7 +29,17 @@ import org.bukkit.entity.Mob;
  * Everything in config.yml, read and checked once per (re)load. Bad values are logged and replaced with a default.
  */
 public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dogs, AttackMode attackMode, Breeds breeds,
-                       Levels levels) {
+                       Boosts boosts, Levels levels) {
+
+    /** Stat treats: each raises one stat by {@code perTreat}, up to {@code max} in total. */
+    public record Boosts(boolean enabled, Map<StatBoost, Boost> stats) {
+        public Optional<Boost> get(StatBoost stat) {
+            return enabled ? Optional.ofNullable(stats.get(stat)) : Optional.empty();
+        }
+    }
+
+    public record Boost(StatBoost stat, double perTreat, double max, boolean craftable, List<String> shape,
+                        Map<Character, Material> ingredients) {}
 
     /**
      * What dogs in attack mode go after.
@@ -161,7 +171,8 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 config.getBoolean("attack-mode.defend-owner-first"),
                 config.getBoolean("attack-mode.ignore-mythic-mobs"));
 
-        return new Settings(config.getBoolean("debug"), saving, teleport, dogs, attackMode, breeds(log, config), levels);
+        return new Settings(config.getBoolean("debug"), saving, teleport, dogs, attackMode, breeds(log, config),
+                boosts(log, config), levels);
     }
 
     /**
@@ -311,6 +322,26 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
             }
         }
         return types;
+    }
+
+    private static Boosts boosts(Logger log, ConfigurationSection config) {
+        Map<StatBoost, Boost> stats = new EnumMap<>(StatBoost.class);
+        for (StatBoost stat : StatBoost.values()) {
+            String path = "boosts.treats." + stat.id();
+            ConfigurationSection entry = section(config, path);
+            if (entry == null) {
+                continue;
+            }
+            double perTreat = entry.getDouble("per-treat");
+            double max = entry.getDouble("max");
+            if (perTreat <= 0 || max <= 0) {
+                log.warning(path + ": per-treat and max must be above 0, so there is no " + stat.id() + " treat.");
+                continue;
+            }
+            TreatRecipe crafting = recipe(log, path, TreatKind.BREED, NamespacedKey.minecraft(stat.id()), entry);
+            stats.put(stat, new Boost(stat, perTreat, max, crafting.craftable(), crafting.shape(), crafting.ingredients()));
+        }
+        return new Boosts(config.getBoolean("boosts.enabled"), stats);
     }
 
     private static Breeds breeds(Logger log, ConfigurationSection config) {

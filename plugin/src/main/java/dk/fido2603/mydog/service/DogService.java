@@ -21,12 +21,14 @@ import org.bukkit.Server;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.EquipmentSlotGroup;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -41,6 +43,7 @@ import dk.fido2603.mydog.api.event.DogTameEvent;
 import dk.fido2603.mydog.config.DefaultDogNames;
 import dk.fido2603.mydog.config.LevelTable;
 import dk.fido2603.mydog.config.Settings;
+import dk.fido2603.mydog.config.StatBoost;
 import dk.fido2603.mydog.config.TreatKind;
 import dk.fido2603.mydog.message.Messages;
 import dk.fido2603.mydog.objects.Dog;
@@ -55,6 +58,8 @@ public final class DogService {
     /** Removes leftovers of an old MyDog nametag from a name: the level ("[3]") and the mode ("[⚔]"). */
     private static final Pattern NAMETAG_EXTRAS = Pattern.compile("\\[\\d+]|\\[[⚔⛨]]");
     private static final Pattern LEGACY_CODES = Pattern.compile("(?i)[§&]([0-9A-FK-ORX]|#[0-9A-F]{6})");
+    /** A tamed wolf's max health in vanilla, used when levels are off. */
+    private static final double VANILLA_TAMED_HEALTH = 40.0;
     private static final List<Sound> PETTING_SOUNDS = List.of(Sound.ENTITY_WOLF_PANT, Sound.ENTITY_WOLF_AMBIENT);
 
     private final Server server;
@@ -232,16 +237,17 @@ public final class DogService {
     }
 
     public void updateWolf(Dog dog, Wolf wolf) {
-        applyNametag(dog, wolf);
-        rememberAppearance(dog, wolf, wolf.getCollarColor());
-
-        Settings.Levels levels = settings.get().levels();
-        if (!levels.enabled()) {
         // The wolf's own owner can drift from MyDog's, e.g. when a server switches between offline and online mode,
         // which changes player UUIDs. Vanilla (sitting, following) goes by the wolf's, so keep it in step.
         if (wolf.getOwner() == null || !wolf.getOwner().getUniqueId().equals(dog.getOwnerId())) {
             wolf.setOwner(server.getOfflinePlayer(dog.getOwnerId()));
         }
+        applyNametag(dog, wolf);
+        rememberAppearance(dog, wolf, wolf.getCollarColor());
+        applyBoosts(dog, wolf);
+
+        Settings.Levels levels = settings.get().levels();
+        if (!levels.enabled()) {
             return;
         }
         LevelTable.Level stats = levels.table().get(dog.getLevel());
@@ -255,6 +261,52 @@ public final class DogService {
             damage.setBaseValue(stats.damage());
         }
         applyEffects(dog, wolf, levels.table());
+    }
+
+    /**
+     * Stat treat boosts, as attribute modifiers on top of the level's base values, so they also apply with levels
+     * turned off. Health and damage add points; speed adds a percentage of the base speed.
+     */
+    private static void applyBoosts(Dog dog, Wolf wolf) {
+        for (StatBoost stat : StatBoost.values()) {
+            AttributeInstance attribute = wolf.getAttribute(switch (stat) {
+                case HEALTH -> Attribute.MAX_HEALTH;
+                case DAMAGE -> Attribute.ATTACK_DAMAGE;
+                case SPEED -> Attribute.MOVEMENT_SPEED;
+            });
+            if (attribute == null) {
+                continue;
+            }
+            NamespacedKey key = NamespacedKey.fromString("mydog:boost_" + stat.id());
+            // By NamespacedKey: the Key overload is an Adventure type, which is relocated in this jar
+            for (AttributeModifier modifier : List.copyOf(attribute.getModifiers())) {
+                if (modifier.getKey().equals(key)) {
+                    attribute.removeModifier(modifier);
+                }
+            }
+            double boost = dog.getBoost(stat);
+            if (boost > 0) {
+                attribute.addModifier(stat == StatBoost.SPEED
+                        ? new AttributeModifier(key, boost / 100.0, AttributeModifier.Operation.ADD_SCALAR, EquipmentSlotGroup.ANY)
+                        : new AttributeModifier(key, boost, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlotGroup.ANY));
+            }
+        }
+    }
+
+    /**
+     * Raises a stat by one treat's worth, up to its cap. Returns how much it went up: 0 when the stat is already
+     * at its cap.
+     */
+    public double addBoost(Dog dog, Settings.Boost boost) {
+        double current = dog.getBoost(boost.stat());
+        double added = Math.min(boost.perTreat(), boost.max() - current);
+        if (added <= 0) {
+            return 0;
+        }
+        dog.setBoost(boost.stat(), current + added);
+        dogs.markChanged(dog);
+        wolfOf(dog).ifPresent(wolf -> applyBoosts(dog, wolf));
+        return added;
     }
 
     /**
@@ -379,7 +431,9 @@ public final class DogService {
 
     /** The max health a dog's level gives it. */
     public double maxHealth(Dog dog) {
-        return settings.get().levels().table().get(dog.getLevel()).health();
+        Settings.Levels levels = settings.get().levels();
+        double base = levels.enabled() ? levels.table().get(dog.getLevel()).health() : VANILLA_TAMED_HEALTH;
+        return base + dog.getBoost(StatBoost.HEALTH);
     }
 
     // Entity#setCustomName(String) is deprecated on Paper in favor of components, but it is the only call Spigot has

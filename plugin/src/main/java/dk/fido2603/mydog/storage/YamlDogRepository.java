@@ -27,6 +27,7 @@ import org.bukkit.DyeColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import dk.fido2603.mydog.config.StatBoost;
 import dk.fido2603.mydog.config.TreatKind;
 import dk.fido2603.mydog.migration.DogsV1ToV2;
 import dk.fido2603.mydog.migration.VersionedYaml;
@@ -109,6 +110,9 @@ public final class YamlDogRepository implements DogRepository {
                 dog.setAppearance(new Dog.Appearance(collar, section.getString("appearance.variant"),
                         section.getString("appearance.sound-variant")));
             }
+            for (StatBoost stat : StatBoost.values()) {
+                dog.setBoost(stat, section.getDouble("boosts." + stat.id()));
+            }
             for (String coOwner : section.getStringList("co-owners")) {
                 try {
                     dog.addCoOwner(UUID.fromString(coOwner));
@@ -154,6 +158,11 @@ public final class YamlDogRepository implements DogRepository {
             section.set("appearance.collar", appearance.collar() != null ? appearance.collar().name().toLowerCase(Locale.ROOT) : null);
             section.set("appearance.variant", appearance.variant());
             section.set("appearance.sound-variant", appearance.soundVariant());
+        }
+        for (StatBoost stat : StatBoost.values()) {
+            if (dog.getBoost(stat) > 0) {
+                section.set("boosts." + stat.id(), dog.getBoost(stat));
+            }
         }
         if (!dog.getCoOwners().isEmpty()) {
             section.set("co-owners", dog.getCoOwners().stream().map(UUID::toString).toList());

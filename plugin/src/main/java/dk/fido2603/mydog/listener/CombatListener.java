@@ -117,16 +117,15 @@ public final class CombatListener implements Listener {
         if (lifesteal <= 0.0 || event.getFinalDamage() <= 0.0 || !(event.getDamager() instanceof Wolf wolf)) {
             return;
         }
-        dogService.dogOf(wolf).ifPresent(dog -> {
-            double maxHealth = dogService.maxHealth(dog);
-            AttributeInstance maxHealthAttribute = wolf.getAttribute(Attribute.MAX_HEALTH);
-            if (maxHealthAttribute != null && maxHealthAttribute.getBaseValue() != maxHealth) {
-                maxHealthAttribute.setBaseValue(maxHealth);
-            }
-            if (wolf.getHealth() < maxHealth) {
-                wolf.setHealth(Math.min(wolf.getHealth() + event.getFinalDamage() * lifesteal, maxHealth));
-            }
-        });
+        if (dogService.dogOf(wolf).isEmpty()) {
+            return;
+        }
+        // The wolf's real max health: its level's, plus any health treats
+        AttributeInstance maxHealthAttribute = wolf.getAttribute(Attribute.MAX_HEALTH);
+        double maxHealth = maxHealthAttribute != null ? maxHealthAttribute.getValue() : wolf.getHealth();
+        if (wolf.getHealth() < maxHealth) {
+            wolf.setHealth(Math.min(wolf.getHealth() + event.getFinalDamage() * lifesteal, maxHealth));
+        }
     }
 
     /** Dogs get experience for what they kill. */

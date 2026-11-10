@@ -26,6 +26,8 @@ ___
 *	The ability to add currently existing Tamed Wolves to the MyDog system, and register them as new Dogs (interact with them).
 *	Dog treats change your dog's breed or personality (how it sounds). Each one has its own, expensive, configurable recipe, or can be handed out by admins only, e.g. for shops and auctions.
 *	Dogs from before wolf breeds and personalities existed get to pick theirs once, for free.
+*	Stat treats permanently raise a dog's health, damage or speed, up to a configurable cap.
+*	Wolf armor can be made unbreakable, and owners are warned before their dog's armor breaks.
 *	Configurable all the way from the sound on LevelUp, the level table and the experience per mob, to every message (written in [MiniMessage](https://docs.advntr.dev/minimessage/format.html), in messages.yml).
 
 ### ToDo Feature-list
