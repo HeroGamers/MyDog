@@ -41,6 +41,7 @@ import dk.fido2603.mydog.command.StoreCommand;
 import dk.fido2603.mydog.command.TradeAcceptCommand;
 import dk.fido2603.mydog.command.TradeCommand;
 import dk.fido2603.mydog.command.TradeDeclineCommand;
+import dk.fido2603.mydog.config.ConfigDefaults;
 import dk.fido2603.mydog.config.Settings;
 import dk.fido2603.mydog.listener.CombatListener;
 import dk.fido2603.mydog.listener.InteractListener;
@@ -72,10 +73,6 @@ import dk.fido2603.mydog.util.DebugLog;
 public final class MyDog extends JavaPlugin {
     public static final int CONFIG_VERSION = 2;
     private static final int BSTATS_ID = 18606;
-    /** Tables the admin may shorten; missing entries in them are not filled in from the defaults. */
-    private static final List<String> FREE_FORM_SECTIONS = List.of("levels.table.", "levels.experience-per-kill.",
-            "breeds.treats.breeds.", "breeds.treats.personalities.");
-
     private volatile Settings settings;
     private Messages messages;
     private YamlDogRepository dogs;
@@ -240,17 +237,7 @@ public final class MyDog extends JavaPlugin {
         YamlConfiguration config = format.load(file, getLogger());
         YamlConfiguration defaults = bundledConfig();
 
-        boolean added = false;
-        for (String key : defaults.getKeys(true)) {
-            if (defaults.isConfigurationSection(key) || config.contains(key)
-                    || FREE_FORM_SECTIONS.stream().anyMatch(key::startsWith)) {
-                continue;
-            }
-            config.set(key, defaults.get(key));
-            config.setComments(key, defaults.getComments(key));
-            added = true;
-        }
-        if (added) {
+        if (ConfigDefaults.addMissing(config, defaults)) {
             try {
                 AtomicFiles.write(file.toPath(), config.saveToString());
                 getLogger().info("Added new settings to config.yml.");

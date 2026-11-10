@@ -145,7 +145,7 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 sound(log, config.getString("levels.level-up-sound", "")),
                 config.getBoolean("levels.player-kill-experience"),
                 "scaled".equalsIgnoreCase(config.getString("levels.mode", "table")) ? scaledTable(log, config) : levelTable(log, config),
-                experiencePerKill(log, config.getConfigurationSection("levels.experience-per-kill")),
+                experiencePerKill(log, section(config, "levels.experience-per-kill")),
                 Math.max(0, config.getInt("levels.experience-per-kill.default")));
 
         AttackMode attackMode = new AttackMode(
@@ -156,6 +156,18 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 config.getBoolean("attack-mode.ignore-mythic-mobs"));
 
         return new Settings(config.getBoolean("debug"), saving, teleport, dogs, attackMode, breeds(log, config), levels);
+    }
+
+    /**
+     * A section of the config, or of the defaults when the config doesn't have it. Bukkit's own
+     * getConfigurationSection hands out a new, empty section in that case, whose sub-sections have no keys.
+     */
+    private static ConfigurationSection section(ConfigurationSection config, String path) {
+        if (config.isSet(path)) {
+            return config.getConfigurationSection(path);
+        }
+        ConfigurationSection defaults = config.getDefaultSection();
+        return defaults != null ? defaults.getConfigurationSection(path) : null;
     }
 
     private static int atLeast(Logger log, ConfigurationSection config, String path, int min) {
@@ -187,7 +199,7 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
     }
 
     private static LevelTable levelTable(Logger log, ConfigurationSection config) {
-        ConfigurationSection section = config.getConfigurationSection("levels.table");
+        ConfigurationSection section = section(config, "levels.table");
         Map<Integer, LevelTable.Level> levels = new HashMap<>();
         if (section != null) {
             for (String key : section.getKeys(false)) {
@@ -299,7 +311,7 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
         List<TreatRecipe> recipes = new ArrayList<>();
         for (TreatKind kind : TreatKind.values()) {
             String path = "breeds.treats." + kind.configSection();
-            ConfigurationSection section = config.getConfigurationSection(path);
+            ConfigurationSection section = section(config, path);
             if (section == null) {
                 continue;
             }
