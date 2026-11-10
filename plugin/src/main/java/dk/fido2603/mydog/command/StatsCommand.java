@@ -16,9 +16,11 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.inventory.meta.Damageable;
 
 import dk.fido2603.mydog.config.Settings;
+import dk.fido2603.mydog.config.StatBoost;
 import dk.fido2603.mydog.message.Messages;
 import dk.fido2603.mydog.objects.Dog;
 import dk.fido2603.mydog.service.DogService;
+import dk.fido2603.mydog.service.TreatService;
 
 /** Shows a dog's level, experience, health, damage and where it was last seen. */
 public final class StatsCommand extends SubCommand {
@@ -42,6 +44,18 @@ public final class StatsCommand extends SubCommand {
         messages.send(sender, "command.stats.name", Messages.dog(dog));
         if (dog.getAppearance() != null) {
             messages.send(sender, "command.stats.breed", Messages.dog(dog));
+        }
+        // e.g. "+8 health, +2 damage", only the stats that have been boosted
+        Component boosts = null;
+        for (StatBoost stat : StatBoost.values()) {
+            if (dog.getBoost(stat) > 0) {
+                Component part = messages.component("command.stats.boost", Messages.component("stat", messages.component("boost." + stat.id())),
+                        Messages.text("amount", TreatService.boostAmount(stat, dog.getBoost(stat))));
+                boosts = boosts == null ? part : boosts.append(Component.text(", ")).append(part);
+            }
+        }
+        if (boosts != null) {
+            messages.send(sender, "command.stats.boosts", Messages.dog(dog), Messages.component("boosts", boosts));
         }
 
         Settings.Levels levels = services.settings().get().levels();

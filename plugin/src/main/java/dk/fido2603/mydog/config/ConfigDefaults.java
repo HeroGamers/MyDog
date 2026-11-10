@@ -11,7 +11,7 @@ public final class ConfigDefaults {
      * out on purpose and not filled in; a section that is missing entirely (a new feature) is added whole.
      */
     public static final List<String> FREE_FORM_SECTIONS = List.of("levels.table", "levels.experience-per-kill",
-            "breeds.treats.breeds", "breeds.treats.personalities");
+            "breeds.treats.breeds", "breeds.treats.personalities", "boosts.treats");
 
     private ConfigDefaults() {
     }

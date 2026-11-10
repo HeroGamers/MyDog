@@ -2,8 +2,10 @@ package dk.fido2603.mydog.objects;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -15,6 +17,7 @@ import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
+import dk.fido2603.mydog.config.StatBoost;
 import dk.fido2603.mydog.config.TreatKind;
 
 /**
@@ -52,6 +55,7 @@ public final class Dog {
     private final Set<TreatKind> freeChoicesUsed = EnumSet.noneOf(TreatKind.class);
     private Stored stored;
     private final Set<UUID> coOwners = new LinkedHashSet<>();
+    private final Map<StatBoost, Double> boosts = new EnumMap<>(StatBoost.class);
 
     /** A stored dog's health and the wolf armor it wore (or null). */
     public record Stored(double health, ItemStack armor) {}
@@ -144,6 +148,19 @@ public final class Dog {
 
     public void clearCoOwners() {
         coOwners.clear();
+    }
+
+    /** How much a stat treat has raised this stat so far (0 if none). */
+    public double getBoost(StatBoost stat) {
+        return boosts.getOrDefault(stat, 0.0);
+    }
+
+    public void setBoost(StatBoost stat, double amount) {
+        if (amount > 0) {
+            boosts.put(stat, amount);
+        } else {
+            boosts.remove(stat);
+        }
     }
 
     /** Whether the dog has been put away with /mydog store; its wolf doesn't exist until it is summoned. */

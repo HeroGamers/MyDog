@@ -114,7 +114,7 @@ public final class MyDog extends JavaPlugin {
                 new CombatListener(getServer(), dogService, messages, currentSettings),
                 new ArmorListener(this, dogService, messages, currentSettings),
                 new WorldListener(this, dogService, teleportService, currentSettings),
-                new TreatListener(this, dogService, treatService, messages))) {
+                new TreatListener(this, dogService, treatService, messages, currentSettings))) {
             getServer().getPluginManager().registerEvents(listener, this);
         }
 

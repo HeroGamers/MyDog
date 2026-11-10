@@ -59,9 +59,8 @@ class BundledConfigTest {
     @Test
     void everyTreatRecipeIsValid() {
         List<String> problems = new ArrayList<>();
-        for (TreatKind kind : TreatKind.values()) {
-            ConfigurationSection section = Objects.requireNonNull(
-                    config.getConfigurationSection("breeds.treats." + kind.configSection()));
+        for (String path : List.of("breeds.treats.breeds", "breeds.treats.personalities", "boosts.treats")) {
+            ConfigurationSection section = Objects.requireNonNull(config.getConfigurationSection(path));
             for (String key : section.getKeys(false)) {
                 Set<Character> ingredients = new HashSet<>();
                 ConfigurationSection ingredientSection = Objects.requireNonNull(section.getConfigurationSection(key + ".ingredients"));
