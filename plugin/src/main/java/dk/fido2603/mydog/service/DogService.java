@@ -237,6 +237,11 @@ public final class DogService {
 
         Settings.Levels levels = settings.get().levels();
         if (!levels.enabled()) {
+        // The wolf's own owner can drift from MyDog's, e.g. when a server switches between offline and online mode,
+        // which changes player UUIDs. Vanilla (sitting, following) goes by the wolf's, so keep it in step.
+        if (wolf.getOwner() == null || !wolf.getOwner().getUniqueId().equals(dog.getOwnerId())) {
+            wolf.setOwner(server.getOfflinePlayer(dog.getOwnerId()));
+        }
             return;
         }
         LevelTable.Level stats = levels.table().get(dog.getLevel());
