@@ -61,7 +61,10 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
     public record Saving(boolean instant, int autosaveMinutes) {}
 
     public record Teleport(boolean enabled, boolean onWorldChange, boolean allTameables,
-                           boolean expandedSearch, boolean distanceCheck, double maxDistance) {}
+                           boolean expandedSearch, boolean distanceCheck, double maxDistance, Comehere comehere) {}
+
+    /** /mydog comehere: whether it may load the chunk a dog is in, and how often (per player). */
+    public record Comehere(boolean loadChunks, int cooldownSeconds) {}
 
     public record Dogs(boolean randomCollarColor, List<String> names, boolean nametagOnlyOnHover,
                        boolean nametagShowLevel, boolean allowNametagRename, boolean arrowDamage, boolean crammingDamage,
@@ -107,7 +110,10 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 config.getBoolean("teleport.all-tameables"),
                 config.getBoolean("teleport.expanded-search"),
                 config.getBoolean("teleport.distance-check.enabled"),
-                Math.max(1.0, config.getDouble("teleport.distance-check.max-distance")));
+                Math.max(1.0, config.getDouble("teleport.distance-check.max-distance")),
+                new Comehere(
+                        config.getBoolean("teleport.comehere.load-chunks"),
+                        atLeast(log, config, "teleport.comehere.cooldown-seconds", 0)));
 
         Dogs dogs = new Dogs(
                 config.getBoolean("dogs.random-collar-color"),
