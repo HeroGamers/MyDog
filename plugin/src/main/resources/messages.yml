@@ -239,6 +239,10 @@ command:
     done: '<gold><bold>[<prefix>]</bold> Come here! Good doggo, <dog_name>!'
     unreachable: '<red><bold>[<prefix>]</bold> Aww bonkers! Seems like your Dog is at a location that cannot be loaded right now!'
     stored: '<red><bold>[<prefix>]</bold> <dog_name><red> is stored. Bring it back with <white>/mydog summon <id></white>.'
+    # teleport.comehere.load-chunks is off, and the dog is far away.
+    not-loaded: '<red><bold>[<prefix>]</bold> <dog_name><red> is too far away to hear you.'
+    # <seconds> until comehere can fetch far-away dogs again.
+    cooldown: '<red><bold>[<prefix>]</bold> Your dogs that are far away need a moment; try again in <seconds>s.'
   stats:
     name: '<aqua>Name: <dog_name>'
     # Shown once MyDog has seen the dog's wolf since this was added.

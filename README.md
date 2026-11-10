@@ -94,6 +94,9 @@ mydog.putdown:
 mydog.comehere:
   description: Player can force their Dogs to load and teleport to the position of the player
   default: true
+mydog.comehere.nocooldown:
+  description: Player can fetch far-away dogs with /mydog comehere without waiting for the cooldown
+  default: op
 mydog.dogs:
   description: Player can get an overview about their Dogs
   default: true

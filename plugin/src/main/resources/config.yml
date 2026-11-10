@@ -30,6 +30,13 @@ teleport:
     enabled: true
     # How far away (in blocks) a dog has to be before it is brought back.
     max-distance: 30
+  comehere:
+    # Let /mydog comehere load the chunk a dog was last seen in, to fetch dogs that are far away. Loading a chunk
+    # costs the server a moment, so it is limited by the cooldown below. Existing chunks are never generated.
+    load-chunks: true
+    # How long (in seconds) a player has to wait before comehere loads chunks again. Calling dogs that are
+    # already loaded is never limited. Players with mydog.comehere.nocooldown (and operators) skip it.
+    cooldown-seconds: 30
 
 dogs:
   # Give newly tamed dogs a random collar color.
