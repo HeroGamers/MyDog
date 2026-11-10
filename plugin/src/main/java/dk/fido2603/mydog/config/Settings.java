@@ -69,7 +69,10 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
     public record Dogs(boolean randomCollarColor, List<String> names, boolean nametagOnlyOnHover,
                        boolean nametagShowLevel, boolean allowNametagRename, boolean arrowDamage, boolean crammingDamage,
                        boolean protectFromOtherPlayers, boolean invulnerable, int calmSeconds, double lifesteal,
-                       LowHealthWarning lowHealthWarning, Revival revival, AutoFeed autoFeed) {}
+                       LowHealthWarning lowHealthWarning, Revival revival, AutoFeed autoFeed, Armor armor) {}
+
+    /** Wolf armor on dogs: never wearing out, and warning the owner below {@code warnBelow} durability left. */
+    public record Armor(boolean unbreakable, int warnBelow) {}
 
     public record LowHealthWarning(boolean enabled, double threshold, long cooldownMillis) {}
 
@@ -138,7 +141,10 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 new AutoFeed(
                         config.getBoolean("dogs.auto-feed.enabled"),
                         share(log, config, "dogs.auto-feed.below"),
-                        Math.max(1.0, config.getDouble("dogs.auto-feed.range"))));
+                        Math.max(1.0, config.getDouble("dogs.auto-feed.range"))),
+                new Armor(
+                        config.getBoolean("dogs.armor.unbreakable"),
+                        atLeast(log, config, "dogs.armor.warn-below", 0)));
 
         Levels levels = new Levels(
                 config.getBoolean("levels.enabled"),

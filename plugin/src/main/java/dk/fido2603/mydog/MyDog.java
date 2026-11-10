@@ -43,6 +43,7 @@ import dk.fido2603.mydog.command.TradeCommand;
 import dk.fido2603.mydog.command.TradeDeclineCommand;
 import dk.fido2603.mydog.config.ConfigDefaults;
 import dk.fido2603.mydog.config.Settings;
+import dk.fido2603.mydog.listener.ArmorListener;
 import dk.fido2603.mydog.listener.CombatListener;
 import dk.fido2603.mydog.listener.InteractListener;
 import dk.fido2603.mydog.listener.TamingListener;
@@ -111,6 +112,7 @@ public final class MyDog extends JavaPlugin {
                 new TamingListener(this, dogService, messages, currentSettings),
                 new InteractListener(dogService, messages, currentSettings),
                 new CombatListener(getServer(), dogService, messages, currentSettings),
+                new ArmorListener(this, dogService, messages, currentSettings),
                 new WorldListener(this, dogService, teleportService, currentSettings),
                 new TreatListener(this, dogService, treatService, messages))) {
             getServer().getPluginManager().registerEvents(listener, this);

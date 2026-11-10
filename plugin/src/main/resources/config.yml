@@ -72,6 +72,12 @@ dogs:
     threshold: 0.25
     # Minimum time between two warnings for the same dog, in milliseconds.
     cooldown-millis: 1000
+  armor:
+    # Wolf armor on dogs never wears out. It stays unbreakable when taken off (wolf armor has no other use).
+    unbreakable: false
+    # Warn the owner when their dog's armor has this much durability left or less (of 64; vanilla cracks it at 60,
+    # 44 and 20), and when it breaks. 0 only warns when it breaks.
+    warn-below: 20
   auto-feed:
     # Hurt dogs near their owner eat wolf food (meat, rotten flesh first) from the owner's inventory, every 5 seconds.
     enabled: false
