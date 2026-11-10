@@ -164,7 +164,7 @@ levels:
   # Let dogs gain experience from killing players.
   player-kill-experience: true
   # "table" uses the table below. "scaled" builds the levels from the scaled section instead, for a quick setup
-  # (it has no player-damage or effects).
+  # (it has no player-damage, effects or armor-proficiency).
   mode: table
   scaled:
     max-level: 20
@@ -182,17 +182,19 @@ levels:
   # Add effects to give dogs potion effects from that level up, e.g. effects: [speed:1, regeneration:2] for Speed I and
   # Regeneration II. A higher level can raise an effect, or remove it with :0. See
   # https://minecraft.wiki/w/Effect#Effect_list for the names.
+  # armor-proficiency is how much less wear (in percent) wolf armor takes on dogs of that level: 50 makes it last twice
+  # as long, 100 makes it unbreakable.
   table:
     1: {experience: 0, health: 40, damage: 4}
     2: {experience: 10, health: 42, damage: 5}
-    3: {experience: 100, health: 44, damage: 6}
-    4: {experience: 200, health: 46, damage: 7}
-    5: {experience: 500, health: 48, damage: 8}
-    6: {experience: 1000, health: 52, damage: 11}
-    7: {experience: 2000, health: 58, damage: 13}
-    8: {experience: 3000, health: 62, damage: 15}
-    9: {experience: 4000, health: 66, damage: 17}
-    10: {experience: 5000, health: 72, damage: 20}
+    3: {experience: 100, health: 44, damage: 6, armor-proficiency: 5}
+    4: {experience: 200, health: 46, damage: 7, armor-proficiency: 10}
+    5: {experience: 500, health: 48, damage: 8, armor-proficiency: 15}
+    6: {experience: 1000, health: 52, damage: 11, armor-proficiency: 20}
+    7: {experience: 2000, health: 58, damage: 13, armor-proficiency: 25}
+    8: {experience: 3000, health: 62, damage: 15, armor-proficiency: 30}
+    9: {experience: 4000, health: 66, damage: 17, armor-proficiency: 40}
+    10: {experience: 5000, health: 72, damage: 20, armor-proficiency: 50}
   # Experience a dog gets for each kill.
   # Keys are entity types, see https://minecraft.wiki/w/Java_Edition_data_values#Entities
   experience-per-kill:

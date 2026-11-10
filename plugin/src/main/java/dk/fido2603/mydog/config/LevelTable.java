@@ -23,9 +23,10 @@ public final class LevelTable {
      * @param playerDamage damage dealt to players instead of {@code damage}, or null to use {@code damage}
      * @param effects      potion effects (by key) and their level (1 = I) from this level up; 0 removes an effect
      *                     an earlier level gave
+     * @param armorProficiency how much less wear (in percent, 0 to 100) wolf armor takes on dogs of this level
      */
     public record Level(int level, int experience, double health, double damage, Double playerDamage,
-                        Map<NamespacedKey, Integer> effects) {
+                        Map<NamespacedKey, Integer> effects, double armorProficiency) {
         public Level {
             effects = Map.copyOf(effects);
             health = Math.max(health, MIN_HEALTH);
@@ -33,6 +34,12 @@ public final class LevelTable {
             if (playerDamage != null) {
                 playerDamage = Math.max(playerDamage, 0.0);
             }
+            armorProficiency = Math.clamp(armorProficiency, 0.0, 100.0);
+        }
+
+        public Level(int level, int experience, double health, double damage, Double playerDamage,
+                     Map<NamespacedKey, Integer> effects) {
+            this(level, experience, health, damage, playerDamage, effects, 0.0);
         }
 
         public Level(int level, int experience, double health, double damage) {
