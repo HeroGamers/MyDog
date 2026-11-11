@@ -77,7 +77,8 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
     public record Comehere(boolean loadChunks, int cooldownSeconds) {}
 
     public record Dogs(boolean randomCollarColor, List<String> names, boolean nametagOnlyOnHover,
-                       boolean nametagShowLevel, boolean allowNametagRename, boolean arrowDamage, boolean crammingDamage,
+                       boolean nametagShowLevel, boolean allowNametagRename, boolean followOwnerChanges,
+                       boolean arrowDamage, boolean crammingDamage,
                        boolean protectFromOtherPlayers, boolean invulnerable, int calmSeconds, double lifesteal,
                        LowHealthWarning lowHealthWarning, Revival revival, AutoFeed autoFeed, Armor armor) {}
 
@@ -134,6 +135,7 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 config.getBoolean("dogs.nametag.only-on-hover"),
                 config.getBoolean("dogs.nametag.show-level"),
                 config.getBoolean("dogs.allow-nametag-rename"),
+                config.getBoolean("dogs.follow-owner-changes"),
                 config.getBoolean("dogs.arrow-damage"),
                 config.getBoolean("dogs.cramming-damage"),
                 config.getBoolean("dogs.protection.from-other-players"),
@@ -260,16 +262,22 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
         if (section == null) {
             return experience;
         }
+        // The bundled list has mobs from the newest Minecraft, so on older servers some are unknown: one line, not one each
+        List<String> unknown = new ArrayList<>();
         for (String key : section.getKeys(false)) {
             if (key.equals("default")) {
                 continue;
             }
             EntityType type = Registry.ENTITY_TYPE.get(NamespacedKey.minecraft(key.toLowerCase(Locale.ROOT)));
             if (type == null) {
-                log.warning("Unknown entity type '" + key + "' in levels.experience-per-kill, skipping it.");
+                unknown.add(key);
                 continue;
             }
             experience.put(type, Math.max(0, section.getInt(key)));
+        }
+        if (!unknown.isEmpty()) {
+            log.warning("Skipping entity types in levels.experience-per-kill that this server doesn't have: "
+                    + String.join(", ", unknown));
         }
         return experience;
     }

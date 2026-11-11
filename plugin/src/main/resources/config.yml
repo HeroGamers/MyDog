@@ -50,6 +50,10 @@ dogs:
     show-level: true
   # Let owners rename their dog with a name tag.
   allow-nametag-rename: true
+  # When another plugin gives a dog to another player (e.g. /givepet from GriefPrevention or its GivePet addon), make
+  # them its owner in MyDog too, like a free /mydog trade: it gets their next free ID, and their dog limit applies.
+  # When off, the dog goes back to its owner, so dogs only change hands through /mydog trade.
+  follow-owner-changes: true
   # Let arrows hurt dogs.
   arrow-damage: false
   # Let dogs take damage from being crammed together (too many mobs in one spot). Off by default, since a pack of

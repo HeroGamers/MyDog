@@ -25,11 +25,11 @@
     <properties>
         <github.repo>HeroGamers/MyDog</github.repo>
         <!-- The oldest Spigot MyDog supports; the API is compiled against it, so it can only use what Spigot has -->
-        <spigotAPIVersion>26.1-R0.1-SNAPSHOT</spigotAPIVersion>
+        <spigotAPIVersion>1.21.3-R0.1-SNAPSHOT</spigotAPIVersion>
         <paperAPIVersion>26.3.build.246-stable</paperAPIVersion>
         <adventureVersion>5.2.0</adventureVersion>
         <junitVersion>6.1.3</junitVersion>
-        <maven.compiler.release>25</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
         <encoding>UTF-8</encoding>
         <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>

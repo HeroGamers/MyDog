@@ -22,6 +22,7 @@ import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Wolf;
@@ -40,6 +41,7 @@ import dk.fido2603.mydog.api.event.DogReleaseEvent;
 import dk.fido2603.mydog.api.event.DogRenameEvent;
 import dk.fido2603.mydog.api.event.DogReviveEvent;
 import dk.fido2603.mydog.api.event.DogTameEvent;
+import dk.fido2603.mydog.api.event.DogTradeEvent;
 import dk.fido2603.mydog.config.DefaultDogNames;
 import dk.fido2603.mydog.config.LevelTable;
 import dk.fido2603.mydog.config.Settings;
@@ -237,11 +239,7 @@ public final class DogService {
     }
 
     public void updateWolf(Dog dog, Wolf wolf) {
-        // The wolf's own owner can drift from MyDog's, e.g. when a server switches between offline and online mode,
-        // which changes player UUIDs. Vanilla (sitting, following) goes by the wolf's, so keep it in step.
-        if (wolf.getOwner() == null || !wolf.getOwner().getUniqueId().equals(dog.getOwnerId())) {
-            wolf.setOwner(server.getOfflinePlayer(dog.getOwnerId()));
-        }
+        syncOwner(dog, wolf);
         applyNametag(dog, wolf);
         rememberAppearance(dog, wolf, wolf.getCollarColor());
         applyBoosts(dog, wolf);
@@ -517,7 +515,46 @@ public final class DogService {
         dogs.markChanged(dog);
     }
 
-    /** Hands a dog over to a new owner (after a trade). It gets the new owner's lowest free ID. */
+    /** {@link #syncOwner(Dog, Wolf)} if the dog's wolf is loaded: before a dog is used, so it goes by its real owner. */
+    public void syncOwner(Dog dog) {
+        wolfOf(dog).ifPresent(wolf -> syncOwner(dog, wolf));
+    }
+
+    /**
+     * Keeps the wolf's own owner and MyDog's in step, since vanilla (sitting, following) goes by the wolf's. When
+     * another plugin gave the wolf to a player who is online (e.g. GriefPrevention's /givepet), that is a handover if
+     * dogs.follow-owner-changes is on. Otherwise MyDog's owner is put back. The wolf's owner also drifts when a server
+     * switches between offline and online mode, which changes player UUIDs; then nobody online has the wolf's.
+     */
+    public void syncOwner(Dog dog, Wolf wolf) {
+        AnimalTamer tamer = wolf.getOwner();
+        if (tamer != null && tamer.getUniqueId().equals(dog.getOwnerId())) {
+            return;
+        }
+        Player newOwner = tamer != null ? server.getPlayer(tamer.getUniqueId()) : null;
+        if (newOwner != null && settings.get().dogs().followOwnerChanges() && acceptHandover(dog, newOwner)) {
+            return;
+        }
+        wolf.setOwner(server.getOfflinePlayer(dog.getOwnerId()));
+    }
+
+    /** A handover by another plugin counts as a free trade: the dog limit and DogTradeEvent apply. */
+    private boolean acceptHandover(Dog dog, Player newOwner) {
+        if (!canOwnMore(newOwner)) {
+            messages.send(newOwner, "dog.handover-limit", Messages.dog(dog));
+            return false;
+        }
+        if (fire(new DogTradeEvent(MyDogApiService.info(dog), dog.getOwnerId(), newOwner, 0.0)).isCancelled()) {
+            messages.send(newOwner, "command.cancelled");
+            return false;
+        }
+        debug.log(() -> dog.getDogName() + " (" + dog.getDogId() + ") was given to " + newOwner.getName() + " by another plugin");
+        transfer(dog, newOwner);
+        messages.send(newOwner, "dog.handover", Messages.dog(dog));
+        return true;
+    }
+
+    /** Hands a dog over to a new owner (after a trade, or another plugin's). It gets the new owner's lowest free ID. */
     public void transfer(Dog dog, Player newOwner) {
         dog.setOwnerId(newOwner.getUniqueId());
         // Co-owners were the old owner's friends

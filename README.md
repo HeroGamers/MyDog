@@ -41,7 +41,7 @@ To view the list of features, please visit the [project page](https://github.com
 For new feature requests, please open a GitHub Issue.
 
 ## Requirements
-*	A Spigot or Paper server on Minecraft 26.1 or newer, running Java 25.
+*	A Spigot or Paper server on Minecraft 1.21.3 or newer (including 26.x), running Java 21 or newer.
 *	Optional: [Vault](https://www.spigotmc.org/resources/vault.34315/) and an economy plugin, for trading dogs for money and paying for revivals.
 
 ## Upgrading from 0.2.x

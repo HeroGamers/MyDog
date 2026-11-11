@@ -1,6 +1,8 @@
 package dk.fido2603.mydog.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +62,8 @@ class LevelTableTest {
     @Test
     void scaledTableSpreadsStats() {
         LevelTable scaled = LevelTable.scaled(5, 1000, 2.0, 40, 80, 4, 20);
+        assertTrue(scaled.scaled());
+        assertFalse(table.scaled());
         assertEquals(1, scaled.minLevel());
         assertEquals(5, scaled.maxLevel());
         assertEquals(new LevelTable.Level(1, 0, 40, 4), scaled.get(1));

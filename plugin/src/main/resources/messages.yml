@@ -48,6 +48,9 @@ dog:
   auto-fed: '<gray><dog_name><gray> ate some <food> from your inventory.'
   # Shown when a player right-clicks someone else's dog. Set to '' to turn it off.
   owner-info: '<gray>This is <dog_name><gray>, <owner>''s dog.'
+  # Another plugin gave a dog to this player (dogs.follow-owner-changes in config.yml).
+  handover: '<gold><bold>[<prefix>]</bold> <dog_name><gold> is now your dog, with ID <aqua><id></aqua>!'
+  handover-limit: '<red><bold>[<prefix>]</bold> <dog_name><red> went back to <owner>: you cannot own any more dogs.'
 
 treat:
   breed:

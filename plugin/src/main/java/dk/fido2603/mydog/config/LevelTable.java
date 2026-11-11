@@ -48,12 +48,18 @@ public final class LevelTable {
     }
 
     private final NavigableMap<Integer, Level> levels;
+    private final boolean scaled;
 
     public LevelTable(Map<Integer, Level> levels) {
+        this(levels, false);
+    }
+
+    private LevelTable(Map<Integer, Level> levels, boolean scaled) {
         if (levels.isEmpty()) {
             throw new IllegalArgumentException("The level table needs at least one level");
         }
         this.levels = Collections.unmodifiableNavigableMap(new TreeMap<>(levels));
+        this.scaled = scaled;
     }
 
     /**
@@ -71,7 +77,15 @@ public final class LevelTable {
             double damage = Math.round((minDamage + (maxDamage - minDamage) * t) * 10.0) / 10.0;
             levels.put(level, new Level(level, experience, health, damage));
         }
-        return new LevelTable(levels);
+        return new LevelTable(levels, true);
+    }
+
+    /**
+     * Whether the levels were built from {@code levels.scaled} ({@code levels.mode: scaled}) instead of listed in
+     * {@code levels.table}.
+     */
+    public boolean scaled() {
+        return scaled;
     }
 
     public int minLevel() {
