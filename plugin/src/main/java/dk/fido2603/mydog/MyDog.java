@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.bstats.bukkit.Metrics;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
@@ -73,13 +72,12 @@ import dk.fido2603.mydog.util.DebugLog;
 /*          https://github.com/DogOnFire/MyHorse          */
 public final class MyDog extends JavaPlugin {
     public static final int CONFIG_VERSION = 2;
-    private static final int BSTATS_ID = 18606;
     private volatile Settings settings;
     private Messages messages;
     private YamlDogRepository dogs;
     private DogService dogService;
     private TreatService treatService;
-    private Metrics metrics;
+    private MyDogMetrics metrics;
     private int minutesSinceSave;
 
     @Override
@@ -132,7 +130,9 @@ public final class MyDog extends JavaPlugin {
         getServer().getServicesManager().register(MyDogApi.class, new MyDogApiService(dogService, currentSettings), this,
                 ServicePriority.Normal);
 
-        metrics = new Metrics(this, BSTATS_ID);
+        metrics = new MyDogMetrics(this, dogs, currentSettings);
+        // First on the first tick: MyDog enables at STARTUP, before economy plugins register with Vault
+        getServer().getScheduler().runTaskTimer(this, metrics::refresh, 1L, MyDogMetrics.REFRESH_TICKS);
     }
 
     private void registerCommands(CommandServices services) {
@@ -211,6 +211,7 @@ public final class MyDog extends JavaPlugin {
         for (Dog dog : List.copyOf(dogs.all())) {
             dogService.updateWolf(dog);
         }
+        metrics.refresh();
         return true;
     }
 
