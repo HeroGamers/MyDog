@@ -8,7 +8,10 @@ import org.bukkit.event.HandlerList;
 
 import dk.fido2603.mydog.api.DogInfo;
 
-/** A buyer accepted a dog trade. Fired before any money changes hands. */
+/**
+ * A buyer accepted a dog trade. Fired before any money changes hands. Also fired, with price 0, when another plugin
+ * gave the dog to another player (MyDog config {@code dogs.follow-owner-changes}); cancelling it gives the dog back.
+ */
 public class DogTradeEvent extends DogEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
 

@@ -62,6 +62,7 @@ public final class TradeService {
         }
 
         Optional<Dog> dog = dogService.find(trade.dogId());
+        dog.ifPresent(dogService::syncOwner);
         // The dog must still belong to the seller, and its wolf must be loaded so it can change owner
         if (dog.isEmpty() || dog.get().isDead() || !dog.get().getOwnerId().equals(trade.sellerId())
                 || dogService.wolfOf(dog.get()).isEmpty()) {

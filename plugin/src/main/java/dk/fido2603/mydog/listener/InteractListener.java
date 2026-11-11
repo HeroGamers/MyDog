@@ -52,6 +52,7 @@ public final class InteractListener implements Listener {
             return;
         }
         Dog dog = found.get();
+        dogService.syncOwner(dog, wolf);
         dogService.updateLastSeen(dog, wolf);
 
         // Sneak-clicking pets the dog, unless the player is holding wolf food. Only the main hand counts, so the

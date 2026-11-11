@@ -77,7 +77,8 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
     public record Comehere(boolean loadChunks, int cooldownSeconds) {}
 
     public record Dogs(boolean randomCollarColor, List<String> names, boolean nametagOnlyOnHover,
-                       boolean nametagShowLevel, boolean allowNametagRename, boolean arrowDamage, boolean crammingDamage,
+                       boolean nametagShowLevel, boolean allowNametagRename, boolean followOwnerChanges,
+                       boolean arrowDamage, boolean crammingDamage,
                        boolean protectFromOtherPlayers, boolean invulnerable, int calmSeconds, double lifesteal,
                        LowHealthWarning lowHealthWarning, Revival revival, AutoFeed autoFeed, Armor armor) {}
 
@@ -134,6 +135,7 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
                 config.getBoolean("dogs.nametag.only-on-hover"),
                 config.getBoolean("dogs.nametag.show-level"),
                 config.getBoolean("dogs.allow-nametag-rename"),
+                config.getBoolean("dogs.follow-owner-changes"),
                 config.getBoolean("dogs.arrow-damage"),
                 config.getBoolean("dogs.cramming-damage"),
                 config.getBoolean("dogs.protection.from-other-players"),
