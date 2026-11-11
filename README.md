@@ -60,7 +60,7 @@ The API is published through [JitPack](https://jitpack.io/#HeroGamers/MyDog). In
 <dependency>
     <groupId>com.github.HeroGamers.MyDog</groupId>
     <artifactId>mydog-api</artifactId>
-    <version>v0.3.0</version> <!-- a release tag -->
+    <version>vX.Y.Z</version> <!-- a release tag, see https://github.com/HeroGamers/MyDog/releases -->
     <scope>provided</scope>
 </dependency>
 ```
