@@ -13,12 +13,14 @@ nix develop                               # devshell with JDK 25 + Maven (flake.
 mvn clean package                         # default goal; tests and builds plugin/target/MyDog-<version>.jar
 mvn test -pl plugin -am -Dtest=LegacyTextTest -Dsurefire.failIfNoSpecifiedTests=false  # one test class (append #method for one test)
 mvn -Pspigot -pl plugin -am clean compile  # compile against spigot-api instead: fails on any Paper-only API (CI runs this too)
+mvn -q -pl api dependency:build-classpath -Dmdep.outputFile=target/spigot.classpath \
+  && java ci/LinkCheck.java plugin/target/MyDog-*.jar "$(cat api/target/spigot.classpath)"  # after package: the jar may only use API the oldest supported Spigot has (CI runs this too)
 ```
 
 - Two Maven modules under a parent `pom.xml` (shared versions and repositories):
-  - `api/` (`mydog-api`): the public API, `dk.fido2603.mydog.api`. It is compiled against `spigot-api` of the oldest supported Minecraft (26.1), so it can only use what Spigot has. It is published with sources and javadoc through JitPack (`jitpack.yml` fetches JDK 25 itself), from release tags.
+  - `api/` (`mydog-api`): the public API, `dk.fido2603.mydog.api`. It is compiled against `spigot-api` of the oldest supported Minecraft (1.21.3), so it can only use what Spigot has. It is published with sources and javadoc through JitPack (`jitpack.yml` fetches JDK 25 itself), from release tags.
   - `plugin/` (`mydog`): everything else. It depends on `mydog-api` and bundles it into the plugin jar.
-- Java 25 (`maven.compiler.release`). CI (`.github/workflows/build.yml`) builds on JDK 25 for every push and PR. Pushing a tag `v<pom version>` (e.g. `v0.3.0`) publishes a GitHub release with the plugin and API jars.
+- Built with JDK 25 but targets Java 21 (`maven.compiler.release`), since 1.21.x servers run on Java 21. Minecraft 1.21.3 is the floor: before it `Attribute` and `Sound` were enums and the attributes had `GENERIC_` names, which the jar (compiled against Paper 26.x) cannot link against. CI (`.github/workflows/build.yml`) builds on JDK 25 for every push and PR. Pushing a tag `v<pom version>` (e.g. `v0.3.0`) publishes a GitHub release with the plugin and API jars.
 - Tests only cover code that runs without a server: migrations, `LegacyText`, `LevelTable`, and `MessageKeysTest` (every message key used in code must exist in the bundled `messages.yml`). Anything touching `Registry`, entities or the scheduler can only be checked on a real server.
 - Adventure (MiniMessage + legacy serializer) and bStats are shaded and relocated to `dk.fido2603.mydog.libs.*`. Never pass Adventure objects to Bukkit/Paper API, and never call Adventure methods on Bukkit objects (e.g. `Sound#key()`): after relocation those are different classes. Text is turned into legacy `§` strings with `Messages.legacy` before it reaches Bukkit.
 - Only `plugin.yml` is Maven-filtered (for `${project.version}`).

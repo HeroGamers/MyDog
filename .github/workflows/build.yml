@@ -32,6 +32,12 @@ jobs:
             api/target/mydog-api-*.jar
           if-no-files-found: error
 
+      # The jar is compiled against the newest Paper API; check it only references what the oldest supported Spigot has
+      - name: Check the jar links against the oldest supported Spigot
+        run: |
+          mvn -B -q -pl api dependency:build-classpath -Dmdep.outputFile=target/spigot.classpath
+          java ci/LinkCheck.java plugin/target/MyDog-*.jar "$(cat api/target/spigot.classpath)"
+
       # MyDog has to run on Spigot, so it may not use Paper-only API
       - name: Compile against the Spigot API
         run: mvn -B -Pspigot -pl plugin -am clean compile

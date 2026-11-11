@@ -260,16 +260,22 @@ public record Settings(boolean debug, Saving saving, Teleport teleport, Dogs dog
         if (section == null) {
             return experience;
         }
+        // The bundled list has mobs from the newest Minecraft, so on older servers some are unknown: one line, not one each
+        List<String> unknown = new ArrayList<>();
         for (String key : section.getKeys(false)) {
             if (key.equals("default")) {
                 continue;
             }
             EntityType type = Registry.ENTITY_TYPE.get(NamespacedKey.minecraft(key.toLowerCase(Locale.ROOT)));
             if (type == null) {
-                log.warning("Unknown entity type '" + key + "' in levels.experience-per-kill, skipping it.");
+                unknown.add(key);
                 continue;
             }
             experience.put(type, Math.max(0, section.getInt(key)));
+        }
+        if (!unknown.isEmpty()) {
+            log.warning("Skipping entity types in levels.experience-per-kill that this server doesn't have: "
+                    + String.join(", ", unknown));
         }
         return experience;
     }
