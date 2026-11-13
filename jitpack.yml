@@ -1,4 +1,5 @@
-# JitPack builds a tag the first time someone asks for it, e.g. com.github.HeroGamers.MyDog:mydog-api:v0.3.0
-# MyDog targets Java 21 but builds with JDK 25 (like CI), which JitPack doesn't reliably provide yet, so the build fetches Temurin 25 itself.
+# JitPack builds a tag the first time someone asks for it, e.g. com.github.HeroGamers.MyDog:mydog-api:v0.4.0
+# MyDog targets Java 21 but builds with JDK 25 (like CI) and a Maven newer than JitPack's own (maven-compiler-plugin 3.15
+# needs 3.6.3+), so the build fetches Temurin 25 and Maven 3.9 itself.
 install:
-  - curl -sSL -o /tmp/jdk25.tar.gz https://api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jdk/hotspot/normal/eclipse && mkdir -p /tmp/jdk25 && tar -xzf /tmp/jdk25.tar.gz -C /tmp/jdk25 --strip-components=1 && export JAVA_HOME=/tmp/jdk25 && export PATH=/tmp/jdk25/bin:$PATH && java -version && mvn -B install -DskipTests
+  - curl -sSL -o /tmp/jdk25.tar.gz https://api.adoptium.net/v3/binary/latest/25/ga/linux/x64/jdk/hotspot/normal/eclipse && mkdir -p /tmp/jdk25 && tar -xzf /tmp/jdk25.tar.gz -C /tmp/jdk25 --strip-components=1 && curl -sSL -o /tmp/maven.tar.gz https://repo1.maven.org/maven2/org/apache/maven/apache-maven/3.9.16/apache-maven-3.9.16-bin.tar.gz && mkdir -p /tmp/maven && tar -xzf /tmp/maven.tar.gz -C /tmp/maven --strip-components=1 && export JAVA_HOME=/tmp/jdk25 && export PATH=/tmp/jdk25/bin:/tmp/maven/bin:$PATH && java -version && mvn -v && mvn -B install -DskipTests
